@@ -48,7 +48,10 @@ export function KpiCard({
   const content = (
     <span className="flex flex-col gap-1">
       <span className="text-body text-text-muted">{label}</span>
-      <span className="flex flex-wrap items-baseline gap-1 text-text">
+      {/* Montant négatif (marge, ventes nettes) : danger-text en plus du signe « − » (§ 2.2, P7). */}
+      <span
+        className={`flex flex-wrap items-baseline gap-1 ${amount < 0 ? "text-danger-text" : "text-text"}`}
+      >
         <span className="text-kpi font-bold tabular-nums">{figure}</span>
         <span className="text-title-sm font-semibold">{unit}</span>
       </span>

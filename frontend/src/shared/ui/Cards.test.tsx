@@ -47,6 +47,20 @@ describe("KpiCard", () => {
     expect(onOpen).toHaveBeenCalledOnce();
   });
 
+  it("affiche un montant négatif en danger-text avec le signe « − » (design-system § 2.2)", () => {
+    render(
+      <>
+        <KpiCard label="Marge du jour" amount={-610000} />
+        <KpiCard label="Ventes du jour" amount={610000} />
+      </>,
+    );
+    const negative = screen.getByText(plain(`${MINUS}610${THIN_NBSP}000`)).parentElement;
+    const positive = screen.getByText(plain(`610${THIN_NBSP}000`)).parentElement;
+    expect(negative).toHaveClass("text-danger-text");
+    expect(positive).toHaveClass("text-text");
+    expect(positive).not.toHaveClass("text-danger-text");
+  });
+
   it("refuse une variation non entière et un montant non entier", () => {
     expectRenderError(() => render(<KpiCard label="A" amount={1} change={1.5} />), "entier");
     expectRenderError(() => render(<KpiCard label="A" amount={1.5} />), "Montant invalide");

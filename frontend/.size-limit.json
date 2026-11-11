@@ -6,9 +6,15 @@
     "limit": "3 MB"
   },
   {
-    "name": "JS initial (gzip)",
-    "path": "dist/assets/*.js",
+    "name": "JS initial (gzip) : fichier d'entrée chargé à l'ouverture",
+    "path": "dist/assets/index-*.js",
     "gzip": true,
     "limit": "250 kB"
+  },
+  {
+    "name": "Tout le JavaScript (gzip), écrans chargés à la demande compris",
+    "path": "dist/assets/*.js",
+    "gzip": true,
+    "limit": "500 kB"
   }
 ]
