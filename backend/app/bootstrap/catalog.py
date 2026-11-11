@@ -1,7 +1,7 @@
 """Assemblage du catalogue (T13) : articles, prix, archivage, recherche.
 
-- `ArticleStock` : implémentation **provisoire** `NoArticleStockRecorded` jusqu'au module
-  Stock (T14), qui la remplacera ici.
+- `ArticleStock` : `LedgerArticleStock` du module Stock (T14), sur la projection `stock_level`
+  (les tests peuvent en injecter un autre).
 - `SalesRanking` : absent jusqu'au module Ventes (T16) ; le tri « plus vendus » répond alors
   400 `SORT_UNAVAILABLE`.
 """
@@ -9,13 +9,14 @@
 from dataclasses import dataclass
 
 from app.application.catalog.ranking import SalesRanking
-from app.application.catalog.stock_probe import ArticleStock, NoArticleStockRecorded
+from app.application.catalog.stock_probe import ArticleStock
 from app.application.catalog.use_cases.archive_article import ArchiveArticle
 from app.application.catalog.use_cases.create_article import CreateArticle
 from app.application.catalog.use_cases.read_articles import GetArticle, SearchArticles
 from app.application.catalog.use_cases.set_prices import SetArticlePrices
 from app.application.catalog.use_cases.update_article import UpdateArticle
 from app.application.security.policy import Policy
+from app.application.stock.probes import LedgerArticleStock
 from app.bootstrap.identity import IdentityModule
 from app.interface.http.routes.catalog import CatalogComponents
 
@@ -37,7 +38,7 @@ def build_catalog(
         create=CreateArticle(uows, policy, clock),
         update=UpdateArticle(uows, policy, clock),
         prices=SetArticlePrices(uows, policy, clock),
-        archive=ArchiveArticle(uows, policy, stock or NoArticleStockRecorded(), clock),
+        archive=ArchiveArticle(uows, policy, stock or LedgerArticleStock(), clock),
         search=SearchArticles(uows, policy, ranking),
         get=GetArticle(uows, policy),
         guard=identity.auth.guard,

@@ -107,8 +107,8 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
   refusé si le réglage est inactif (`MIN_PRICE_DISABLED`). **Visibilité** :
   `application/catalog/visibility.py` (seul endroit) — vendeur sans `last_cost`/`wac` (clés
   absentes), comptable sans prix de vente, chauffeur 403.
-- **Provisoire** : `NoArticleStockRecorded` (archivage) jusqu'au module Stock (T14) ;
-  `last_cost`/`wac` écrits par `Article.record_costs`, réservé aux Achats (T15).
+- `last_cost`/`wac` écrits par `Article.record_costs`, réservé aux Achats (T15). Archivage :
+  port `ArticleStock`, servi par le module Stock (T14).
 
 ## Dépenses (T18)
 
@@ -124,6 +124,25 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
   **réécrit** les dépenses du tag source et aplatit les fusions antérieures.
 - « Autre » exige une description : `expense_category.requires_description` (migration
   `0004_expenses`, qui le pose sur les « Autre » existants).
+
+## Stock (T14)
+
+- **Grand livre** : `application/stock/ledger.py` (`StockLedger`) est le **seul** point d'entrée
+  des mouvements (`record_entry`, `record_exit(deferred=…)`, `reverse`), appelé dans la
+  transaction du document source ; il met à jour la projection `stock_level` (verrou
+  optimiste) et refuse en ligne un stock négatif (`422 STOCK_INSUFFICIENT`, `details.available`
+  et `other_locations`). Différé (RG-T18) : accepté, `stock_to_verify`, alerte. Sur conflit de
+  concurrence, rejouer la transaction par `with_stock_retry` (`retry.py`, 3 essais).
+- **Routes** (`/shops/{id}/…`) : `GET /stock?q=&location_id=&sort=name|quantity_asc|quantity_desc`,
+  `GET /stock/value`, `GET /stock/damaged`, `GET /articles/{aid}/movements`, `POST /adjustments`,
+  `POST /inventories`, `GET /inventories/{iid}`, `PUT /inventories/{iid}/counts`,
+  `POST /inventories/{iid}/validate|abandon`. Visibilité : `application/stock/visibility.py`.
+- **Décisions** : seuil bas **strict** et stock vendable tous lieux (Q-18) ; théorique d'inventaire
+  lu à la validation, jamais renvoyé avant (Q-17) ; ajustement + au CMP courant (Q-16) ;
+  `other_locations` = lieux actifs à stock > 0 (Q-43) ; valeur sans coût = `null` + nombre
+  d'articles sans coût (RG-T15). Alertes : `application/stock/alerts.py`, branchées dans
+  `bootstrap/core.py`.
+- **Migration** `0006_stock` ; seed de dev : stock de départ des six motos (`tools/seed_stock.py`).
 
 ## Couches
 

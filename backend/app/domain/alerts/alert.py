@@ -28,7 +28,9 @@ class AlertId(EntityId):
 
 
 class AlertType(StrEnum):
-    """Les douze types du CDC § 20.1 (code stable)."""
+    """Les douze types du CDC § 20.1 (code stable), plus deux alertes exigées par des cas
+    d'utilisation sans type au § 20.1 : ajustement du comptable (UC-STK-08, ADJ-03) et
+    inventaire validé avec la valeur des écarts (UC-STK-07, INV-04)."""
 
     LOW_STOCK = "low_stock"  # Stock bas
     STOCK_TO_VERIFY = "stock_to_verify"  # Stock à vérifier
@@ -42,6 +44,8 @@ class AlertType(StrEnum):
     TRUCK_SILENT = "truck_silent"  # Camion sans nouvelle
     DOCUMENT_TO_RENEW = "document_to_renew"  # Document à renouveler
     ENTRY_REFUSED = "entry_refused"  # Saisie refusée
+    STOCK_ADJUSTMENT = "stock_adjustment"  # Ajustement de stock (par le comptable)
+    INVENTORY_VALIDATED = "inventory_validated"  # Inventaire validé (valeur des écarts)
 
 
 @dataclass(eq=False, kw_only=True)

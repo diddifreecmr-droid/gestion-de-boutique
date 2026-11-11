@@ -26,8 +26,8 @@ def alert(**overrides: object) -> Alert:
     return Alert.raise_for(**(values | overrides))  # type: ignore[arg-type]
 
 
-def test_twelve_cdc_types() -> None:
-    assert len(AlertType) == 12
+def test_twelve_cdc_types_plus_two_stock_alerts() -> None:
+    assert len(AlertType) == 12 + 2  # T14 : ajustement du comptable, inventaire validé
 
 
 def test_read_and_resolve_lifecycle() -> None:

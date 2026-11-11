@@ -4,6 +4,9 @@ Identité, journal et boutiques partagent **les mêmes** stockages (une base mé
 moteur SQL) : c'est ce qui permet la transaction commune plateforme + boutique (T10). Les
 handlers de boutique (journal puis alertes) sont posés sur les unités de boutique **et** sur
 les unités jointes ; le handler du journal de l'identité, sur l'unité plateforme.
+
+Les règles d'alerte des modules sont branchées **ici, une fois** par répartiteur (stock, T14) :
+assembler un module plusieurs fois (outils, tests) ne double jamais une alerte.
 """
 
 from dataclasses import dataclass
@@ -18,6 +21,7 @@ from app.application.plans.ports import EntitlementOverrides
 from app.application.ports.clock import Clock
 from app.application.ports.uow import UnitOfWorkFactory
 from app.application.shops.ports import ShopCatalog
+from app.application.stock.alerts import register_stock_alerts
 from app.bootstrap.config import PersistenceBackend, Settings
 from app.bootstrap.persistence import MEMORY_REPOSITORIES, SQL_REPOSITORIES, sql_engine
 from app.infrastructure.persistence.memory.database import MemoryDatabase
@@ -60,6 +64,7 @@ class Core:
 
 def build_core(settings: Settings, clock: Clock) -> Core:
     alerts = AlertDispatcher(clock)
+    register_stock_alerts(alerts)
     handlers = (AuditRecorder(clock), alerts)
     backend = settings.persistence_backend
     if backend is PersistenceBackend.MEMORY:

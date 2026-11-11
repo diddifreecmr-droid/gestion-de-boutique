@@ -659,10 +659,256 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/shops/{shop_id}/stock": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Stock Matrix */
+    get: operations["stock_matrix_api_v1_shops__shop_id__stock_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/stock/value": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Stock Value */
+    get: operations["stock_value_api_v1_shops__shop_id__stock_value_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/stock/damaged": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Damaged Stock */
+    get: operations["damaged_stock_api_v1_shops__shop_id__stock_damaged_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/articles/{article_id}/movements": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Article Movements */
+    get: operations["article_movements_api_v1_shops__shop_id__articles__article_id__movements_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/adjustments": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Record Adjustment */
+    post: operations["record_adjustment_api_v1_shops__shop_id__adjustments_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/inventories": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Start Inventory */
+    post: operations["start_inventory_api_v1_shops__shop_id__inventories_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/inventories/{inventory_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Inventory */
+    get: operations["get_inventory_api_v1_shops__shop_id__inventories__inventory_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/inventories/{inventory_id}/counts": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Put Counts */
+    put: operations["put_counts_api_v1_shops__shop_id__inventories__inventory_id__counts_put"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/inventories/{inventory_id}/validate": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Validate Inventory */
+    post: operations["validate_inventory_api_v1_shops__shop_id__inventories__inventory_id__validate_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/inventories/{inventory_id}/abandon": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Abandon Inventory */
+    post: operations["abandon_inventory_api_v1_shops__shop_id__inventories__inventory_id__abandon_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /** AbandonRequest */
+    AbandonRequest: {
+      /** Version */
+      version: number;
+    };
+    /** AdjustmentRequest */
+    AdjustmentRequest: {
+      /** Id */
+      id?: string | null;
+      /** Location Id */
+      location_id: string;
+      /** Article Id */
+      article_id: string;
+      /**
+       * Direction
+       * @enum {string}
+       */
+      direction: "in" | "out";
+      /** Quantity */
+      quantity: number | string;
+      /**
+       * Condition
+       * @default sellable
+       * @enum {string}
+       */
+      condition: "sellable" | "damaged";
+      /**
+       * Reason
+       * @enum {string}
+       */
+      reason:
+        | "breakage"
+        | "theft"
+        | "loss"
+        | "entry_error"
+        | "sample_or_gift"
+        | "supplier_return"
+        | "offcut"
+        | "other";
+      /** Note */
+      note?: string | null;
+      /** Photo Id */
+      photo_id?: string | null;
+    };
+    /** AdjustmentResponse */
+    AdjustmentResponse: {
+      /** Id */
+      id: string;
+      /** Location Id */
+      location_id: string;
+      /** Article Id */
+      article_id: string;
+      /** Direction */
+      direction: string;
+      /** Quantity */
+      quantity: string;
+      /** Condition */
+      condition: string;
+      /** Reason */
+      reason: string;
+      /** Note */
+      note: string | null;
+      /** Photo Id */
+      photo_id: string | null;
+      /** Inventory Id */
+      inventory_id: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Author Id */
+      author_id: string;
+      /** Balance After */
+      balance_after: string | null;
+    };
     /** AdminAccessResponse */
     AdminAccessResponse: {
       /** Active */
@@ -912,6 +1158,44 @@ export interface components {
       /** New Pin Confirmation */
       new_pin_confirmation: string;
     };
+    /** CountEntry */
+    CountEntry: {
+      /** Article Id */
+      article_id: string;
+      /** Counted */
+      counted: number | string | null;
+    };
+    /** CountsRequest */
+    CountsRequest: {
+      /** Version */
+      version: number;
+      /** Counts */
+      counts: components["schemas"]["CountEntry"][];
+    };
+    /** DamagedLine */
+    DamagedLine: {
+      /** Article Id */
+      article_id: string;
+      /** Display Name */
+      display_name: string;
+      /** Stock Unit */
+      stock_unit: string;
+      /** Location Id */
+      location_id: string;
+      /** Location Name */
+      location_name: string;
+      /** Damaged */
+      damaged: string;
+      /** Wac */
+      wac?: number | null;
+      /** Wac Value */
+      wac_value?: number | null;
+    };
+    /** DamagedStockResponse */
+    DamagedStockResponse: {
+      /** Items */
+      items: components["schemas"]["DamagedLine"][];
+    };
     /**
      * Entitlement
      * @description Code stable d'un droit d'offre (stocké, renvoyé dans `error.details`).
@@ -1139,6 +1423,68 @@ export interface components {
        */
       status: "ok";
     };
+    /** InventoryLineResponse */
+    InventoryLineResponse: {
+      /** Article Id */
+      article_id: string;
+      /** Display Name */
+      display_name: string;
+      /** Stock Unit */
+      stock_unit: string;
+      /** Counted */
+      counted: string | null;
+      /** Theoretical */
+      theoretical?: string | null;
+      /** Difference */
+      difference?: string | null;
+      /** Reason */
+      reason?: string | null;
+      /** Gap Value */
+      gap_value?: number | null;
+    };
+    /** InventoryResponse */
+    InventoryResponse: {
+      /** Id */
+      id: string;
+      /** Number */
+      number: string;
+      /** Version */
+      version: number;
+      /** Status */
+      status: string;
+      /** Location Id */
+      location_id: string;
+      /** Location Name */
+      location_name: string;
+      /**
+       * Started At
+       * Format: date-time
+       */
+      started_at: string;
+      /** Closed At */
+      closed_at: string | null;
+      /** Global Reason */
+      global_reason: string | null;
+      /** Sales Since Start */
+      sales_since_start: number;
+      /** Sales Message */
+      sales_message: string | null;
+      /** Counted Lines */
+      counted_lines: number;
+      /** Lines */
+      lines: components["schemas"]["InventoryLineResponse"][];
+      /** Gap Count */
+      gap_count?: number | null;
+      /** Gap Value */
+      gap_value?: number | null;
+    };
+    /** InventoryStartRequest */
+    InventoryStartRequest: {
+      /** Id */
+      id?: string | null;
+      /** Location Id */
+      location_id: string;
+    };
     /** LocationCreateRequest */
     LocationCreateRequest: {
       /** Id */
@@ -1203,6 +1549,18 @@ export interface components {
       /** Version */
       version: number;
     };
+    /** LocationValuation */
+    LocationValuation: {
+      /** Location Id */
+      location_id: string;
+      /** Location Name */
+      location_name: string;
+      /** Active */
+      active: boolean;
+      sellable: components["schemas"]["Valuation"];
+      damaged: components["schemas"]["Valuation"];
+      incoming: components["schemas"]["Valuation"];
+    };
     /**
      * LoginRequest
      * @description Code à 6 chiffres (membre) **ou** mot de passe (administrateur plateforme).
@@ -1220,6 +1578,11 @@ export interface components {
        */
       device_label: string;
     };
+    /**
+     * MatrixOrder
+     * @enum {string}
+     */
+    MatrixOrder: "name" | "quantity_asc" | "quantity_desc";
     /** MeResponse */
     MeResponse: {
       /** User Id */
@@ -1311,6 +1674,64 @@ export interface components {
       | "dashboard"
       | "import"
       | "audit";
+    /** MovementDocument */
+    MovementDocument: {
+      /** Type */
+      type: string;
+      /** Id */
+      id: string | null;
+      /** Number */
+      number: string | null;
+    };
+    /** MovementListResponse */
+    MovementListResponse: {
+      /** Article Id */
+      article_id: string;
+      /** Stock Unit */
+      stock_unit: string;
+      /** Items */
+      items: components["schemas"]["MovementResponse"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+    };
+    /** MovementResponse */
+    MovementResponse: {
+      /** Id */
+      id: string;
+      /** Type */
+      type: string;
+      /** Type Label */
+      type_label: string;
+      /** Location Id */
+      location_id: string;
+      /** Location Name */
+      location_name: string;
+      /** Condition */
+      condition: string;
+      /** Quantity */
+      quantity: string;
+      /** Balance After */
+      balance_after: string;
+      document: components["schemas"]["MovementDocument"];
+      /**
+       * Occurred At
+       * Format: date-time
+       */
+      occurred_at: string;
+      /**
+       * Recorded At
+       * Format: date-time
+       */
+      recorded_at: string;
+      /** Author Id */
+      author_id: string;
+      /** Stock To Verify */
+      stock_to_verify: boolean;
+      /** Reverses Id */
+      reverses_id: string | null;
+      /** Unit Cost */
+      unit_cost?: number | null;
+    };
     /** OpenShopRequest */
     OpenShopRequest: {
       /**
@@ -1468,6 +1889,13 @@ export interface components {
       min_price_enabled: boolean;
       /** Default Location Id */
       default_location_id: string | null;
+    };
+    /** ReasonEntry */
+    ReasonEntry: {
+      /** Article Id */
+      article_id: string;
+      /** Reason */
+      reason: string;
     };
     /**
      * ReceiptFormat
@@ -1647,6 +2075,71 @@ export interface components {
        */
       created_at: string;
     };
+    /** StockCell */
+    StockCell: {
+      /** Location Id */
+      location_id: string;
+      /** Sellable */
+      sellable: string;
+      /** Damaged */
+      damaged: string;
+    };
+    /** StockColumn */
+    StockColumn: {
+      /** Location Id */
+      location_id: string;
+      /** Name */
+      name: string;
+      /** Kind */
+      kind: string;
+      /** Is Point Of Sale */
+      is_point_of_sale: boolean;
+    };
+    /** StockMatrixResponse */
+    StockMatrixResponse: {
+      /** Locations */
+      locations: components["schemas"]["StockColumn"][];
+      /** Items */
+      items: components["schemas"]["StockRow"][];
+    };
+    /** StockRow */
+    StockRow: {
+      /** Article Id */
+      article_id: string;
+      /** Display Name */
+      display_name: string;
+      /** Stock Unit */
+      stock_unit: string;
+      /** Cells */
+      cells: components["schemas"]["StockCell"][];
+      /** Incoming */
+      incoming: string;
+      /** Total */
+      total: string;
+      /**
+       * Stock Status
+       * @enum {string}
+       */
+      stock_status: "ok" | "low" | "out";
+      /** Alert Threshold */
+      alert_threshold: string;
+      /** Base Price */
+      base_price?: number | null;
+      /** Last Cost */
+      last_cost?: number | null;
+      /** Wac */
+      wac?: number | null;
+      /** Wac Value */
+      wac_value?: number | null;
+    };
+    /** StockValueResponse */
+    StockValueResponse: {
+      /** Locations */
+      locations: components["schemas"]["LocationValuation"][];
+      sellable: components["schemas"]["Valuation"];
+      damaged: components["schemas"]["Valuation"];
+      incoming: components["schemas"]["Valuation"];
+    };
     /** TagMergeRequest */
     TagMergeRequest: {
       /** Source Id */
@@ -1707,6 +2200,15 @@ export interface components {
       /** Unread Count */
       unread_count: number;
     };
+    /** ValidateRequest */
+    ValidateRequest: {
+      /** Version */
+      version: number;
+      /** Reasons */
+      reasons?: components["schemas"]["ReasonEntry"][];
+      /** Global Reason */
+      global_reason?: string | null;
+    };
     /** ValidationError */
     ValidationError: {
       /** Location */
@@ -1719,6 +2221,21 @@ export interface components {
       input?: unknown;
       /** Context */
       ctx?: Record<string, never>;
+    };
+    /** Valuation */
+    Valuation: {
+      /** At Wac */
+      at_wac: number | null;
+      /** At Wac Known */
+      at_wac_known: number;
+      /** Without Wac */
+      without_wac: number;
+      /** At Last Cost */
+      at_last_cost: number | null;
+      /** At Last Cost Known */
+      at_last_cost_known: number;
+      /** Without Last Cost */
+      without_last_cost: number;
     };
   };
   responses: never;
@@ -3552,6 +4069,378 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["TagMergeResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  stock_matrix_api_v1_shops__shop_id__stock_get: {
+    parameters: {
+      query?: {
+        q?: string | null;
+        location_id?: string | null;
+        sort?: components["schemas"]["MatrixOrder"];
+      };
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["StockMatrixResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  stock_value_api_v1_shops__shop_id__stock_value_get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["StockValueResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  damaged_stock_api_v1_shops__shop_id__stock_damaged_get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DamagedStockResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  article_movements_api_v1_shops__shop_id__articles__article_id__movements_get: {
+    parameters: {
+      query?: {
+        cursor?: string | null;
+        limit?: number | null;
+      };
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        article_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MovementListResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  record_adjustment_api_v1_shops__shop_id__adjustments_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AdjustmentRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AdjustmentResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  start_inventory_api_v1_shops__shop_id__inventories_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["InventoryStartRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InventoryResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_inventory_api_v1_shops__shop_id__inventories__inventory_id__get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        inventory_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InventoryResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  put_counts_api_v1_shops__shop_id__inventories__inventory_id__counts_put: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        inventory_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CountsRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InventoryResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  validate_inventory_api_v1_shops__shop_id__inventories__inventory_id__validate_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        inventory_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ValidateRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InventoryResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  abandon_inventory_api_v1_shops__shop_id__inventories__inventory_id__abandon_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        inventory_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AbandonRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InventoryResponse"];
         };
       };
       /** @description Validation Error */

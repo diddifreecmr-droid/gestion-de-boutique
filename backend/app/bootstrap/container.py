@@ -15,6 +15,7 @@ from app.bootstrap.expenses import build_expenses
 from app.bootstrap.identity import build_identity
 from app.bootstrap.journal import build_journal
 from app.bootstrap.shops import build_shops
+from app.bootstrap.stock import build_stock
 from app.infrastructure.system_clock import SystemClock
 from app.interface.http.app import create_app
 from app.interface.http.config import HttpConfig
@@ -46,6 +47,7 @@ def build_app(env_file: Path | None = DEFAULT_ENV_FILE) -> FastAPI:
     shops = build_shops(identity)
     catalog = build_catalog(identity)
     expenses = build_expenses(identity)
+    stock = build_stock(identity)
     app = create_app(
         http_config_from(settings),
         identity.auth,
@@ -53,6 +55,7 @@ def build_app(env_file: Path | None = DEFAULT_ENV_FILE) -> FastAPI:
         shops.http,
         catalog=catalog.http,
         expenses=expenses.http,
+        stock=stock.http,
     )
     # Fabrique des unités de travail de boutique (handlers du journal et des alertes branchés).
     app.state.uow_factory = journal.uow_factory

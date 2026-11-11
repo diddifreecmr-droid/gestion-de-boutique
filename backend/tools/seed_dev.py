@@ -2,7 +2,8 @@
 
 Ouvre la boutique (profil Motos) par le vrai cas d'utilisation `OpenShop`, comme
 l'administrateur, puis ajoute un vendeur (Garoua), un comptable et un chauffeur par
-`ManageMembers`, et six modèles de motos avec leur prix (`tools/seed_catalog.py`). Les codes
+`ManageMembers`, six modèles de motos avec leur prix (`tools/seed_catalog.py`) et leur stock
+de départ par lieu (« Reprise de départ » avec coût, `tools/seed_stock.py`). Les codes
 sont fixés (connus, non simples) pour les essais du frontend : ils ne servent **jamais**
 ailleurs qu'en démonstration. Relancer ne recrée rien (idempotent).
 
@@ -31,6 +32,7 @@ from app.domain.shared.ids import DeviceId, ShopId
 from app.domain.shared.roles import Role
 from app.infrastructure.system_clock import SystemClock
 from tools.seed_catalog import seed_motos
+from tools.seed_stock import seed_opening_stock
 
 SHOP_NAME = "Motos Garoua"
 ADMIN = ("699000000", "Admin démo", "Demo-Admin-2026!")
@@ -53,6 +55,7 @@ class SeedReport:
     accounts: list[tuple[str, str, str]] = field(default_factory=list)
     """(rôle, téléphone, code ou mot de passe)."""
     articles: int = 0
+    movements: int = 0
 
 
 def _set_secret(identity: IdentityModule, phone: str, secret: str) -> None:
@@ -123,6 +126,7 @@ def seed(settings: Settings, hasher: PasswordHasher | None = None) -> SeedReport
         _set_secret(identity, phone, secret)
         report.accounts.append((rest[0].value if rest else Role.OWNER.value, phone, secret))
     report.articles = seed_motos(identity, owner)
+    report.movements = seed_opening_stock(identity, owner)
     report.shop_id, report.created = opened.shop_id, True
     return report
 
@@ -138,6 +142,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"  {role:<15} {phone}  {secret}")
     if report.articles:
         print(f"  {report.articles} articles au catalogue")
+    if report.movements:
+        print(f"  {report.movements} mouvements de stock de départ")
     return 0
 
 

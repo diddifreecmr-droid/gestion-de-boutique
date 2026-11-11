@@ -13,12 +13,15 @@ from app.interface.http.routes.catalog import CatalogComponents, build_catalog_r
 from app.interface.http.routes.expense_components import ExpensesComponents
 from app.interface.http.routes.expense_settings import build_expense_settings_router
 from app.interface.http.routes.expenses import build_expenses_router
+from app.interface.http.routes.inventories import build_inventories_router
 from app.interface.http.routes.journal import JournalComponents, build_journal_router
 from app.interface.http.routes.members import build_members_router
 from app.interface.http.routes.places import build_places_router
 from app.interface.http.routes.platform import build_platform_router
 from app.interface.http.routes.shop_components import ShopsComponents
 from app.interface.http.routes.shop_profile import build_shop_profile_router
+from app.interface.http.routes.stock import build_stock_router
+from app.interface.http.routes.stock_components import StockComponents
 
 
 def create_app(
@@ -28,6 +31,7 @@ def create_app(
     shops: ShopsComponents | None = None,
     catalog: CatalogComponents | None = None,
     expenses: ExpensesComponents | None = None,
+    stock: StockComponents | None = None,
 ) -> FastAPI:
     """`journal`/`shops` absents : leurs routes ne sont pas montées (outils, tests ciblés)."""
     prefix = config.api_prefix
@@ -57,4 +61,7 @@ def create_app(
     if expenses is not None:
         app.include_router(build_expenses_router(expenses), prefix=prefix)
         app.include_router(build_expense_settings_router(expenses), prefix=prefix)
+    if stock is not None:
+        app.include_router(build_stock_router(stock), prefix=prefix)
+        app.include_router(build_inventories_router(stock), prefix=prefix)
     return app

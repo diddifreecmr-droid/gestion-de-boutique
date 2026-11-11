@@ -4,7 +4,7 @@ import pytest
 
 from app.application.ports.uow import UnitOfWork
 from app.application.security.errors import PermissionDenied
-from app.application.shops.stock_probe import LocationStock, NoStockRecorded
+from app.application.shops.stock_probe import LocationStock
 from app.application.shops.use_cases.manage_locations import ManageLocations
 from app.domain.shared.errors import Duplicate, VersionConflict
 from app.domain.shared.roles import Role
@@ -69,7 +69,6 @@ def test_withdrawal_rules() -> None:
     with pytest.raises(LocationHasStock):
         stocked.update(owner, depot.id, {"active": False}, 1)
     assert world.http.locations.update(owner, depot.id, {"active": False}, 1).active is False
-    assert NoStockRecorded().has_stock(None, depot.id) is False  # type: ignore[arg-type]  # provisoire, n'utilise pas l'unité
 
 
 def test_location_read_access_by_role() -> None:

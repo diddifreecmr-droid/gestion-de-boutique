@@ -1,7 +1,7 @@
 """Assemblage du socle des boutiques (T10) : console plateforme, profil, réglages, lieux,
 modes de paiement, membres, délégation de l'administrateur.
 
-`LocationStock` : implémentation **provisoire** `NoStockRecorded` jusqu'au module Stock (T14).
+`LocationStock` : `LedgerLocationStock` du module Stock (T14), sur la projection `stock_level`.
 """
 
 from dataclasses import dataclass
@@ -12,7 +12,7 @@ from app.application.identity.use_cases.reset_pin import ResetPin
 from app.application.identity.use_cases.revoke_user_devices import RevokeUserDevices
 from app.application.identity.use_cases.unlock_user import UnlockUser
 from app.application.security.policy import Policy
-from app.application.shops.stock_probe import LocationStock, NoStockRecorded
+from app.application.shops.stock_probe import LocationStock
 from app.application.shops.use_cases.admin_access import GrantAdminAccess, RevokeAdminAccess
 from app.application.shops.use_cases.get_shop_profile import GetShopProfile
 from app.application.shops.use_cases.manage_locations import ManageLocations
@@ -21,6 +21,7 @@ from app.application.shops.use_cases.manage_payment_modes import ManagePaymentMo
 from app.application.shops.use_cases.open_shop import OpenShop
 from app.application.shops.use_cases.platform_shops import PlatformShops
 from app.application.shops.use_cases.shop_settings import ShopSettingsUseCase
+from app.application.stock.probes import LedgerLocationStock
 from app.bootstrap.identity import IdentityModule
 from app.infrastructure.auth.opaque_tokens import RandomPinGenerator
 from app.interface.http.routes.shop_components import ShopsComponents
@@ -47,7 +48,7 @@ def build_shops(
         platform=PlatformShops(shop_uows, core.catalog, core.overrides, policy, clock),
         profile=GetShopProfile(shop_uows, policy),
         settings=ShopSettingsUseCase(shop_uows, policy, clock),
-        locations=ManageLocations(shop_uows, policy, stock or NoStockRecorded(), clock),
+        locations=ManageLocations(shop_uows, policy, stock or LedgerLocationStock(), clock),
         payment_modes=ManagePaymentModes(shop_uows, policy, clock),
         members=ManageMembers(platform_uows, policy, hasher, pins, clock),
         reset_pin=ResetPin(platform_uows, access, hasher, pins, clock),

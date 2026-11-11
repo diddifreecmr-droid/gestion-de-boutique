@@ -19,6 +19,7 @@ from app.infrastructure.persistence.memory.catalog import MEMORY_CATALOG_REPOSIT
 from app.infrastructure.persistence.memory.database import MemoryDatabase
 from app.infrastructure.persistence.memory.expenses import EXPENSE_REPOSITORIES
 from app.infrastructure.persistence.memory.shops import SHOP_REPOSITORIES
+from app.infrastructure.persistence.memory.stock import MEMORY_STOCK_REPOSITORIES
 from app.infrastructure.persistence.memory.uow import MemoryUnitOfWorkFactory, RepositoryRegistry
 from app.infrastructure.persistence.sqlalchemy.alerts import SqlAlertRepository
 from app.infrastructure.persistence.sqlalchemy.audit_log import SqlAuditLog
@@ -26,6 +27,7 @@ from app.infrastructure.persistence.sqlalchemy.catalog import SQL_CATALOG_REPOSI
 from app.infrastructure.persistence.sqlalchemy.engine import create_sql_engine
 from app.infrastructure.persistence.sqlalchemy.expense_query import SQL_EXPENSE_ADAPTERS
 from app.infrastructure.persistence.sqlalchemy.shops_members import SQL_SHOP_REPOSITORIES
+from app.infrastructure.persistence.sqlalchemy.stock_documents import SQL_STOCK_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.uow import (
     SqlRepositoryRegistry,
     SqlUnitOfWorkFactory,
@@ -37,6 +39,7 @@ MEMORY_REPOSITORIES: RepositoryRegistry = (
     *SHOP_REPOSITORIES,
     *MEMORY_CATALOG_REPOSITORIES,
     *EXPENSE_REPOSITORIES,
+    *MEMORY_STOCK_REPOSITORIES,
 )
 SQL_REPOSITORIES: SqlRepositoryRegistry = (
     SqlAuditLog,
@@ -44,6 +47,7 @@ SQL_REPOSITORIES: SqlRepositoryRegistry = (
     *SQL_SHOP_REPOSITORIES,
     *SQL_CATALOG_REPOSITORIES,
     *SQL_EXPENSE_ADAPTERS,
+    *SQL_STOCK_REPOSITORIES,
 )
 
 
