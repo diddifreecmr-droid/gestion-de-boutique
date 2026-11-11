@@ -9,6 +9,8 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from app.bootstrap.config import DEFAULT_ENV_FILE, Environment, Settings, load_settings
+from app.bootstrap.identity import build_identity
+from app.bootstrap.persistence import build_unit_of_work_factory
 from app.interface.http.app import create_app
 from app.interface.http.config import HttpConfig
 
@@ -32,4 +34,7 @@ def build_app(env_file: Path | None = DEFAULT_ENV_FILE) -> FastAPI:
     """Lit la configuration (fail-fast), configure la journalisation, assemble l'application."""
     settings = load_settings(env_file)
     configure_logging(settings)
-    return create_app(http_config_from(settings))
+    app = create_app(http_config_from(settings), build_identity(settings).auth)
+    # Consommée par les routes à venir (T08+) ; adaptateur choisi par PERSISTENCE_BACKEND.
+    app.state.uow_factory = build_unit_of_work_factory(settings)
+    return app

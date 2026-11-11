@@ -1,36 +1,15 @@
 """Banc de tests de contrat : la même suite sur chaque adaptateur (specs § 12.1, TR-02).
 
     uv run pytest tests/contracts --backend=memory     # défaut
-    uv run pytest tests/contracts --backend=postgres   # T06 : échoue explicitement en T05
+    uv run pytest tests/contracts --backend=postgres   # TEST_DATABASE_URL requis
 
-L'option est déclarée ici (et non dans `tests/conftest.py`) : elle n'est donc reconnue sur la
-ligne de commande que si `tests/contracts` (ou un de ses fichiers) est passé à pytest. Lancée
-sans chemin, la suite complète exécute les contrats sur l'adaptateur par défaut.
+L'option `--backend` est déclarée dans `tests/conftest.py` (reconnue sur toute la suite).
 """
 
 import pytest
 
 from app.domain.shared.ids import ShopId
-from tests.contracts.backends import (
-    BACKENDS,
-    DEFAULT_BACKEND,
-    ContractBackend,
-    build_backend,
-    require_available,
-)
-
-
-def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addoption(
-        "--backend",
-        choices=BACKENDS,
-        default=DEFAULT_BACKEND,
-        help="Adaptateur de persistance sous contrat (tests/contracts).",
-    )
-
-
-def pytest_configure(config: pytest.Config) -> None:
-    require_available(str(config.getoption("--backend")))
+from tests.contracts.backends import ContractBackend, build_backend
 
 
 @pytest.fixture

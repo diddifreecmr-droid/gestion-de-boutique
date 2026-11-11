@@ -11,15 +11,14 @@ from app.application.ports.errors import UnitOfWorkStateError
 from app.application.ports.repository import not_found
 from app.domain.shared.doc_number import DocType
 from app.domain.shared.ids import EntityId, ShopId
+from app.infrastructure.persistence.errors import PRIMARY_KEY, duplicate, version_conflict
 from app.infrastructure.persistence.memory.database import (
     ChangeSet,
     MemoryDatabase,
     Row,
     SequenceKey,
     Write,
-    duplicate,
     find_unique_clash,
-    version_conflict,
 )
 
 
@@ -48,7 +47,9 @@ class MemoryTransaction:
         self._require_open()
         key = (table, row.entity_id)
         if key in self._writes or self._database.read(table, row.entity_id) is not None:
-            raise duplicate(table, "id")  # identifiant global (clé primaire), toutes boutiques
+            raise duplicate(
+                table, PRIMARY_KEY
+            )  # identifiant global (clé primaire), toutes boutiques
         self._require_unique(table, row)
         self._writes[key] = Write(table, row, expected_version=None)
 

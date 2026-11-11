@@ -1,9 +1,4 @@
-"""Unité de travail mémoire et sa fabrique.
-
-Les dépôts disponibles sont déclarés par la liste de leurs **classes d'adaptateur**, fournie par
-la composition root (ou par les tests) : l'unité de travail ne grossit pas à chaque module. Le
-port demandé est servi par l'unique adaptateur qui en hérite.
-"""
+"""Unité de travail mémoire et sa fabrique (registre de dépôts : voir `persistence.registry`)."""
 
 from collections.abc import Sequence
 from typing import Any
@@ -18,6 +13,7 @@ from app.infrastructure.persistence.memory.database import MemoryDatabase
 from app.infrastructure.persistence.memory.numbering import MemoryDocumentNumberAllocator
 from app.infrastructure.persistence.memory.repository import MemoryRepository
 from app.infrastructure.persistence.memory.transaction import MemoryTransaction
+from app.infrastructure.persistence.registry import select_adapter
 
 RepositoryRegistry = Sequence[type[MemoryRepository[Any, Any]]]
 
@@ -53,12 +49,8 @@ class MemoryUnitOfWork(UnitOfWork):
         return self._require_transaction().has_changes
 
     def _build_repository(self, port: type[Repository[Any, Any]]) -> Repository[Any, Any]:
-        candidates = [adapter for adapter in self._registry if issubclass(adapter, port)]
-        if len(candidates) != 1:
-            found = ", ".join(adapter.__name__ for adapter in candidates) or "aucun"
-            msg = f"Il faut un et un seul adaptateur mémoire pour {port.__name__} ({found})"
-            raise LookupError(msg)
-        return candidates[0](self.shop_id, self, self._require_transaction())
+        adapter = select_adapter(self._registry, port, "mémoire")
+        return adapter(self.shop_id, self, self._require_transaction())
 
     def _numbering(self) -> DocumentNumberAllocator:
         if self._allocator is None:

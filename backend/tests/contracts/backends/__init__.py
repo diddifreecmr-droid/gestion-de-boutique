@@ -13,14 +13,11 @@ import pytest
 from app.application.ports.event_handler import EventHandler
 from app.application.ports.uow import UnitOfWork
 from app.domain.shared.ids import ShopId
+from tests.contracts.backends import postgres
 from tests.contracts.backends.memory import MemoryContractBackend
 
 BACKENDS = ("memory", "postgres")
 DEFAULT_BACKEND = "memory"
-POSTGRES_PENDING = (
-    "--backend=postgres : adaptateur PostgreSQL : T06 (pas encore livré). "
-    "Seul --backend=memory est disponible en T05."
-)
 
 
 class ContractBackend(Protocol):
@@ -30,14 +27,22 @@ class ContractBackend(Protocol):
 
 
 def require_available(name: str) -> None:
-    """Échec explicite (jamais de saut silencieux) pour un adaptateur non livré."""
-    if name == "postgres":
-        raise pytest.UsageError(POSTGRES_PENDING)
+    """Prépare l'adaptateur ; échec explicite (jamais de saut silencieux) s'il est injoignable."""
     if name not in BACKENDS:
         msg = f"Adaptateur inconnu : {name!r} (attendu : {', '.join(BACKENDS)})"
         raise pytest.UsageError(msg)
+    if name == "postgres":
+        postgres.prepare()
 
 
 def build_backend(name: str) -> ContractBackend:
+    """Base vierge pour un test."""
+    if name == "postgres":
+        return postgres.PostgresContractBackend()
     require_available(name)
     return MemoryContractBackend()
+
+
+def release() -> None:
+    """Fin de session : rend les connexions ouvertes par `prepare`."""
+    postgres.dispose()

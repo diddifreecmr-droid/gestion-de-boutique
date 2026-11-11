@@ -11,8 +11,10 @@ from collections.abc import Hashable, Mapping
 from dataclasses import dataclass, field
 
 from app.domain.shared.doc_number import DocType
-from app.domain.shared.errors import Duplicate, VersionConflict
 from app.domain.shared.ids import EntityId, ShopId
+from app.infrastructure.persistence.errors import PRIMARY_KEY
+from app.infrastructure.persistence.errors import duplicate as duplicate  # réexport (compat.)
+from app.infrastructure.persistence.errors import version_conflict as version_conflict
 
 SequenceKey = tuple[ShopId, DocType]
 
@@ -43,17 +45,6 @@ class ChangeSet:
 
     writes: list[Write] = field(default_factory=list)
     sequences: dict[SequenceKey, tuple[int, int]] = field(default_factory=dict)  # (lu, nouveau)
-
-
-def duplicate(table: str, constraint: str) -> Duplicate:
-    return Duplicate("Valeur déjà utilisée", details={"table": table, "constraint": constraint})
-
-
-def version_conflict(expected: int | None, current: int | None) -> VersionConflict:
-    return VersionConflict(
-        "L'élément a été modifié entre-temps",
-        details={"expected_version": expected, "current_version": current},
-    )
 
 
 def find_unique_clash(rows: Mapping[EntityId, Row], row: Row) -> str | None:
@@ -96,7 +87,7 @@ class MemoryDatabase:
                 table = staged.setdefault(write.table, {})
                 current = table.get(write.row.entity_id)
                 if write.expected_version is None and current is not None:
-                    raise duplicate(write.table, "id")
+                    raise duplicate(write.table, PRIMARY_KEY)
                 if write.expected_version is not None and (
                     current is None or current.version != write.expected_version
                 ):

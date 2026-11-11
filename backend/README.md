@@ -20,12 +20,39 @@ uv run ruff check .                     # lint
 uv run ruff format --check .            # format
 uv run mypy                             # typage strict (app, tests, tools)
 uv run lint-imports                     # règle de dépendance entre couches
-uv run pytest --cov                     # tests + couverture (seuil 90 %)
+uv run pytest --cov                     # tests + couverture (seuil 90 %), sans base
 uv run python tools/check_file_length.py   # aucun .py > 200 lignes dans app/ et tests/
 ```
 
 Windows, sortie redirigée (CI, `> fichier`) : exporter `PYTHONUTF8=1`, sinon `lint-imports`
 (via `rich`) plante en encodant ses symboles en cp1252.
+
+## Persistance (PostgreSQL, migrations)
+
+`PERSISTENCE_BACKEND=memory|postgres` choisit l'adaptateur (`app/bootstrap/persistence.py`) ;
+absent, il vaut `memory` si `ENVIRONMENT=test`, `postgres` sinon. `postgres` exige
+`DATABASE_URL` ; `memory` est refusé en prod. Base locale : `../infra/README.md`.
+
+```bash
+docker compose -f ../infra/docker-compose.dev.yml up -d --wait postgres   # depuis backend/
+
+# Migrations (Alembic, dossier alembic/) — ne lisent que DATABASE_URL (env ou .env)
+uv run alembic upgrade head
+uv run alembic check                     # le schéma déclaré (tables.py) = les migrations
+uv run alembic revision -m "catalogue"   # une migration par changement, jamais éditée après fusion
+
+# Contrats + concurrence sur PostgreSQL (base de test vidée à chaque test, migrée au démarrage)
+export TEST_DATABASE_URL=postgresql+psycopg://boutique:boutique-dev-password@127.0.0.1:5432/boutique_test
+uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
+```
+
+- Sans option, `pytest` tourne **sans base** : contrats sur l'adaptateur mémoire, et adaptateur
+  SQL rejoué sur SQLite (`tests/infrastructure/sqlalchemy`). Les tests de
+  `tests/infrastructure/postgres` sont alors sautés avec leur motif (`-ra`).
+- `--backend=postgres` sans `TEST_DATABASE_URL`, base injoignable ou base dont le nom ne contient
+  pas « test » : la session **échoue** (`UsageError`), elle ne saute rien.
+- Tables métier : les déclarer dans `app/infrastructure/persistence/sqlalchemy/tables.py`
+  (contraintes `UNIQUE (shop_id, …)` nommées comme les `UniqueKey` du port) + migration.
 
 ## Couches
 

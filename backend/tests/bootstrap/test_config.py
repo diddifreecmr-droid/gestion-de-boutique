@@ -9,12 +9,16 @@ from app.bootstrap.config import ConfigurationError, Environment, load_settings
 
 @pytest.fixture(autouse=True)
 def _clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    for name in ("ENVIRONMENT", "API_PREFIX", "LOG_LEVEL"):
+    for name in ("ENVIRONMENT", "API_PREFIX", "LOG_LEVEL", "PERSISTENCE_BACKEND", "DATABASE_URL"):
         monkeypatch.delenv(name, raising=False)
+
+
+DEV_URL = "postgresql+psycopg://boutique:secret@127.0.0.1:5432/boutique"
 
 
 def test_defaults_apply_when_only_environment_is_set(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ENVIRONMENT", "dev")
+    monkeypatch.setenv("DATABASE_URL", DEV_URL)
     settings = load_settings(env_file=None)
     assert settings.ENVIRONMENT is Environment.DEV
     assert settings.API_PREFIX == "/api/v1"
@@ -25,6 +29,7 @@ def test_all_variables_are_read(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ENVIRONMENT", "prod")
     monkeypatch.setenv("API_PREFIX", "/api/v2")
     monkeypatch.setenv("LOG_LEVEL", "WARNING")
+    monkeypatch.setenv("DATABASE_URL", DEV_URL)
     settings = load_settings(env_file=None)
     assert (settings.ENVIRONMENT, settings.API_PREFIX, settings.LOG_LEVEL) == (
         Environment.PROD,
@@ -60,6 +65,7 @@ def test_invalid_value_stops_startup_naming_the_variable(
     monkeypatch: pytest.MonkeyPatch, name: str, value: str
 ) -> None:
     monkeypatch.setenv("ENVIRONMENT", "dev")
+    monkeypatch.setenv("DATABASE_URL", DEV_URL)
     monkeypatch.setenv(name, value)
     with pytest.raises(ConfigurationError, match=name):
         load_settings(env_file=None)

@@ -15,6 +15,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.domain.identity.errors import AccountLocked, Unauthenticated
 from app.domain.shared.errors import Conflict, DomainError, Forbidden, NotFound, ValidationFailed
 
 logger = logging.getLogger(__name__)
@@ -22,9 +23,11 @@ logger = logging.getLogger(__name__)
 # Statut par type ; une sous-classe hérite du statut de son ancêtre le plus proche.
 _STATUS_BY_TYPE: Mapping[type[object], int] = {
     ValidationFailed: HTTPStatus.BAD_REQUEST,
+    Unauthenticated: HTTPStatus.UNAUTHORIZED,
     Forbidden: HTTPStatus.FORBIDDEN,
     NotFound: HTTPStatus.NOT_FOUND,
     Conflict: HTTPStatus.CONFLICT,
+    AccountLocked: HTTPStatus.LOCKED,
 }
 # Règle métier violée (STOCK_INSUFFICIENT, PRICE_BELOW_MINIMUM…) : 422.
 _DEFAULT_DOMAIN_STATUS = HTTPStatus.UNPROCESSABLE_ENTITY
@@ -61,8 +64,11 @@ def _field_errors(exc: RequestValidationError) -> list[dict[str, str]]:
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(DomainError)
     async def _domain(_: Request, exc: DomainError) -> JSONResponse:
+        status = status_for(exc)
+        # RFC 9110 § 15.5.2 : un 401 annonce le schéma d'authentification attendu.
+        headers = {"WWW-Authenticate": "Bearer"} if status == HTTPStatus.UNAUTHORIZED else None
         return JSONResponse(
-            error_body(exc.code, exc.message, exc.details), status_code=status_for(exc)
+            error_body(exc.code, exc.message, exc.details), status_code=status, headers=headers
         )
 
     @app.exception_handler(RequestValidationError)

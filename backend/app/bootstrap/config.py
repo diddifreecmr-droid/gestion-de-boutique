@@ -6,14 +6,18 @@ explicite des variables fautives ; l'application ne démarre pas.
 
 from enum import StrEnum
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import Field, ValidationError
+from pydantic import Field, SecretStr, ValidationError, field_validator, model_validator
+from pydantic_core import ErrorDetails
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import make_url
+from sqlalchemy.exc import ArgumentError
 
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 DEFAULT_ENV_FILE = Path(".env")
+JWT_SECRET_MIN_BYTES = 32
 
 
 class Environment(StrEnum):
@@ -22,23 +26,109 @@ class Environment(StrEnum):
     PROD = "prod"
 
 
+class PersistenceBackend(StrEnum):
+    MEMORY = "memory"  # tests et démo : tout est perdu à l'arrêt
+    POSTGRES = "postgres"
+
+
 class ConfigurationError(RuntimeError):
     """Configuration absente ou invalide : arrêt immédiat du démarrage."""
+
+
+_SETTINGS_CONFIG = SettingsConfigDict(
+    case_sensitive=True,
+    extra="ignore",  # l'environnement du système contient d'autres variables
+    frozen=True,
+    env_file_encoding="utf-8",
+)
+
+
+def check_database_url(value: SecretStr) -> SecretStr:
+    """URL SQLAlchemy lisible et qui nomme sa base ; `ValueError` sinon."""
+    try:
+        url = make_url(value.get_secret_value())
+    except ArgumentError as exc:
+        msg = "URL SQLAlchemy illisible (attendu : postgresql+psycopg://…)"
+        raise ValueError(msg) from exc
+    if not url.database:
+        msg = "l'URL doit nommer la base (…/nom_de_base)"
+        raise ValueError(msg)
+    return value
 
 
 class Settings(BaseSettings):
     """Variables reconnues. Voir `backend/.env.example`."""
 
-    model_config = SettingsConfigDict(
-        case_sensitive=True,
-        extra="ignore",  # l'environnement du système contient d'autres variables
-        frozen=True,
-        env_file_encoding="utf-8",
-    )
+    model_config = _SETTINGS_CONFIG
 
     ENVIRONMENT: Environment
     API_PREFIX: str = Field(default="/api/v1", pattern=r"^(/[a-z0-9][a-z0-9_-]*)+$")
     LOG_LEVEL: LogLevel = "INFO"
+    # Absent : `memory` si ENVIRONMENT=test, `postgres` sinon (voir `persistence_backend`).
+    PERSISTENCE_BACKEND: PersistenceBackend | None = None
+    # Secret : l'URL porte le mot de passe, jamais affiché (repr, journaux).
+    DATABASE_URL: SecretStr | None = None
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def _parse_database_url(cls, value: SecretStr | None) -> SecretStr | None:
+        return None if value is None else check_database_url(value)
+
+    # Identité et sessions (T08, specs § 7.2, § 15.1)
+    JWT_SECRET: SecretStr
+    ACCESS_TOKEN_TTL_MINUTES: int = Field(default=15, ge=1, le=60)
+    REFRESH_TOKEN_TTL_DAYS: int = Field(default=30, ge=1, le=365)
+    ADMIN_SESSION_TTL_HOURS: int = Field(default=8, ge=1, le=24)
+
+    @field_validator("JWT_SECRET")
+    @classmethod
+    def _strong_jwt_secret(cls, value: SecretStr) -> SecretStr:
+        if len(value.get_secret_value().encode("utf-8")) < JWT_SECRET_MIN_BYTES:
+            msg = f"au moins {JWT_SECRET_MIN_BYTES} octets exigés"
+            raise ValueError(msg)
+        return value
+
+    @property
+    def persistence_backend(self) -> PersistenceBackend:
+        if self.PERSISTENCE_BACKEND is not None:
+            return self.PERSISTENCE_BACKEND
+        if self.ENVIRONMENT is Environment.TEST:
+            return PersistenceBackend.MEMORY
+        return PersistenceBackend.POSTGRES
+
+    @model_validator(mode="after")
+    def _require_database(self) -> Self:
+        backend = self.persistence_backend
+        if backend is PersistenceBackend.POSTGRES and self.DATABASE_URL is None:
+            msg = "DATABASE_URL est obligatoire avec PERSISTENCE_BACKEND=postgres"
+            raise ValueError(msg)
+        if backend is PersistenceBackend.MEMORY and self.ENVIRONMENT is Environment.PROD:
+            msg = "PERSISTENCE_BACKEND=memory interdit en prod (données perdues à l'arrêt)"
+            raise ValueError(msg)
+        return self
+
+
+def _describe(error: ErrorDetails) -> str:
+    location = ".".join(str(part) for part in error["loc"])
+    return f"{location} : {error['msg']}" if location else error["msg"]  # règle croisée : sans loc
+
+
+class MigrationSettings(BaseSettings):
+    """Sous-ensemble lu par Alembic : migrer n'exige que la base (ni secret JWT ni réglage HTTP)."""
+
+    model_config = _SETTINGS_CONFIG
+
+    DATABASE_URL: SecretStr
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def _parse_database_url(cls, value: SecretStr) -> SecretStr:
+        return check_database_url(value)
+
+
+def _invalid(exc: ValidationError) -> ConfigurationError:
+    problems = "; ".join(_describe(error) for error in exc.errors(include_url=False))
+    return ConfigurationError(f"Configuration invalide — {problems}")
 
 
 def load_settings(env_file: Path | None = DEFAULT_ENV_FILE) -> Settings:
@@ -46,9 +136,13 @@ def load_settings(env_file: Path | None = DEFAULT_ENV_FILE) -> Settings:
     try:
         return Settings(_env_file=env_file)
     except ValidationError as exc:
-        problems = "; ".join(
-            f"{'.'.join(str(part) for part in error['loc'])} : {error['msg']}"
-            for error in exc.errors(include_url=False)
-        )
-        msg = f"Configuration invalide — {problems}"
-        raise ConfigurationError(msg) from exc
+        raise _invalid(exc) from exc
+
+
+def load_database_url(env_file: Path | None = DEFAULT_ENV_FILE) -> str:
+    """`DATABASE_URL` validée (migrations) ; `ConfigurationError` si absente ou invalide."""
+    try:
+        settings = MigrationSettings(_env_file=env_file)
+    except ValidationError as exc:
+        raise _invalid(exc) from exc
+    return settings.DATABASE_URL.get_secret_value()

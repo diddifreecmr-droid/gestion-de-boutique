@@ -8,9 +8,10 @@ from fastapi import FastAPI
 from app.interface.http.config import HttpConfig
 from app.interface.http.errors import register_error_handlers
 from app.interface.http.routes import health
+from app.interface.http.routes.auth import AuthComponents, build_auth_router
 
 
-def create_app(config: HttpConfig) -> FastAPI:
+def create_app(config: HttpConfig, auth: AuthComponents) -> FastAPI:
     prefix = config.api_prefix
     expose_docs = config.expose_docs
     app = FastAPI(
@@ -22,4 +23,5 @@ def create_app(config: HttpConfig) -> FastAPI:
     )
     register_error_handlers(app)
     app.include_router(health.router, prefix=prefix)
+    app.include_router(build_auth_router(auth, prefix), prefix=prefix)
     return app
