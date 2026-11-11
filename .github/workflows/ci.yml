@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch: # relance manuelle (ex. run resté bloqué en file d'attente côté GitHub)
 
 concurrency:
   group: ci-${{ github.ref }}
