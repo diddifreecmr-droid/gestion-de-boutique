@@ -1,5 +1,5 @@
 import { screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { axeViolations } from "../../testing/axe";
 import {
   articleButton,
@@ -9,10 +9,13 @@ import {
   replaceText,
   SALE_SHOP,
   validateButton,
+  preloadSales,
+  saleAlert,
 } from "../../testing/renderSale";
 import { OFFLINE_MESSAGE } from "./saleErrorMessage";
 import { BELOW_MINIMUM } from "./useSaleSubmit";
 
+beforeAll(preloadSales);
 beforeEach(() => {
   window.localStorage.clear();
 });
@@ -60,7 +63,7 @@ describe("prix sous le minimum (UC-VEN-03)", () => {
     await user.click(await articleButton("Sanya SY150-3"));
     await replaceText(user, priceField(), "650000");
     await user.click(validateButton());
-    expect(await screen.findByRole("alert")).toHaveTextContent(BELOW_MINIMUM);
+    expect(await saleAlert()).toHaveTextContent(BELOW_MINIMUM);
     expect(screen.getByRole("button", { name: ASK })).toBeVisible();
     expect(screen.getByText(/Prix inférieur au minimum \(680 000 FCFA\)/)).toBeVisible();
   });
@@ -74,7 +77,7 @@ describe("refus du serveur", () => {
     await user.click(await articleButton("Haojue HJ150-10"));
     await user.click(screen.getByRole("button", { name: "Quantité : plus un" }));
     await user.click(validateButton());
-    const alert = await screen.findByRole("alert");
+    const alert = await saleAlert();
     expect(plain(alert.textContent)).toContain(
       "Stock insuffisant pour Haojue HJ150-10 : 1 disponible à Garoua. Autres lieux — Ngaoundéré : 3.",
     );
@@ -89,26 +92,28 @@ describe("refus du serveur", () => {
     await user.click(screen.getByRole("button", { name: /Plus de détails : couleur/ }));
     await user.type(screen.getByLabelText("N° de châssis — moto 1"), "lbxpcj0a1n0001234");
     await user.click(validateButton());
-    expect(await screen.findByRole("alert")).toHaveTextContent(
+    expect(await saleAlert()).toHaveTextContent(
       "Le numéro de châssis LBXPCJ0A1N0001234 a déjà été vendu (vente V-000098).",
     );
   });
 
   it("hors connexion : message clair, saisie conservée, renvoi en un appui (même id)", async () => {
-    const { user, network, recordSale, container } = renderSale();
+    const { user, network, fake, container } = renderSale();
     await user.click(await articleButton("Haojue HJ125-8"));
     await replaceText(user, priceField(), "760000");
     network.online = false;
     await user.click(validateButton());
-    expect(await screen.findByRole("alert")).toHaveTextContent(OFFLINE_MESSAGE);
+    expect(await saleAlert()).toHaveTextContent(OFFLINE_MESSAGE);
     expect(plain(priceField().value)).toBe("760 000");
     expect(await axeViolations(container)).toEqual([]);
 
     network.online = true;
     await user.click(validateButton());
     expect(await screen.findByRole("heading", { name: /V-000124/ })).toBeVisible();
-    const [first, second] = recordSale.mock.calls;
-    expect(first?.[1].id).toBe(second?.[1].id);
+    const posts = fake.calls.filter((c) => c.method === "POST" && c.url.endsWith("/sales"));
+    expect(posts).toHaveLength(2);
+    const ids = posts.map((c) => (c.body as { id: string }).id);
+    expect(ids[0]).toBe(ids[1]);
   });
 
   it("hors connexion à l'ouverture : « Réessayer »", async () => {

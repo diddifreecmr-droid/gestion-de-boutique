@@ -1,5 +1,5 @@
 import { screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { axeViolations } from "../../testing/axe";
 import {
   articleButton,
@@ -9,9 +9,12 @@ import {
   renderSale,
   replaceText,
   validateButton,
+  preloadSales,
+  saleAlert,
 } from "../../testing/renderSale";
 import { FIX_FIELDS } from "./useSaleSubmit";
 
+beforeAll(preloadSales);
 beforeEach(() => {
   window.localStorage.clear();
 });
@@ -25,7 +28,7 @@ async function startCredit(user: ReturnType<typeof renderSale>["user"]) {
 }
 
 describe("Nouvelle vente à crédit (UC-VEN-02)", () => {
-  it("client obligatoire (nom + téléphone) : refus sans client, puis création rapide", async () => {
+  it("client obligatoire (nom + téléphone) : refus sans client", async () => {
     const { user, recordSale, container } = renderSale();
     await startCredit(user);
     await user.click(validateButton());
@@ -35,7 +38,11 @@ describe("Nouvelle vente à crédit (UC-VEN-02)", () => {
     ).toBeVisible();
     expect(recordSale).not.toHaveBeenCalled();
     expect(await axeViolations(container)).toEqual([]);
+  });
 
+  it("création rapide du client : téléphone contrôlé, acompte, reste à payer", async () => {
+    const { user, recordSale, container } = renderSale();
+    await startCredit(user);
     await user.click(screen.getByRole("button", { name: "Nouveau client" }));
     await user.type(screen.getByLabelText("Nom du client"), "Ibrahim Oumarou");
     await user.type(screen.getByLabelText("Téléphone du client"), "69011");
@@ -100,7 +107,7 @@ describe("Nouvelle vente à crédit (UC-VEN-02)", () => {
     await user.type(screen.getByLabelText("Chercher un client"), "garba");
     await user.click(await screen.findByRole("button", { name: /Garba Transport/ }));
     await user.click(validateButton());
-    expect(await screen.findByRole("alert")).toHaveTextContent(/Plafond de crédit dépassé/);
+    expect(await saleAlert()).toHaveTextContent(/Plafond de crédit dépassé/);
   });
 
   it("plafond de crédit dépassé : le propriétaire passe, avec un avertissement", async () => {
@@ -110,7 +117,9 @@ describe("Nouvelle vente à crédit (UC-VEN-02)", () => {
     await user.click(await screen.findByRole("button", { name: /Garba Transport/ }));
     await user.click(validateButton());
     await screen.findByRole("heading", { name: /V-000124/ });
-    expect(screen.getByText(/Plafond de crédit dépassé pour Garba Transport/)).toBeVisible();
+    expect(
+      screen.getByText(/Plafond de crédit dépassé : ce client doit maintenant 1 080 000/),
+    ).toBeVisible();
   });
 });
 

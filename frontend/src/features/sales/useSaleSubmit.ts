@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ApiError, NetworkError } from "../../core/api/errors";
 import { uuidV7 } from "../../core/api/uuidv7";
-import type { SaleSetup } from "../../core/gateways/catalogContract";
+import type { SaleLocation } from "../../core/gateways/catalogContract";
 import { useGateways } from "../../core/gateways/gateways";
 import { priceBelowMinimum } from "../../core/gateways/saleErrors";
 import type { SaleResult } from "../../core/gateways/salesContract";
@@ -22,7 +22,7 @@ export function approvalKey(line: LineDraft): string {
 
 interface Options {
   shopId: string;
-  setup: SaleSetup;
+  location: SaleLocation;
   draft: SaleDraft;
   checks: SaleChecks;
   update: (patch: Partial<SaleDraft>) => void;
@@ -33,7 +33,7 @@ interface Options {
  * Envoi de la vente et des demandes d'accord. Le brouillon n'est jamais effacé par un échec ;
  * une erreur qui n'est pas prévue par le contrat est relancée au rendu (fail-fast).
  */
-export function useSaleSubmit({ shopId, setup, draft, checks, update, onRecorded }: Options) {
+export function useSaleSubmit({ shopId, location, draft, checks, update, onRecorded }: Options) {
   const { sales } = useGateways();
   const [submitting, setSubmitting] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
@@ -52,7 +52,7 @@ export function useSaleSubmit({ shopId, setup, draft, checks, update, onRecorded
       return;
     }
     try {
-      setMessage(saleErrorMessage(error, draft.lines, setup.location.name));
+      setMessage(saleErrorMessage(error, draft.lines, location.name));
     } catch (unexpected) {
       setFatal(unexpected);
     }
@@ -68,10 +68,13 @@ export function useSaleSubmit({ shopId, setup, draft, checks, update, onRecorded
     setMessage(null);
     setSubmitting(true);
     try {
-      const command = buildCommand(draft, setup.location.id, checks.total);
-      const sale = await sales.recordSale(shopId, command);
+      const command = buildCommand(draft, location.id, checks.total);
+      const sale = await sales.recordSale(shopId, command, new Date());
       const remembered = draft.payment === CREDIT_CHOICE ? draft.depositMode : draft.payment;
-      if (remembered !== null && (draft.payment !== CREDIT_CHOICE || command.payments.length > 0)) {
+      if (
+        remembered !== null &&
+        (draft.payment !== CREDIT_CHOICE || (command.payments ?? []).length > 0)
+      ) {
         writeLastPaymentMode(shopId, remembered);
       }
       onRecorded(sale);
@@ -92,7 +95,7 @@ export function useSaleSubmit({ shopId, setup, draft, checks, update, onRecorded
       try {
         await sales.requestPriceApproval(shopId, {
           id: uuidV7(),
-          location_id: setup.location.id,
+          location_id: location.id,
           article_id: line.article.id,
           requested_price: line.unitPrice,
         });

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createSimulatedGateways } from "../../core/gateways/gateways";
+import { createSimulatedGateways } from "../../core/gateways/simulated";
 import { GatewaysProvider } from "../../core/gateways/GatewaysProvider";
 import { NewSalePage } from "../../features/sales/NewSalePage";
 import { GallerySection } from "./GallerySection";

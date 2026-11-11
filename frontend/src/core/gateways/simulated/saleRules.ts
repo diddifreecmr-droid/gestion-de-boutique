@@ -3,7 +3,7 @@
  * `ApiError` au code et aux `details` du contrat, jamais un succès partiel.
  */
 import { ApiError } from "../../api/errors";
-import type { RecordSaleCommand } from "../salesContract";
+import type { RecordSaleCommand, SaleWarning } from "../salesContract";
 import { LOCATIONS } from "./seed";
 import { requireArticle, type World } from "./world";
 
@@ -20,21 +20,40 @@ export function saleTotal(command: RecordSaleCommand): number {
   return command.lines.reduce((sum, line) => sum + quantityOf(line.quantity) * line.unit_price, 0);
 }
 
+/** Paiements du corps (facultatifs dans le contrat : absents = aucun). */
+export function paymentsOf(command: RecordSaleCommand) {
+  return command.payments ?? [];
+}
+
+/** Lieu de la vente : le simulateur exige qu'il soit donné (le vrai serveur le déduit). */
+export function locationOf(command: RecordSaleCommand): string {
+  const location = command.location_id;
+  if (location === undefined || location === null) invalid("Lieu de vente absent", "location_id");
+  return location;
+}
+
 export function checkShape(command: RecordSaleCommand): void {
   if (command.lines.length === 0) invalid("La vente n'a aucune ligne", "lines");
+  locationOf(command);
   command.lines.forEach((line) => {
     if (!Number.isSafeInteger(line.unit_price) || line.unit_price < 1) {
       invalid("Le prix doit être un entier positif", "unit_price");
     }
   });
-  command.payments.forEach((payment) => {
+  paymentsOf(command).forEach((payment) => {
     if (!Number.isSafeInteger(payment.amount) || payment.amount < 1) {
       invalid("Un paiement doit être un montant positif", "payments");
     }
   });
   if (command.kind === "credit") {
     const customer = command.customer;
-    if (customer === null || customer.name.trim() === "" || customer.phone.trim() === "") {
+    const blank = (text: string | null | undefined) => (text ?? "").trim() === "";
+    if (
+      customer === null ||
+      customer === undefined ||
+      blank(customer.name) ||
+      blank(customer.phone)
+    ) {
       invalid("Client obligatoire (nom et téléphone) pour une vente à crédit", "customer");
     }
   }
@@ -43,9 +62,10 @@ export function checkShape(command: RecordSaleCommand): void {
 export function checkStock(world: World, command: RecordSaleCommand): void {
   command.lines.forEach((line) => {
     const article = requireArticle(world, line.article_id);
-    const available = article.stock[command.location_id] ?? 0;
+    const here = locationOf(command);
+    const available = article.stock[here] ?? 0;
     if (quantityOf(line.quantity) <= available) return;
-    const others = LOCATIONS.filter((location) => location.id !== command.location_id)
+    const others = LOCATIONS.filter((location) => location.id !== here)
       .map((location) => ({ location, quantity: article.stock[location.id] ?? 0 }))
       .filter((entry) => entry.quantity > 0)
       .map((entry) => ({
@@ -69,6 +89,7 @@ export function checkMinimum(world: World, shopId: string, command: RecordSaleCo
     if (line.unit_price >= article.min_price) return;
     throw new ApiError(422, "PRICE_BELOW_MINIMUM", "Prix inférieur au minimum", {
       article_id: article.id,
+      line: command.lines.indexOf(line) + 1,
       min_price: article.min_price,
       request_required: true,
     });
@@ -76,7 +97,7 @@ export function checkMinimum(world: World, shopId: string, command: RecordSaleCo
 }
 
 export function checkPayments(command: RecordSaleCommand, total: number): void {
-  const paid = command.payments.reduce((sum, payment) => sum + payment.amount, 0);
+  const paid = paymentsOf(command).reduce((sum, payment) => sum + payment.amount, 0);
   if (paid > total) {
     throw new ApiError(422, "OVERPAYMENT", "Le total payé dépasse le montant de la vente", {
       total,
@@ -84,14 +105,18 @@ export function checkPayments(command: RecordSaleCommand, total: number): void {
     });
   }
   if (command.kind === "cash" && paid !== total) {
-    invalid("Une vente au comptant est payée en entier", "payments");
+    throw new ApiError(422, "PAYMENT_INCOMPLETE", "Une vente au comptant est payée en entier", {
+      total,
+      paid,
+      remaining: total - paid,
+    });
   }
 }
 
 export function checkChassis(world: World, command: RecordSaleCommand): void {
   command.lines.forEach((line) => {
-    line.details.forEach((detail) => {
-      const chassis = detail.chassis_number;
+    (line.details ?? []).forEach((detail) => {
+      const chassis = detail.chassis_number ?? null;
       if (chassis === null) return;
       const sale = world.soldChassis.get(chassis);
       if (sale === undefined) return;
@@ -110,15 +135,21 @@ export function creditLimitWarning(
   shopId: string,
   command: RecordSaleCommand,
   remaining: number,
-): string | null {
+): SaleWarning | null {
   const id = command.customer?.id ?? null;
   const customer = world.customers.find((known) => known.id === id);
-  if (command.kind !== "credit" || customer?.credit_limit == null) return null;
+  if (command.kind !== "credit" || customer === undefined) return null;
+  if (customer.credit_limit === null) return null;
   if (customer.debt + remaining <= customer.credit_limit) return null;
   const message = `Plafond de crédit dépassé pour ${customer.name}`;
-  if (world.options.roleIn(shopId) === "owner") return message;
-  throw new ApiError(422, "CREDIT_LIMIT_EXCEEDED", message, {
-    credit_limit: customer.credit_limit,
-    debt: customer.debt,
-  });
+  const details = {
+    customer_id: customer.id,
+    limit: customer.credit_limit,
+    due_before: customer.debt,
+    due_after: customer.debt + remaining,
+  };
+  if (world.options.roleIn(shopId) === "owner") {
+    return { code: "CREDIT_LIMIT_EXCEEDED", message, details };
+  }
+  throw new ApiError(422, "CREDIT_LIMIT_EXCEEDED", message, details);
 }

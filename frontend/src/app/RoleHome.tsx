@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { shopPath } from "../core/profile/shopProfile";
 import { useSignedIn } from "../core/services/servicesContext";
 import { SALE_ROLES } from "../features/sales/saleRoles";
-import { NEW_SALE_KEY } from "../features/sales/SalesHome";
+import { NEW_SALE_KEY } from "../features/sales/salesNav";
 import { Button, EmptyState } from "../shared/ui";
 import { useActiveShop } from "./shopContext";
 

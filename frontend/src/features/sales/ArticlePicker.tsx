@@ -83,6 +83,19 @@ export function ArticlePicker(props: ArticlePickerProps) {
   );
 }
 
+/** Article non vendable ici : une pastille dit pourquoi ; sinon la ligne s'ouvre. */
+function pickState(article: CatalogArticle, onPick: (article: CatalogArticle) => void) {
+  // Vente au mètre ou à la pièce : arrive avec le profil « tissus » (cet écran vend à l'unité).
+  if (article.sale_mode !== "unit")
+    return { badge: <Badge status="warning">Au mètre : à venir</Badge> };
+  if (unitStock(article) < 1) return { badge: <Badge status="danger">Rupture</Badge> };
+  return {
+    onOpen: () => {
+      onPick(article);
+    },
+  };
+}
+
 function Results({
   label,
   query,
@@ -110,24 +123,15 @@ function Results({
   }
   return (
     <ListCard label={label}>
-      {items.map((article) => {
-        const stock = unitStock(article);
-        return (
-          <ListCardRow
-            key={article.id}
-            title={article.name}
-            subtitle={`Stock à ${locationName} : ${formatQuantity(stock)}`}
-            amount={article.base_price}
-            {...(stock < 1
-              ? { badge: <Badge status="danger">Rupture</Badge> }
-              : {
-                  onOpen: () => {
-                    onPick(article);
-                  },
-                })}
-          />
-        );
-      })}
+      {items.map((article) => (
+        <ListCardRow
+          key={article.id}
+          title={article.name}
+          subtitle={`Stock à ${locationName} : ${formatQuantity(article.available)}`}
+          {...(article.base_price === null ? {} : { amount: article.base_price })}
+          {...pickState(article, onPick)}
+        />
+      ))}
     </ListCard>
   );
 }

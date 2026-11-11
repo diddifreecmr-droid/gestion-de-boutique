@@ -10,12 +10,16 @@ export const NGAOUNDERE: SaleLocation = { id: "loc-ngaoundere", name: "Ngaoundé
 export const BOULAI: SaleLocation = { id: "loc-boulai", name: "Dépôt Garoua-Boulaï" };
 export const LOCATIONS: readonly SaleLocation[] = [GAROUA, NGAOUNDERE, BOULAI];
 
+function mode(id: string, name: string, order: number): PaymentMode {
+  return { id, name, reference_required: false, active: true, display_order: order, version: 1 };
+}
+
 export const PAYMENT_MODES: readonly PaymentMode[] = [
-  { id: "pm-cash", label: "Espèces", kind: "cash" },
-  { id: "pm-orange", label: "Orange Money", kind: "mobile_money" },
-  { id: "pm-mtn", label: "MTN MoMo", kind: "mobile_money" },
-  { id: "pm-transfer", label: "Virement", kind: "transfer" },
-  { id: "pm-cheque", label: "Chèque", kind: "cheque" },
+  mode("pm-cash", "Espèces", 1),
+  mode("pm-orange", "Orange Money", 2),
+  mode("pm-mtn", "MTN MoMo", 3),
+  mode("pm-transfer", "Virement", 4),
+  mode("pm-cheque", "Chèque", 5),
 ];
 
 export interface SeedArticle {
@@ -118,36 +122,43 @@ export const ARTICLES: readonly SeedArticle[] = [
 ];
 
 export interface SeedCustomer extends CustomerSummary {
-  /** Plafond de crédit (null = aucun) et dette en cours, pour CREDIT_LIMIT_EXCEEDED. */
-  credit_limit: number | null;
+  /** Dette en cours, pour CREDIT_LIMIT_EXCEEDED (le plafond est `credit_limit`). */
   debt: number;
 }
 
-export const CUSTOMERS: readonly SeedCustomer[] = [
-  {
-    id: "cus-moussa",
-    name: "Moussa Abdou",
-    phone: "+237690000000",
+function customer(
+  id: string,
+  name: string,
+  phone: string,
+  extra: Partial<SeedCustomer> = {},
+): SeedCustomer {
+  return {
+    id,
+    name,
+    phone,
     kind: "individual",
+    city: null,
+    address: null,
+    id_doc_type: null,
+    id_doc_number: null,
+    id_doc_photo_id: null,
     credit_limit: null,
+    note: null,
+    created_by: "vitrine",
+    version: 1,
     debt: 0,
-  },
-  {
-    id: "cus-garba",
-    name: "Garba Transport SARL",
-    phone: "+237677112233",
+    ...extra,
+  };
+}
+
+export const CUSTOMERS: readonly SeedCustomer[] = [
+  customer("cus-moussa", "Moussa Abdou", "+237690000000"),
+  customer("cus-garba", "Garba Transport SARL", "+237677112233", {
     kind: "company",
     credit_limit: 500_000,
     debt: 300_000,
-  },
-  {
-    id: "cus-aissatou",
-    name: "Aïssatou Bello",
-    phone: "+237699887766",
-    kind: "individual",
-    credit_limit: null,
-    debt: 120_000,
-  },
+  }),
+  customer("cus-aissatou", "Aïssatou Bello", "+237699887766", { debt: 120_000 }),
 ];
 
 /** Châssis déjà vendu (RG-M01) et la vente qui le porte. */

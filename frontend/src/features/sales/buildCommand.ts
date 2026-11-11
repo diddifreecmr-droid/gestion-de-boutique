@@ -1,5 +1,6 @@
 /** Brouillon → corps exact de `POST /shops/{id}/sales` (specs § 6.4). */
 import type {
+  CustomerKind,
   RecordSaleCommand,
   SaleCustomerInput,
   SalePaymentInput,
@@ -35,9 +36,18 @@ function details(units: readonly UnitDetail[]): SoldDetailInput[] {
     .filter((detail) => Object.values(detail).some((value) => value !== null));
 }
 
+/** Type de client lu de l'API (`string`) : une valeur inconnue est une rupture de contrat. */
+export function customerKind(kind: string): CustomerKind {
+  if (kind === "individual" || kind === "company") return kind;
+  throw new Error(`Type de client inconnu : « ${kind} »`);
+}
+
 function customerInput(customer: CustomerDraft): SaleCustomerInput | null {
   if (customer.mode === "none") return null;
-  if (customer.mode === "existing") return { ...customer.customer };
+  if (customer.mode === "existing") {
+    const { id, name, phone, kind } = customer.customer;
+    return { id, name, phone, kind: customerKind(kind) };
+  }
   const phone = normalizePhone(customer.phone);
   if (phone === null) throw new Error("buildCommand : téléphone invalide (contrôle sauté ?)");
   return { id: null, name: customer.name.trim(), phone, kind: customer.kind };

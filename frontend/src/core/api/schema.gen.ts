@@ -1075,6 +1075,265 @@ export interface paths {
     patch: operations["update_customer_api_v1_shops__shop_id__customers__customer_id__patch"];
     trace?: never;
   };
+  "/api/v1/shops/{shop_id}/price-requests": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Price Requests */
+    get: operations["list_price_requests_api_v1_shops__shop_id__price_requests_get"];
+    put?: never;
+    /** Request Price */
+    post: operations["request_price_api_v1_shops__shop_id__price_requests_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/price-requests/{request_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Price Request */
+    get: operations["get_price_request_api_v1_shops__shop_id__price_requests__request_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/price-requests/{request_id}/decision": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Decide Price Request */
+    post: operations["decide_price_request_api_v1_shops__shop_id__price_requests__request_id__decision_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/sales/{sale_id}/returns": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Returns */
+    get: operations["list_returns_api_v1_shops__shop_id__sales__sale_id__returns_get"];
+    put?: never;
+    /** Record Return */
+    post: operations["record_return_api_v1_shops__shop_id__sales__sale_id__returns_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/receivables": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Receivables */
+    get: operations["list_receivables_api_v1_shops__shop_id__receivables_get"];
+    put?: never;
+    /** Record Legacy */
+    post: operations["record_legacy_api_v1_shops__shop_id__receivables_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/receivables/{receivable_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Receivable */
+    get: operations["get_receivable_api_v1_shops__shop_id__receivables__receivable_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Change Receivable */
+    patch: operations["change_receivable_api_v1_shops__shop_id__receivables__receivable_id__patch"];
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/receivables/{receivable_id}/write-off": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Write Off */
+    post: operations["write_off_api_v1_shops__shop_id__receivables__receivable_id__write_off_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/receivables/{receivable_id}/reminders": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Schedule Reminder */
+    post: operations["schedule_reminder_api_v1_shops__shop_id__receivables__receivable_id__reminders_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/reminders/{reminder_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Change Reminder */
+    patch: operations["change_reminder_api_v1_shops__shop_id__reminders__reminder_id__patch"];
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/receivables/{receivable_id}/guarantors": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Add Guarantor */
+    post: operations["add_guarantor_api_v1_shops__shop_id__receivables__receivable_id__guarantors_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/receivables/{receivable_id}/installments": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Record On Receivable */
+    post: operations["record_on_receivable_api_v1_shops__shop_id__receivables__receivable_id__installments_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/customers/{customer_id}/installments": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Record On Customer */
+    post: operations["record_on_customer_api_v1_shops__shop_id__customers__customer_id__installments_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/installments/{installment_id}/cancel": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Cancel Installment */
+    post: operations["cancel_installment_api_v1_shops__shop_id__installments__installment_id__cancel_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/installments/{installment_id}/receipt": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Receipt */
+    get: operations["get_receipt_api_v1_shops__shop_id__installments__installment_id__receipt_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/customers/{customer_id}/statement": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Statement */
+    get: operations["get_statement_api_v1_shops__shop_id__customers__customer_id__statement_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1484,6 +1743,15 @@ export interface components {
       /** Note */
       note?: string | null;
     };
+    /** CustomerRef */
+    CustomerRef: {
+      /** Id */
+      id: string;
+      /** Name */
+      name: string;
+      /** Phone */
+      phone: string;
+    };
     /** CustomerResponse */
     CustomerResponse: {
       /** Id */
@@ -1636,6 +1904,12 @@ export interface components {
       replied_at: string | null;
       /** Version */
       version: number;
+    };
+    /** ExchangeRequest */
+    ExchangeRequest: {
+      sale: components["schemas"]["SaleCreateRequest"];
+      /** Mode Id */
+      mode_id: string;
     };
     /** ExpenseCategoryCreateRequest */
     ExpenseCategoryCreateRequest: {
@@ -1860,6 +2134,42 @@ export interface components {
       choices: string[];
     };
     FieldValue: string | number | boolean | null;
+    /** GuarantorRequest */
+    GuarantorRequest: {
+      /** Id */
+      id?: string | null;
+      /** Name */
+      name: string;
+      /** Phone */
+      phone: string;
+      /** Relation */
+      relation?: string | null;
+      id_doc_type?: components["schemas"]["IdDocumentType"] | null;
+      /** Id Doc Number */
+      id_doc_number?: string | null;
+      /** Id Doc Photo Id */
+      id_doc_photo_id?: string | null;
+    };
+    /**
+     * GuarantorResponse
+     * @description `id_doc_*` absents (clés omises) hors propriétaire et vendeur responsable (SEC-N06).
+     */
+    GuarantorResponse: {
+      /** Id */
+      id: string;
+      /** Name */
+      name: string;
+      /** Phone */
+      phone: string;
+      /** Relation */
+      relation: string | null;
+      /** Id Doc Type */
+      id_doc_type?: string | null;
+      /** Id Doc Number */
+      id_doc_number?: string | null;
+      /** Id Doc Photo Id */
+      id_doc_photo_id?: string | null;
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -1878,6 +2188,99 @@ export interface components {
      * @enum {string}
      */
     IdDocumentType: "national_id" | "passport" | "driving_license" | "residence_permit" | "other";
+    /** InstallmentReceiptResponse */
+    InstallmentReceiptResponse: {
+      /** Shop Name */
+      shop_name: string;
+      /** Shop City */
+      shop_city: string | null;
+      /** Shop Phone */
+      shop_phone: string | null;
+      /** Number */
+      number: string;
+      /**
+       * Paid On
+       * Format: date
+       */
+      paid_on: string;
+      /** Customer Name */
+      customer_name: string;
+      /** Customer Phone */
+      customer_phone: string;
+      /** Amount */
+      amount: number;
+      /** Mode Name */
+      mode_name: string;
+      /** Reference */
+      reference: string | null;
+      /** Nature */
+      nature: string;
+      /** Cancelled */
+      cancelled: boolean;
+      /** Total Paid */
+      total_paid: number;
+      /** Remaining */
+      remaining: number;
+      /** Settled */
+      settled: boolean;
+      /** Sale Number */
+      sale_number: string | null;
+    };
+    /** InstallmentRequest */
+    InstallmentRequest: {
+      /** Id */
+      id?: string | null;
+      /** Amount */
+      amount: number;
+      /** Mode Id */
+      mode_id: string;
+      /** Paid On */
+      paid_on?: string | null;
+      /** Reference */
+      reference?: string | null;
+    };
+    /** InstallmentResponse */
+    InstallmentResponse: {
+      /** Id */
+      id: string;
+      /** Number */
+      number: string;
+      /**
+       * Paid On
+       * Format: date
+       */
+      paid_on: string;
+      /** Amount */
+      amount: number;
+      /** Mode Id */
+      mode_id: string;
+      /** Reference */
+      reference: string | null;
+      /** Nature */
+      nature: string;
+      /** Status */
+      status: string;
+      /** To Refund */
+      to_refund: boolean;
+      /** Created By */
+      created_by: string;
+      /**
+       * Received At
+       * Format: date-time
+       */
+      received_at: string;
+      /** Cancelled At */
+      cancelled_at: string | null;
+      /** Cancelled By */
+      cancelled_by: string | null;
+      /** Cancel Reason */
+      cancel_reason: string | null;
+    };
+    /** InstallmentResultResponse */
+    InstallmentResultResponse: {
+      installment: components["schemas"]["InstallmentResponse"];
+      receivable: components["schemas"]["ReceivableResponse"];
+    };
     /** InventoryLineResponse */
     InventoryLineResponse: {
       /** Article Id */
@@ -1939,6 +2342,41 @@ export interface components {
       id?: string | null;
       /** Location Id */
       location_id: string;
+    };
+    /**
+     * LegacyReceivableRequest
+     * @description UC-CRE-02 : client existant (`customer.id`) ou nom + téléphone.
+     */
+    LegacyReceivableRequest: {
+      /** Id */
+      id?: string | null;
+      customer: components["schemas"]["SaleCustomerRequest"];
+      /** Amount */
+      amount: number;
+      /**
+       * Opened On
+       * Format: date
+       */
+      opened_on: string;
+      /** Description */
+      description: string;
+      /** Responsible Seller Id */
+      responsible_seller_id?: string | null;
+      /** Terms */
+      terms?: string | null;
+    };
+    /** LineBalanceResponse */
+    LineBalanceResponse: {
+      /** Line */
+      line: number;
+      /** Article Id */
+      article_id: string;
+      /** Sold */
+      sold: string;
+      /** Returned */
+      returned: string;
+      /** Returnable */
+      returnable: string;
     };
     /**
      * LinePatchRequest
@@ -2363,6 +2801,16 @@ export interface components {
       /** Device Id */
       device_id: string | null;
     };
+    /** PriceDecisionRequest */
+    PriceDecisionRequest: {
+      /**
+       * Decision
+       * @enum {string}
+       */
+      decision: "accept" | "refuse";
+      /** Version */
+      version?: number | null;
+    };
     /** PriceHistoryResponse */
     PriceHistoryResponse: {
       /** Price Kind */
@@ -2378,6 +2826,53 @@ export interface components {
       effective_at: string;
       /** Author Id */
       author_id: string;
+    };
+    /** PriceRequestCreate */
+    PriceRequestCreate: {
+      /** Id */
+      id?: string | null;
+      /** Article Id */
+      article_id: string;
+      /** Requested Price */
+      requested_price: number;
+      sale_mode?: components["schemas"]["SaleMode"] | null;
+    };
+    /** PriceRequestResponse */
+    PriceRequestResponse: {
+      /** Id */
+      id: string;
+      /** Seller Id */
+      seller_id: string;
+      /** Article Id */
+      article_id: string;
+      /** Article Name */
+      article_name: string;
+      /** Location Id */
+      location_id: string;
+      /** Requested Price */
+      requested_price: number;
+      /** Min Price */
+      min_price: number;
+      /** Status */
+      status: string;
+      /**
+       * Requested At
+       * Format: date-time
+       */
+      requested_at: string;
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
+      /** Decided By */
+      decided_by: string | null;
+      /** Decided At */
+      decided_at: string | null;
+      /** Sale Id */
+      sale_id: string | null;
+      /** Version */
+      version: number;
     };
     /**
      * PricesRequest
@@ -2589,6 +3084,11 @@ export interface components {
       /** Reason */
       reason: string;
     };
+    /** ReasonRequest */
+    ReasonRequest: {
+      /** Reason */
+      reason?: string | null;
+    };
     /** ReceiptCustomer */
     ReceiptCustomer: {
       /** Name */
@@ -2664,15 +3164,206 @@ export interface components {
       /** Copies */
       copies: number;
     };
+    /** ReceivableListResponse */
+    ReceivableListResponse: {
+      summary: components["schemas"]["ReceivableSummaryResponse"];
+      /** Items */
+      items: components["schemas"]["ReceivableResponse"][];
+    };
+    /**
+     * ReceivablePatch
+     * @description Champs présents seulement ; `responsible_seller_id` : propriétaire seul (Q-21).
+     */
+    ReceivablePatch: {
+      /** Version */
+      version: number;
+      /** Responsible Seller Id */
+      responsible_seller_id?: string | null;
+      /** Terms */
+      terms?: string | null;
+      /** Attachment Ids */
+      attachment_ids?: string[] | null;
+    };
     /**
      * ReceivableRef
-     * @description Créance liée (T17) : `id` posé quand le module Créances l'aura ouverte.
+     * @description Créance liée (T17) : `id` = celle ouverte par la vente (`GET /receivables/{id}` : reste
+     *     à jour des versements) ; `remaining` = reste à payer de la vente (total - acompte).
      */
     ReceivableRef: {
       /** Id */
-      id: string | null;
+      id: string;
       /** Remaining */
       remaining: number;
+    };
+    /** ReceivableResponse */
+    ReceivableResponse: {
+      /** Id */
+      id: string;
+      /** Version */
+      version: number;
+      customer: components["schemas"]["CustomerRef"];
+      /** Origin */
+      origin: string;
+      /** Sale Id */
+      sale_id: string | null;
+      /** Sale Number */
+      sale_number: string | null;
+      /** Sale Total */
+      sale_total: number | null;
+      /** Paid At Sale */
+      paid_at_sale: number;
+      /** Description */
+      description: string | null;
+      /** Initial Amount */
+      initial_amount: number;
+      /** Total Paid */
+      total_paid: number;
+      /** Remaining */
+      remaining: number;
+      /** Status */
+      status: string;
+      /**
+       * Opened On
+       * Format: date
+       */
+      opened_on: string;
+      /** Seniority Days */
+      seniority_days: number;
+      /** Seniority Band */
+      seniority_band: string;
+      /** Last Installment On */
+      last_installment_on: string | null;
+      /** Responsible Seller Id */
+      responsible_seller_id: string | null;
+      /** Terms */
+      terms: string | null;
+      /** Attachment Ids */
+      attachment_ids: string[];
+      write_off: components["schemas"]["WriteOffResponse"] | null;
+      /** Cancelled On */
+      cancelled_on: string | null;
+      /** Manageable */
+      manageable: boolean;
+      /** Installments */
+      installments: components["schemas"]["InstallmentResponse"][];
+      /** Reminders */
+      reminders: components["schemas"]["ReminderResponse"][];
+      /** Guarantors */
+      guarantors: components["schemas"]["GuarantorResponse"][];
+    };
+    /**
+     * ReceivableStatus
+     * @enum {string}
+     */
+    ReceivableStatus: "open" | "settled" | "cancelled" | "written_off";
+    /** ReceivableSummaryResponse */
+    ReceivableSummaryResponse: {
+      /** Total Due */
+      total_due: number;
+      /** Debtor Count */
+      debtor_count: number;
+      /** Received Today */
+      received_today: number;
+    };
+    /** RefundRequest */
+    RefundRequest: {
+      /** Amount */
+      amount: number;
+      /** Mode Id */
+      mode_id: string;
+      /** Refunded On */
+      refunded_on?: string | null;
+    };
+    /** RefundResponse */
+    RefundResponse: {
+      /** Amount */
+      amount: number;
+      /** Mode Id */
+      mode_id: string;
+      /**
+       * Refunded On
+       * Format: date
+       */
+      refunded_on: string;
+    };
+    /** ReminderPatch */
+    ReminderPatch: {
+      status?: components["schemas"]["ReminderStatus"] | null;
+      /** Remind On */
+      remind_on?: string | null;
+      /** Note */
+      note?: string | null;
+    };
+    /** ReminderRequest */
+    ReminderRequest: {
+      /** Id */
+      id?: string | null;
+      /**
+       * Remind On
+       * Format: date
+       */
+      remind_on: string;
+      /** Note */
+      note?: string | null;
+    };
+    /** ReminderResponse */
+    ReminderResponse: {
+      /** Id */
+      id: string;
+      /**
+       * Remind On
+       * Format: date
+       */
+      remind_on: string;
+      /** Note */
+      note: string | null;
+      /** Status */
+      status: string;
+      /** Alerted For */
+      alerted_for: string | null;
+    };
+    /**
+     * ReminderStatus
+     * @enum {string}
+     */
+    ReminderStatus: "upcoming" | "done" | "postponed";
+    /** ReturnLineRequest */
+    ReturnLineRequest: {
+      /** Line */
+      line: number;
+      /** Quantity */
+      quantity: string;
+      /** @default sellable */
+      condition: components["schemas"]["StockCondition"];
+      /** Chassis */
+      chassis?: string[];
+    };
+    /** ReturnedLineResponse */
+    ReturnedLineResponse: {
+      /** Line */
+      line: number;
+      /** Article Id */
+      article_id: string;
+      /** Article Name */
+      article_name: string;
+      /** Quantity */
+      quantity: string;
+      /** Stock Quantity */
+      stock_quantity: string;
+      /** Stock Unit */
+      stock_unit: string;
+      /** Condition */
+      condition: string;
+      /** Amount */
+      amount: number;
+      /** Chassis */
+      chassis: string[];
+      /** Cost */
+      cost?: number | null;
+      /** Margin */
+      margin?: number | null;
+      /** Margin Wac */
+      margin_wac?: number | null;
     };
     /** RevokedDevicesResponse */
     RevokedDevicesResponse: {
@@ -2902,6 +3593,65 @@ export interface components {
       /** Error Reports */
       error_reports: components["schemas"]["ErrorReportResponse"][];
     };
+    /** SaleReturnCreate */
+    SaleReturnCreate: {
+      /** Id */
+      id?: string | null;
+      /** Lines */
+      lines: components["schemas"]["ReturnLineRequest"][];
+      /** Reason */
+      reason: string;
+      refund?: components["schemas"]["RefundRequest"] | null;
+      exchange?: components["schemas"]["ExchangeRequest"] | null;
+    };
+    /** SaleReturnResponse */
+    SaleReturnResponse: {
+      /** Id */
+      id: string;
+      /** Sale Id */
+      sale_id: string;
+      /** Sale Number */
+      sale_number: string;
+      /** Kind */
+      kind: string;
+      /** Lines */
+      lines: components["schemas"]["ReturnedLineResponse"][];
+      /** Reason */
+      reason: string;
+      /** Amount */
+      amount: number;
+      refund: components["schemas"]["RefundResponse"] | null;
+      /** Credit Reduction */
+      credit_reduction: number;
+      /** Exchange Sale Id */
+      exchange_sale_id: string | null;
+      /**
+       * Returned At
+       * Format: date-time
+       */
+      returned_at: string;
+      /**
+       * Returned On
+       * Format: date
+       */
+      returned_on: string;
+      /** Created By */
+      created_by: string;
+      exchange_sale?: components["schemas"]["SaleResponse"] | null;
+      /** Margin */
+      margin?: number | null;
+      /** Margin Wac */
+      margin_wac?: number | null;
+    };
+    /** SaleReturnsResponse */
+    SaleReturnsResponse: {
+      /** Sale Id */
+      sale_id: string;
+      /** Returns */
+      returns: components["schemas"]["SaleReturnResponse"][];
+      /** Balances */
+      balances: components["schemas"]["LineBalanceResponse"][];
+    };
     /** SaleTotalsResponse */
     SaleTotalsResponse: {
       /** Count */
@@ -2911,6 +3661,11 @@ export interface components {
       /** Paid */
       paid: number;
     };
+    /**
+     * SeniorityBand
+     * @enum {string}
+     */
+    SeniorityBand: "under_30" | "31_60" | "61_90" | "over_90";
     /** SettingsPatch */
     SettingsPatch: {
       /** Version */
@@ -3044,6 +3799,34 @@ export interface components {
        */
       created_at: string;
     };
+    /** StatementLineResponse */
+    StatementLineResponse: {
+      /** Kind */
+      kind: string;
+      /**
+       * On
+       * Format: date
+       */
+      on: string;
+      /** Receivable Id */
+      receivable_id: string;
+      /** Number */
+      number: string | null;
+      /** Amount */
+      amount: number;
+      /** Cancelled */
+      cancelled: boolean;
+      /** Balance After */
+      balance_after: number;
+    };
+    /** StatementResponse */
+    StatementResponse: {
+      customer: components["schemas"]["CustomerRef"];
+      /** Total Due */
+      total_due: number;
+      /** Lines */
+      lines: components["schemas"]["StatementLineResponse"][];
+    };
     /** StockCell */
     StockCell: {
       /** Location Id */
@@ -3064,6 +3847,11 @@ export interface components {
       /** Is Point Of Sale */
       is_point_of_sale: boolean;
     };
+    /**
+     * StockCondition
+     * @enum {string}
+     */
+    StockCondition: "sellable" | "damaged";
     /** StockMatrixResponse */
     StockMatrixResponse: {
       /** Locations */
@@ -3289,6 +4077,18 @@ export interface components {
       details: {
         [key: string]: unknown;
       };
+    };
+    /** WriteOffResponse */
+    WriteOffResponse: {
+      /**
+       * On
+       * Format: date
+       */
+      on: string;
+      /** Reason */
+      reason: string;
+      /** By */
+      by: string;
     };
     /** CancelRequest */
     app__interface__http__schemas__expenses__CancelRequest: {
@@ -6443,6 +7243,723 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["CustomerResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_price_requests_api_v1_shops__shop_id__price_requests_get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PriceRequestResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  request_price_api_v1_shops__shop_id__price_requests_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PriceRequestCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PriceRequestResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_price_request_api_v1_shops__shop_id__price_requests__request_id__get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        request_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PriceRequestResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  decide_price_request_api_v1_shops__shop_id__price_requests__request_id__decision_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        request_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PriceDecisionRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PriceRequestResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_returns_api_v1_shops__shop_id__sales__sale_id__returns_get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        sale_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SaleReturnsResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  record_return_api_v1_shops__shop_id__sales__sale_id__returns_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        sale_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SaleReturnCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SaleReturnResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_receivables_api_v1_shops__shop_id__receivables_get: {
+    parameters: {
+      query?: {
+        status?: components["schemas"]["ReceivableStatus"] | null;
+        seller_id?: string | null;
+        band?: components["schemas"]["SeniorityBand"] | null;
+        reminder_overdue?: boolean;
+        quiet?: boolean;
+      };
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReceivableListResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  record_legacy_api_v1_shops__shop_id__receivables_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["LegacyReceivableRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReceivableResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_receivable_api_v1_shops__shop_id__receivables__receivable_id__get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        receivable_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReceivableResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  change_receivable_api_v1_shops__shop_id__receivables__receivable_id__patch: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        receivable_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReceivablePatch"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReceivableResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  write_off_api_v1_shops__shop_id__receivables__receivable_id__write_off_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        receivable_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReasonRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReceivableResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  schedule_reminder_api_v1_shops__shop_id__receivables__receivable_id__reminders_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        receivable_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReminderRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReceivableResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  change_reminder_api_v1_shops__shop_id__reminders__reminder_id__patch: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        reminder_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReminderPatch"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReceivableResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  add_guarantor_api_v1_shops__shop_id__receivables__receivable_id__guarantors_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        receivable_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["GuarantorRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReceivableResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  record_on_receivable_api_v1_shops__shop_id__receivables__receivable_id__installments_post: {
+    parameters: {
+      query?: never;
+      header: {
+        "x-captured-at"?: string | null;
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        receivable_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["InstallmentRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InstallmentResultResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  record_on_customer_api_v1_shops__shop_id__customers__customer_id__installments_post: {
+    parameters: {
+      query?: never;
+      header: {
+        "x-captured-at"?: string | null;
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        customer_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["InstallmentRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InstallmentResultResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  cancel_installment_api_v1_shops__shop_id__installments__installment_id__cancel_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        installment_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReasonRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InstallmentResultResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_receipt_api_v1_shops__shop_id__installments__installment_id__receipt_get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        installment_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["InstallmentReceiptResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_statement_api_v1_shops__shop_id__customers__customer_id__statement_get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        customer_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["StatementResponse"];
         };
       };
       /** @description Validation Error */

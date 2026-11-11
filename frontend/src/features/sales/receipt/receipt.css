@@ -1,0 +1,112 @@
+/*
+ * Reçu imprimé (design-system § 10, TR-18). Chargé avec la vue d'impression seulement (chunk
+ * à la demande) : rien n'alourdit le premier affichage. Petite échelle propre à l'impression,
+ * indépendante de l'écran : texte courant = taille réglée par la boutique (règle `<style>`
+ * posée par la vue), nom de la boutique et total en `em` pour retrouver l'échelle du § 10 :
+ * 58 mm 10 / 13 / 14 pt, 80 mm 11 / 15 / 16 pt, A5-A4 11 / 18 / 16 pt.
+ * Noir pur, aucun gris (les thermiques impriment mal le gris) : seule valeur de couleur en dur
+ * du projet, voulue par le § 10 et hors des tokens d'écran.
+ */
+.receipt {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0 auto;
+  background: #fff;
+  color: #000;
+  font-family: var(--font-sans);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.receipt p,
+.receipt h2,
+.receipt dl,
+.receipt dd,
+.receipt ul {
+  margin: 0;
+  padding: 0;
+}
+.receipt ul {
+  list-style: none;
+}
+.receipt__center {
+  text-align: center;
+}
+.receipt__shop {
+  font-weight: 700;
+  font-size: 1.3em;
+}
+.receipt--thermal-80 .receipt__shop {
+  font-size: 1.364em;
+}
+.receipt--a4-a5 .receipt__shop {
+  font-size: 1.636em;
+}
+.receipt__title {
+  font-weight: 700;
+  font-size: 1em;
+}
+.receipt__rule {
+  border: 0;
+  border-top: 1px dashed #000;
+  margin: 0.5em 0;
+}
+.receipt__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+.receipt__row > :last-child {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.receipt__line + .receipt__line {
+  margin-top: 0.4em;
+}
+.receipt__detail {
+  padding-left: 0.5em;
+}
+.receipt__total {
+  font-weight: 700;
+  font-size: 1.4em;
+}
+.receipt--thermal-80 .receipt__total,
+.receipt--a4-a5 .receipt__total {
+  font-size: 1.455em;
+}
+.receipt__mention {
+  display: block;
+  margin: 0.4em auto 0;
+  padding: 0.2em 0.5em;
+  border: 2px solid #000;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+@media screen {
+  .receipt {
+    border: 1px solid var(--color-border);
+  }
+  .receipt--a4-a5 {
+    padding: 12mm;
+  }
+}
+
+/* À l'impression, seul le reçu sort : barres, boutons et coquille de l'application disparaissent. */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .receipt,
+  .receipt * {
+    visibility: visible !important;
+  }
+  .receipt {
+    position: absolute;
+    inset: 0 auto auto 0;
+    border: 0;
+    margin: 0;
+  }
+}

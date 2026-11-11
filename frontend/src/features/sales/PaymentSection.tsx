@@ -18,7 +18,7 @@ export interface PaymentSectionProps {
 /** Mode de paiement en grosses pastilles, « À crédit » compris ; répartition facultative. */
 export function PaymentSection({ modes, draft, checks, showErrors, update }: PaymentSectionProps) {
   const options: ChoiceOption<string>[] = [
-    ...modes.map((mode) => ({ value: mode.id, label: mode.label })),
+    ...modes.map((mode) => ({ value: mode.id, label: mode.name })),
     { value: CREDIT_CHOICE, label: "À crédit" },
   ];
   const cash = draft.payment !== null && draft.payment !== CREDIT_CHOICE;
@@ -86,7 +86,7 @@ function SplitPayments({
       {modes.map((mode) => (
         <AmountField
           key={mode.id}
-          label={mode.label}
+          label={mode.name}
           value={split[mode.id] ?? null}
           onChange={(amount) => {
             update({ split: { ...split, [mode.id]: amount } });

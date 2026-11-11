@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { ApiError, NetworkError } from "../../api/errors";
-import { createSimulatedGateways } from "../gateways";
+import { createSimulatedGateways } from ".";
 import type { RecordSaleCommand } from "../salesContract";
 
 const SHOP = "s1";
+const AT = new Date("2026-11-11T10:00:00Z");
 
 function gateways(online = true, role: "seller" | "owner" = "seller") {
   const onNetworkFailure = vi.fn();
@@ -52,7 +53,7 @@ async function codeOf(promise: Promise<unknown>): Promise<string> {
 describe("passerelle de vente simulée", () => {
   it("numérote V-000124 puis V-000125 et rejoue une vente déjà reçue (idempotence)", async () => {
     const { sales } = gateways();
-    const first = await sales.recordSale(SHOP, command());
+    const first = await sales.recordSale(SHOP, command(), AT);
     expect(first).toMatchObject({
       number: "V-000124",
       total: 780_000,
@@ -60,14 +61,14 @@ describe("passerelle de vente simulée", () => {
       remaining: 0,
     });
     expect(first.receivable).toBeNull();
-    expect(await sales.recordSale(SHOP, command())).toBe(first);
-    const second = await sales.recordSale(SHOP, command({ id: "autre" }));
+    expect(await sales.recordSale(SHOP, command(), AT)).toBe(first);
+    const second = await sales.recordSale(SHOP, command({ id: "autre" }), AT);
     expect(second.number).toBe("V-000125");
   });
 
   it("le stock baisse après la vente : la recherche suivante le montre", async () => {
     const { sales, catalog } = gateways();
-    await sales.recordSale(SHOP, command());
+    await sales.recordSale(SHOP, command(), AT);
     const { items } = await catalog.searchArticles(SHOP, {
       location_id: "loc-garoua",
       query: "hj125",
@@ -78,13 +79,15 @@ describe("passerelle de vente simulée", () => {
 
   it("refuse les formes invalides (VALIDATION_ERROR)", async () => {
     const { sales } = gateways();
-    expect(await codeOf(sales.recordSale(SHOP, command({ lines: [] })))).toBe("VALIDATION_ERROR");
+    expect(await codeOf(sales.recordSale(SHOP, command({ lines: [] }), AT))).toBe(
+      "VALIDATION_ERROR",
+    );
     const half = command({ payments: [{ mode_id: "pm-cash", amount: 1, reference: null }] });
-    expect(await codeOf(sales.recordSale(SHOP, half))).toBe("VALIDATION_ERROR");
+    expect(await codeOf(sales.recordSale(SHOP, half, AT))).toBe("PAYMENT_INCOMPLETE");
     const noCustomer = command({ kind: "credit", payments: [] });
-    expect(await codeOf(sales.recordSale(SHOP, noCustomer))).toBe("VALIDATION_ERROR");
+    expect(await codeOf(sales.recordSale(SHOP, noCustomer, AT))).toBe("VALIDATION_ERROR");
     const over = command({ payments: [{ mode_id: "pm-cash", amount: 900_000, reference: null }] });
-    expect(await codeOf(sales.recordSale(SHOP, over))).toBe("OVERPAYMENT");
+    expect(await codeOf(sales.recordSale(SHOP, over, AT))).toBe("OVERPAYMENT");
     const badQuantity = command({
       lines: [
         {
@@ -96,12 +99,12 @@ describe("passerelle de vente simulée", () => {
         },
       ],
     });
-    expect(await codeOf(sales.recordSale(SHOP, badQuantity))).toBe("VALIDATION_ERROR");
+    expect(await codeOf(sales.recordSale(SHOP, badQuantity, AT))).toBe("VALIDATION_ERROR");
   });
 
   it("hors connexion : NetworkError et signal au bandeau, rien n'est enregistré", async () => {
     const { sales, onNetworkFailure } = gateways(false);
-    await expect(sales.recordSale(SHOP, command())).rejects.toBeInstanceOf(NetworkError);
+    await expect(sales.recordSale(SHOP, command(), AT)).rejects.toBeInstanceOf(NetworkError);
     expect(onNetworkFailure).toHaveBeenCalledTimes(1);
   });
 

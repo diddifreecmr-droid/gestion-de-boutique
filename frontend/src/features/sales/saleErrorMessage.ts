@@ -3,8 +3,8 @@
  * une réponse de l'API ni une coupure réseau est un bug : elle est relancée (fail-fast).
  */
 import { ApiError, NetworkError } from "../../core/api/errors";
-import { duplicate, stockInsufficient } from "../../core/gateways/saleErrors";
-import { formatQuantity } from "../../shared/format";
+import { duplicate, paymentIncomplete, stockInsufficient } from "../../core/gateways/saleErrors";
+import { formatMoney, formatQuantity } from "../../shared/format";
 import type { LineDraft } from "./draft";
 
 export const OFFLINE_MESSAGE =
@@ -23,6 +23,8 @@ function stockMessage(error: ApiError, lines: readonly LineDraft[], locationName
   return `${here} Autres lieux — ${others}.`;
 }
 
+const remainingOf = (error: ApiError) => paymentIncomplete(error).remaining;
+
 export function saleErrorMessage(
   error: unknown,
   lines: readonly LineDraft[],
@@ -35,16 +37,37 @@ export function saleErrorMessage(
       return stockMessage(error, lines, locationName);
     case "DUPLICATE": {
       const details = duplicate(error);
-      const sale = details.sale_number === null ? "" : ` (vente ${details.sale_number})`;
-      return `Le numéro de châssis ${details.value} a déjà été vendu${sale}.`;
+      if (details.sale_number === null) {
+        return `Le numéro de châssis ${details.value} est saisi deux fois dans cette vente.`;
+      }
+      return `Le numéro de châssis ${details.value} a déjà été vendu (vente ${details.sale_number}).`;
     }
     case "CREDIT_LIMIT_EXCEEDED":
       return "Plafond de crédit dépassé pour ce client : seul le propriétaire peut valider cette vente.";
     case "OVERPAYMENT":
       return "Le total payé dépasse le montant de la vente.";
+    case "PAYMENT_INCOMPLETE":
+      return `Une vente au comptant est payée en entier : il manque ${formatMoney(remainingOf(error))}. Complétez les paiements ou choisissez « À crédit ».`;
+    case "LOCATION_NOT_ALLOWED":
+      return "Vous vendez depuis votre lieu de vente habituel : demandez au propriétaire de vous en attribuer un.";
+    case "LOCATION_NOT_POINT_OF_SALE":
+      return `${locationName} n'est plus un point de vente actif : rouvrez « Nouvelle vente » et choisissez un autre lieu.`;
     case "FORBIDDEN":
       return "Vous n'avez pas le droit d'enregistrer cette vente.";
     default:
       return `La vente n'a pas été enregistrée : ${error.message} (${error.code}).`;
   }
+}
+
+/**
+ * Échec d'une action sur une vente existante (liste, annulation, signalement) : coupure
+ * réseau ou refus du serveur dit en clair ; toute autre erreur est relancée (fail-fast).
+ */
+export function actionErrorMessage(error: unknown, action: string): string {
+  if (error instanceof NetworkError)
+    return `Connexion nécessaire : ${action} impossible pour l'instant. Réessayez quand le réseau revient.`;
+  if (!(error instanceof ApiError)) throw error;
+  if (error.code === "FORBIDDEN")
+    return `Vous n'avez pas le droit de faire cette action (${action}).`;
+  return `${action} refusé : ${error.message} (${error.code}).`;
 }

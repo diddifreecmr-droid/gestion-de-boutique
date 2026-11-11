@@ -55,7 +55,7 @@ export function CreditSection({
       {deposit > 0 && (
         <ChoiceChips
           label="Mode de l'acompte"
-          options={modes.map((mode) => ({ value: mode.id, label: mode.label }))}
+          options={modes.map((mode) => ({ value: mode.id, label: mode.name }))}
           value={draft.depositMode}
           onChange={(depositMode) => {
             update({ depositMode });

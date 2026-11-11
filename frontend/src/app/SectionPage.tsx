@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { useParams } from "react-router";
 import { findSection } from "../core/profile/shopProfile";
 import { MORE_KEY } from "../core/profile/types";
-import { NEW_SALE_KEY, SALES_KEY, SalesHome } from "../features/sales/SalesHome";
+import { MY_SALES_KEY, NEW_SALE_KEY, SALES_KEY } from "../features/sales/salesNav";
 import { SALE_ROLES } from "../features/sales/saleRoles";
 import { AccountPage } from "../features/settings/AccountPage";
 import { EXPENSES_KEY } from "../features/expenses/expenseNav";
@@ -18,6 +18,7 @@ import { Skeleton } from "../shared/ui";
 
 /** Écran chargé à la demande (specs § 4.6) : il ne pèse pas sur le premier affichage. */
 const NewSaleRoute = lazy(() => import("../features/sales/NewSaleRoute"));
+const SalesRoute = lazy(() => import("../features/sales/SalesRoute"));
 const ExpensesRoute = lazy(() => import("../features/expenses/ExpensesRoute"));
 const StockRoute = lazy(() => import("../features/stock/StockRoute"));
 const PurchasingRoute = lazy(() => import("../features/purchasing/PurchasingRoute"));
@@ -47,7 +48,14 @@ export function SectionPage() {
   if (entry === null) return <NotFoundPage />;
   if (entry.key === MORE_KEY) return <MorePage />;
   if (entry.key === SETTINGS_KEY) return <AccountPage title={entry.label} />;
-  if (entry.key === SALES_KEY) return <SalesHome shopId={shopId} title={entry.label} />;
+  // « Ventes » du propriétaire, « Mes ventes » du vendeur (UC-VEN-05).
+  if ((entry.key === SALES_KEY || entry.key === MY_SALES_KEY) && SALE_ROLES.includes(role)) {
+    return (
+      <Suspense fallback={<Skeleton lines={4} label="Ouverture des ventes…" />}>
+        <SalesRoute shopId={shopId} role={role} title={entry.label} />
+      </Suspense>
+    );
+  }
   if (entry.key === EXPENSES_KEY) {
     return (
       <Suspense fallback={<Skeleton lines={4} label="Ouverture des dépenses…" />}>

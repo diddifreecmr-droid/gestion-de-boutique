@@ -1,19 +1,20 @@
 import { useEffect, useRef } from "react";
-import { AlertTriangle, CheckCircle2, CirclePlus, Printer, Share2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, CirclePlus, Printer } from "lucide-react";
 import type { SaleResult } from "../../core/gateways/salesContract";
 import { formatMoney, formatQuantity } from "../../shared/format";
+import { ShareButton } from "./ShareButton";
+import { warningText } from "./warningText";
 import { ActionBar, Badge, Button, ListCard, ListCardRow, SummaryCard } from "../../shared/ui";
-
-/** Raison affichée sous Imprimer / Partager tant que les reçus ne sont pas livrés (§ 9.1, T21). */
-export const RECEIPTS_PENDING = "Reçus : à venir";
 
 export interface SaleConfirmationProps {
   sale: SaleResult;
+  /** Ouvre la vue d'impression du reçu (TR-18). */
+  onPrint: () => void;
   onNewSale: () => void;
 }
 
 /** Écran de confirmation (UC-VEN-01 étape 7) : numéro, total, Imprimer, Partager, Nouvelle vente. */
-export function SaleConfirmation({ sale, onNewSale }: SaleConfirmationProps) {
+export function SaleConfirmation({ sale, onPrint, onNewSale }: SaleConfirmationProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     headingRef.current?.focus();
@@ -60,18 +61,20 @@ export function SaleConfirmation({ sale, onNewSale }: SaleConfirmationProps) {
         ))}
       </ListCard>
       {sale.warnings.map((warning) => (
-        <p key={warning.code} className="m-0 flex items-start gap-2 text-body text-warning-text">
+        <p
+          key={warning.code}
+          role="status"
+          className="m-0 flex items-start gap-2 text-body text-warning-text"
+        >
           <AlertTriangle aria-hidden="true" className="size-6 shrink-0" />
-          <span>{warning.message}</span>
+          <span>{warningText(warning)}</span>
         </p>
       ))}
       <div className="grid grid-cols-2 gap-4">
-        <Button variant="secondary" icon={Printer} fullWidth disabledReason={RECEIPTS_PENDING}>
+        <Button variant="secondary" icon={Printer} fullWidth onClick={onPrint}>
           Imprimer
         </Button>
-        <Button variant="secondary" icon={Share2} fullWidth disabledReason={RECEIPTS_PENDING}>
-          Partager
-        </Button>
+        <ShareButton />
       </div>
       <div className="sticky bottom-16 z-20 -mx-4">
         <ActionBar fixed={false}>

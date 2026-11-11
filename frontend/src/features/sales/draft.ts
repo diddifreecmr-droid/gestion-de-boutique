@@ -71,9 +71,9 @@ export function newDraft(payment: string | null): SaleDraft {
   };
 }
 
-/** Stock d'un article vendu à l'unité : un entier, sinon la donnée est incohérente. */
+/** Stock d'un article vendu à l'unité : un entier (« 4 » ou « 4.000 »), sinon incohérent. */
 export function unitStock(article: CatalogArticle): number {
-  if (!/^\d+$/.test(article.available)) {
+  if (!/^\d+(\.0+)?$/.test(article.available)) {
     throw new Error(`Stock non entier pour « ${article.name} » : « ${article.available} »`);
   }
   return Number(article.available);

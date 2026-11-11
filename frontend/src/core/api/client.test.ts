@@ -41,6 +41,19 @@ describe("client API — en-têtes", () => {
     expect(hooks.onResponse).toHaveBeenCalledOnce();
   });
 
+  it("ajoute les en-têtes propres à l'appel, refuse ceux du client", async () => {
+    const fake = createFakeFetch({ [ROUTES.me]: json(200, meBody()) });
+    const client = createApiClient({ base: "/api", deviceId: () => DEVICE, fetch: fake.fetch });
+    const at = "2026-11-11T10:05:00.000+01:00";
+    await client.get("/api/v1/me", { headers: { "X-Captured-At": at } });
+    expect(fake.calls[0]?.headers.get("X-Captured-At")).toBe(at);
+    expect(fake.calls[0]?.headers.get("X-Device-Id")).toBe(DEVICE);
+    await expect(client.get("/api/v1/me", { headers: { "x-device-id": "autre" } })).rejects.toThrow(
+      "réservé au client API",
+    );
+    expect(fake.calls).toHaveLength(1);
+  });
+
   it("renvoie undefined pour une réponse 204", async () => {
     const { api } = setup({ [ROUTES.logout]: new Response(null, { status: 204 }) });
     await expect(api.logout()).resolves.toBeUndefined();

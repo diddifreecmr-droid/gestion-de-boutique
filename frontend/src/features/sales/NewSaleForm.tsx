@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Plus } from "lucide-react";
 import type { Role } from "../../core/auth/me";
-import type { SaleSetup } from "../../core/gateways/catalogContract";
+import type { PaymentMode, SaleLocation } from "../../core/gateways/catalogContract";
 import type { SaleResult } from "../../core/gateways/salesContract";
 import { Button } from "../../shared/ui";
 import { FormAlert } from "../auth/FormAlert";
@@ -19,30 +19,31 @@ import { useSaleSubmit } from "./useSaleSubmit";
 export interface NewSaleFormProps {
   shopId: string;
   role: Role;
-  setup: SaleSetup;
+  location: SaleLocation;
+  modes: readonly PaymentMode[];
   onRecorded: (sale: SaleResult) => void;
   /** Mention sous le titre (ex. « Démonstration » tant que la passerelle est simulée). */
   notice?: ReactNode;
 }
 
 /** Le dernier mode utilisé s'il existe encore, sinon le premier (jamais « À crédit »). */
-function initialPayment(shopId: string, setup: SaleSetup): string {
-  const [first] = setup.payment_modes;
+function initialPayment(shopId: string, modes: readonly PaymentMode[]): string {
+  const [first] = modes;
   if (first === undefined) throw new Error("La boutique n'a aucun mode de paiement actif");
   const last = readLastPaymentMode(shopId);
-  return setup.payment_modes.some((mode) => mode.id === last) && last !== null ? last : first.id;
+  return modes.some((mode) => mode.id === last) && last !== null ? last : first.id;
 }
 
 /** Formulaire « Nouvelle vente » (design-system § 7.1) : article, prix, paiement, valider. */
-export function NewSaleForm({ shopId, role, setup, onRecorded, notice }: NewSaleFormProps) {
-  const [draft, setDraft] = useState<SaleDraft>(() => newDraft(initialPayment(shopId, setup)));
+export function NewSaleForm(props: NewSaleFormProps) {
+  const { shopId, role, location, modes, onRecorded, notice } = props;
+  const [draft, setDraft] = useState<SaleDraft>(() => newDraft(initialPayment(shopId, modes)));
   const [picking, setPicking] = useState(false);
   const update = (patch: Partial<SaleDraft>) => {
     setDraft((current) => ({ ...current, ...patch }));
   };
   const checks = checkSale(draft, role);
-  const submit = useSaleSubmit({ shopId, setup, draft, checks, update, onRecorded });
-  const location = setup.location;
+  const submit = useSaleSubmit({ shopId, location, draft, checks, update, onRecorded });
   const showPicker = picking || draft.lines.length === 0;
 
   return (
@@ -99,7 +100,7 @@ export function NewSaleForm({ shopId, role, setup, onRecorded, notice }: NewSale
         </Button>
       )}
       <PaymentSection
-        modes={setup.payment_modes}
+        modes={modes}
         draft={draft}
         checks={checks}
         showErrors={submit.showErrors}
@@ -108,7 +109,7 @@ export function NewSaleForm({ shopId, role, setup, onRecorded, notice }: NewSale
       {draft.payment === CREDIT_CHOICE && (
         <CreditSection
           shopId={shopId}
-          modes={setup.payment_modes}
+          modes={modes}
           draft={draft}
           checks={checks}
           showErrors={submit.showErrors}

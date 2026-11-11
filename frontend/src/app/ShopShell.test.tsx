@@ -43,11 +43,11 @@ describe("coquille — menus par rôle (CDC § 17.4)", () => {
 
   it("une entrée ouvre sa page provisoire « à venir » et devient active", async () => {
     const { user, router } = openAs("seller");
-    await user.click(await screen.findByRole("link", { name: "Mes ventes" }));
-    expect(router.state.location.pathname).toBe(`/s/${SHOP_A}/mes-ventes`);
-    expect(screen.getByRole("heading", { name: "Mes ventes" })).toBeVisible();
+    await user.click(await screen.findByRole("link", { name: "Créances" }));
+    expect(router.state.location.pathname).toBe(`/s/${SHOP_A}/creances`);
+    expect(screen.getByRole("heading", { name: "Créances" })).toBeVisible();
     expect(screen.getByText("Cet écran arrive bientôt.")).toBeVisible();
-    expect(nav().getByRole("link", { name: "Mes ventes" })).toHaveAttribute("aria-current", "page");
+    expect(nav().getByRole("link", { name: "Créances" })).toHaveAttribute("aria-current", "page");
   });
 
   it("« Plus » du propriétaire, puis Réglages : version et « Recharger la dernière version »", async () => {

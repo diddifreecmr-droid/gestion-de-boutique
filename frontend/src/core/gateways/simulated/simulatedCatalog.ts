@@ -1,6 +1,6 @@
 /** Catalogue simulé : recherche dès la 1re lettre, « plus vendus » d'abord (CDC § 1.3). */
 import type { CatalogArticle, CatalogGateway } from "../catalogContract";
-import { GAROUA, PAYMENT_MODES, type SeedArticle } from "./seed";
+import { BOULAI, GAROUA, LOCATIONS, PAYMENT_MODES, type SeedArticle } from "./seed";
 import { reach, type World } from "./world";
 
 /** Compare sans accents ni casse : « nan » trouve « Nanfang ». */
@@ -38,7 +38,14 @@ export function createSimulatedCatalog(world: World): CatalogGateway {
   return {
     async saleSetup() {
       await reach(world);
-      return { location: GAROUA, payment_modes: PAYMENT_MODES.map((mode) => ({ ...mode })) };
+      return {
+        // Points de vente : Garoua et Ngaoundéré (le dépôt n'en est pas un).
+        locations: LOCATIONS.filter((place) => place.id !== BOULAI.id).map((place) => ({
+          ...place,
+        })),
+        default_location_id: GAROUA.id,
+        payment_modes: PAYMENT_MODES.map((mode) => ({ ...mode })),
+      };
     },
     async searchArticles(_shopId, search) {
       await reach(world);

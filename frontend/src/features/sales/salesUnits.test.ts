@@ -132,13 +132,18 @@ describe("erreurs de vente", () => {
     ).toThrow("other_locations");
     expect(() =>
       priceBelowMinimum(
-        new ApiError(422, "PRICE_BELOW_MINIMUM", "x", { article_id: "a1", min_price: 1.5 }),
+        new ApiError(422, "PRICE_BELOW_MINIMUM", "x", {
+          article_id: "a1",
+          line: 1,
+          min_price: 1.5,
+        }),
       ),
     ).toThrow("request_required");
     expect(() =>
       priceBelowMinimum(
         new ApiError(422, "PRICE_BELOW_MINIMUM", "x", {
           article_id: "a1",
+          line: 1,
           min_price: 1.5,
           request_required: true,
         }),

@@ -5,22 +5,23 @@
 import type { ApiError, ErrorDetails } from "../api/errors";
 
 export interface OtherLocationStock {
-  /** HYPOTHÈSE : specs § 6.2 dit `other_locations[]` sans en donner la forme. */
   location_id: string;
   location_name: string;
   available: string;
 }
 
 export interface StockInsufficientDetails {
-  /** HYPOTHÈSE : l'article en cause (nécessaire quand la vente a plusieurs lignes). */
+  /** L'article en cause (la vente peut avoir plusieurs lignes). */
   article_id: string;
+  /** Chaîne décimale. */
   available: string;
   other_locations: OtherLocationStock[];
 }
 
 export interface PriceBelowMinimumDetails {
-  /** HYPOTHÈSE : l'article en cause. */
   article_id: string;
+  /** Rang de la ligne, à partir de 1. */
+  line: number;
   min_price: number;
   request_required: boolean;
 }
@@ -28,8 +29,14 @@ export interface PriceBelowMinimumDetails {
 export interface DuplicateDetails {
   field: string;
   value: string;
-  /** HYPOTHÈSE : la vente qui porte déjà ce châssis (RG-M01 « montre la vente concernée »). */
+  /** La vente qui porte déjà ce châssis (RG-M01) ; `null` si le doublon est dans la vente. */
   sale_number: string | null;
+}
+
+export interface PaymentIncompleteDetails {
+  total: number;
+  paid: number;
+  remaining: number;
 }
 
 function fail(code: string, field: string): never {
@@ -75,6 +82,7 @@ export function priceBelowMinimum(error: ApiError): PriceBelowMinimumDetails {
   if (typeof required !== "boolean") fail(code, "request_required");
   return {
     article_id: text(error.details, code, "article_id"),
+    line: integer(error.details, code, "line"),
     min_price: integer(error.details, code, "min_price"),
     request_required: required,
   };
@@ -83,9 +91,19 @@ export function priceBelowMinimum(error: ApiError): PriceBelowMinimumDetails {
 export function duplicate(error: ApiError): DuplicateDetails {
   const code = "DUPLICATE";
   const sale = error.details["sale_number"];
+  if (sale !== null && typeof sale !== "string") fail(code, "sale_number");
   return {
     field: text(error.details, code, "field"),
     value: text(error.details, code, "value"),
-    sale_number: typeof sale === "string" ? sale : null,
+    sale_number: sale,
+  };
+}
+
+export function paymentIncomplete(error: ApiError): PaymentIncompleteDetails {
+  const code = "PAYMENT_INCOMPLETE";
+  return {
+    total: integer(error.details, code, "total"),
+    paid: integer(error.details, code, "paid"),
+    remaining: integer(error.details, code, "remaining"),
   };
 }

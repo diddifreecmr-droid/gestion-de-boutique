@@ -2,7 +2,8 @@
  * Petit client `fetch` typé par le contrat généré (specs § 6.1, § 7.2).
  *
  * - URL : `base` (VITE_API_BASE, ex. « /api ») + chemin du contrat sans son préfixe « /api ».
- * - En-têtes : `X-Device-Id` toujours, `Authorization: Bearer` si un jeton est fourni.
+ * - En-têtes : `X-Device-Id` toujours, `Authorization: Bearer` si un jeton est fourni, et
+ *   ceux de l'appel (`headers`, ex. `X-Captured-At`).
  * - `credentials: "include"` : le cookie de rafraîchissement (httpOnly) part avec `/auth/*`.
  * - Erreur : `ApiError` (enveloppe lue) ou `NetworkError` (serveur injoignable). Rien d'avalé.
  */
@@ -42,7 +43,15 @@ export interface CallOptions<B> {
   params?: PathParams;
   /** Paramètres `?clé=valeur` (omis si `null` ou `undefined`). */
   query?: QueryParams;
+  /**
+   * En-têtes propres à l'appel (`X-Captured-At` d'une vente). Ceux que le client pose
+   * lui-même (`Accept`, `Authorization`, `Content-Type`, `X-Device-Id`) sont refusés.
+   */
+  headers?: Readonly<Record<string, string>>;
 }
+
+/** En-têtes réservés au client : un appel ne peut pas les remplacer (fail-fast). */
+const RESERVED_HEADERS = ["accept", "authorization", "content-type", "x-device-id"];
 
 export interface ClientHooks {
   /** Une réponse HTTP est arrivée : le réseau fonctionne. */
@@ -105,6 +114,12 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     const headers = new Headers({ Accept: "application/json", "X-Device-Id": options.deviceId() });
     if (init.token !== undefined) headers.set("Authorization", `Bearer ${init.token}`);
     if (init.body !== undefined) headers.set("Content-Type", "application/json");
+    for (const [name, value] of Object.entries(init.headers ?? {})) {
+      if (RESERVED_HEADERS.includes(name.toLowerCase())) {
+        throw new Error(`En-tête « ${name} » réservé au client API`);
+      }
+      headers.set(name, value);
+    }
     // Hors du `try` : un chemin mal câblé est une erreur de code, pas une coupure réseau.
     const url = resolveUrl(options.base, fillPath(path, init.params)) + queryString(init.query);
     let response: Response;

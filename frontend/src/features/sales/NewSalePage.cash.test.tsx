@@ -1,5 +1,5 @@
 import { screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { isUuidV7 } from "../../core/api/uuidv7";
 import { axeViolations } from "../../testing/axe";
 import {
@@ -11,8 +11,10 @@ import {
   money,
   plain,
   validateButton,
+  preloadSales,
 } from "../../testing/renderSale";
 
+beforeAll(preloadSales);
 beforeEach(() => {
   window.localStorage.clear();
 });
@@ -27,7 +29,7 @@ describe("Nouvelle vente au comptant (UC-VEN-01)", () => {
       .getAllByRole("listitem")
       .map((item) => item.textContent);
     expect(titles[0]).toMatch(/^Haojue HJ125-8/);
-    expect(titles).toHaveLength(5);
+    expect(titles).toHaveLength(8); // limite de la recherche (SEARCH_LIMIT)
     const rupture = within(list).getByText("Rupture");
     expect(rupture.closest("li")?.querySelector("button")).toBeNull();
     expect(await axeViolations(container)).toEqual([]);
@@ -93,17 +95,19 @@ describe("Nouvelle vente au comptant (UC-VEN-01)", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("confirmation : total, Imprimer et Partager à venir, puis « Nouvelle vente » avec le dernier mode", async () => {
+  it("confirmation : total, Imprimer actif, Partager à venir, puis « Nouvelle vente » avec le dernier mode", async () => {
     const { user } = renderSale();
     await user.click(await articleButton("Sanya SY125-8"));
     await user.click(radio("MTN MoMo"));
     await user.click(validateButton());
     await screen.findByRole("heading", { name: /V-000124/ });
     expect(screen.getAllByText(money(650_000)).length).toBeGreaterThan(0);
-    for (const name of ["Imprimer", "Partager"]) {
-      expect(screen.getByRole("button", { name })).toHaveAttribute("aria-disabled", "true");
-    }
-    expect(screen.getAllByText("Reçus : à venir")).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "Imprimer" })).not.toHaveAttribute("aria-disabled");
+    expect(screen.getByRole("button", { name: "Partager" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+    expect(screen.getByText("Partage PDF : à venir")).toBeVisible();
 
     await user.click(screen.getByRole("button", { name: "Nouvelle vente" }));
     await user.click(await articleButton("Sanya SY125-8"));
