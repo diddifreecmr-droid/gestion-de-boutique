@@ -74,7 +74,7 @@ def matrix_response(matrix: StockMatrix) -> s.StockMatrixResponse:
     )
 
 
-def _valuation(data: ValuationData) -> s.Valuation:
+def valuation_response(data: ValuationData) -> s.Valuation:
     return s.Valuation(
         at_wac=amount(data.at_wac),
         at_wac_known=data.at_wac_known.amount,
@@ -92,15 +92,15 @@ def value_response(report: StockValueReport) -> s.StockValueResponse:
                 location_id=str(line.location.id),
                 location_name=line.location.name,
                 active=line.location.active,
-                sellable=_valuation(line.sellable),
-                damaged=_valuation(line.damaged),
-                incoming=_valuation(line.incoming),
+                sellable=valuation_response(line.sellable),
+                damaged=valuation_response(line.damaged),
+                incoming=valuation_response(line.incoming),
             )
             for line in report.locations
         ],
-        sellable=_valuation(report.sellable),
-        damaged=_valuation(report.damaged),
-        incoming=_valuation(report.incoming),
+        sellable=valuation_response(report.sellable),
+        damaged=valuation_response(report.damaged),
+        incoming=valuation_response(report.incoming),
     )
 
 

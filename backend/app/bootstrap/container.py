@@ -16,6 +16,7 @@ from app.bootstrap.identity import build_identity
 from app.bootstrap.journal import build_journal
 from app.bootstrap.purchasing import build_purchasing
 from app.bootstrap.receivables import build_receivables
+from app.bootstrap.reporting import build_reporting
 from app.bootstrap.sales import build_sales, sales_ranking
 from app.bootstrap.shops import build_shops
 from app.bootstrap.stock import build_stock
@@ -54,6 +55,7 @@ def build_app(env_file: Path | None = DEFAULT_ENV_FILE) -> FastAPI:
     purchasing = build_purchasing(identity, stock.ledger)
     sales = build_sales(identity, stock.ledger)
     receivables = build_receivables(identity)
+    reporting = build_reporting(identity)
     app = create_app(
         http_config_from(settings),
         identity.auth,
@@ -65,6 +67,7 @@ def build_app(env_file: Path | None = DEFAULT_ENV_FILE) -> FastAPI:
         purchasing=purchasing.http,
         sales=sales.http,
         receivables=receivables.http,
+        reporting=reporting.http,
     )
     # Fabrique des unités de travail de boutique (handlers du journal et des alertes branchés).
     app.state.uow_factory = journal.uow_factory

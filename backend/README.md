@@ -263,6 +263,34 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
   (`alerted_for` + `dedup_key`) ; un report réarme l'alerte.
 - **Migration** `0009_receivables` (après `0008_sales`, tête parallèle à `0010_sales_returns`).
 
+## Tableau de bord et accueils (T19)
+
+- **Routes** (`/shops/{id}/…`, `Cache-Control: no-store`, RG-T25) :
+  `GET /dashboard?period=today|yesterday|week|month|last_month|custom&from=&to=` (propriétaire
+  seul, `DASHBOARD_READ` ; autres rôles 403), `GET /dashboard/details/{metric}` (`sales`,
+  `payments`, `expenses`, `receivables`, `low_stock` ; même `period`), `GET /home` (accueil du
+  rôle, un seul bloc : `owner` = tableau du jour, `seller`, `accountant`, `driver`).
+- **Indicateurs** : définis **uniquement** dans `application/reporting/indicators.py` (§ 14.1).
+  Q-09 généralisée : ventes, payé, marges, versements **et dépenses** annulés comptent le jour
+  de l'annulation ; une journée passée ne bouge jamais. Retours au `returned_on` (montant et
+  marges figés), remboursements au `refunded_on`. Marge = marges connues ; `without_cost` =
+  lignes sans coût (RG-T15). Taux et variations en chaînes à 2 décimales, `null` si la base
+  vaut 0. Comparaison = période précédente de même longueur (la veille pour un jour).
+- **Périodes** (`periods.py`) : semaine du lundi, mois en cours, mois dernier, libre ≤ 366 jours
+  et ≤ aujourd'hui ; plusieurs jours → `series` (ventes, marge par jour, total, moyenne).
+- **États actuels** (non historisés au Lot 1) : total à recevoir, rappels du jour (non faits,
+  datés ≤ aujourd'hui, retards compris), stock (valeur au CMP et au dernier coût, stock bas
+  strict, stock à vérifier = couples négatifs), alertes en attente (signalements ouverts,
+  demandes de prix en attente non échues). Lot 2 (déplacements, camions, dépenses de transport,
+  voyage du chauffeur) : objet `{available: false, lot: 2, message}`, jamais 0.
+- **Port de requête** `DashboardQueries` (sommes brutes par journée de Douala) : adaptateurs
+  mémoire et SQL (`sqlalchemy/reporting*.py`), contrat `tests/contracts/test_reporting_contract.py`.
+  Annulations rattachées à leur journée en Python (SQL portable). Index : migration
+  `0011_reporting_indexes` (`expense`/`installment (shop_id, cancelled_at)`, `sale_return
+  (shop_id, refunded_on)`) ; `tests/infrastructure/postgres/test_reporting_indexes.py` vérifie
+  par `EXPLAIN`, sur un volume réaliste, que chaque agrégat passe par son index de période.
+- **Recette** : SCN-09 rejoué par HTTP (`tests/http/reporting/test_scn09_http.py`).
+
 ## Couches
 
 | Package | Peut importer |

@@ -20,6 +20,7 @@ from app.infrastructure.persistence.memory.database import MemoryDatabase
 from app.infrastructure.persistence.memory.expenses import EXPENSE_REPOSITORIES
 from app.infrastructure.persistence.memory.purchasing import MEMORY_PURCHASING_REPOSITORIES
 from app.infrastructure.persistence.memory.receivables import MEMORY_RECEIVABLES_REPOSITORIES
+from app.infrastructure.persistence.memory.reporting import MEMORY_REPORTING_ADAPTERS
 from app.infrastructure.persistence.memory.sales import MEMORY_SALES_REPOSITORIES
 from app.infrastructure.persistence.memory.sales_returns import (
     MEMORY_SALES_RETURNS_REPOSITORIES,
@@ -34,6 +35,7 @@ from app.infrastructure.persistence.sqlalchemy.engine import create_sql_engine
 from app.infrastructure.persistence.sqlalchemy.expense_query import SQL_EXPENSE_ADAPTERS
 from app.infrastructure.persistence.sqlalchemy.purchasing import SQL_PURCHASING_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.receivables import SQL_RECEIVABLES_REPOSITORIES
+from app.infrastructure.persistence.sqlalchemy.reporting import SQL_REPORTING_ADAPTERS
 from app.infrastructure.persistence.sqlalchemy.sales_repository import SQL_SALES_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.sales_returns import (
     SQL_SALES_RETURNS_REPOSITORIES,
@@ -56,6 +58,7 @@ MEMORY_REPOSITORIES: RepositoryRegistry = (
     *MEMORY_RECEIVABLES_REPOSITORIES,
     *MEMORY_SALES_REPOSITORIES,
     *MEMORY_SALES_RETURNS_REPOSITORIES,
+    *MEMORY_REPORTING_ADAPTERS,
 )
 SQL_REPOSITORIES: SqlRepositoryRegistry = (
     SqlAuditLog,
@@ -68,6 +71,7 @@ SQL_REPOSITORIES: SqlRepositoryRegistry = (
     *SQL_RECEIVABLES_REPOSITORIES,
     *SQL_SALES_REPOSITORIES,
     *SQL_SALES_RETURNS_REPOSITORIES,
+    *SQL_REPORTING_ADAPTERS,
 )
 
 

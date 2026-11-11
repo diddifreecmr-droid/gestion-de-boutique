@@ -64,7 +64,7 @@ def purchase_response(view: PurchaseView) -> s.PurchaseResponse:
         status=purchase.status.value,
         cancellation=None
         if cancel is None
-        else s.CancellationResponse(
+        else s.PurchaseCancellationResponse(
             cancelled_at=cancel.at, cancelled_by=str(cancel.by), reason=cancel.reason
         ),
         created_by=str(capture.created_by),

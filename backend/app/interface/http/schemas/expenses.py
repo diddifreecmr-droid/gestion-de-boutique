@@ -24,7 +24,7 @@ class TagResponse(_Strict):
     name: str
 
 
-class CancellationResponse(_Strict):
+class ExpenseCancellationResponse(_Strict):
     cancelled_at: datetime
     cancelled_by: str
     reason: str
@@ -48,7 +48,7 @@ class ExpenseResponse(_Strict):
     device_id: str
     captured_at: datetime
     received_at: datetime
-    cancellation: CancellationResponse | None
+    cancellation: ExpenseCancellationResponse | None
     editable: bool
     """L'utilisateur peut encore la corriger ou l'annuler (UC-DEP-04)."""
     correction_deadline: datetime
@@ -103,7 +103,7 @@ class ExpensePatch(_Strict):
     attachment_id: str | None = OPTIONAL_REF
 
 
-class CancelRequest(_Strict):
+class ExpenseCancelRequest(_Strict):
     reason: str = Field(max_length=2000)
 
 

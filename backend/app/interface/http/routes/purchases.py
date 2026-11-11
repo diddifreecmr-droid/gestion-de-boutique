@@ -30,8 +30,8 @@ from app.interface.http.routes.expense_inputs import captured_at_of
 from app.interface.http.routes.purchasing_components import PurchasingComponents
 from app.interface.http.routes.purchasing_inputs import input_of, optional, patch_of
 from app.interface.http.schemas.purchasing import (
-    CancelRequest,
     PaymentRequest,
+    PurchaseCancelRequest,
     PurchaseCreateRequest,
     PurchasePageResponse,
     PurchasePatch,
@@ -100,7 +100,9 @@ def build_purchases_router(purchasing: PurchasingComponents) -> APIRouter:
         return purchase_response(purchasing.correct.execute(actor, command))
 
     @router.post("/shops/{shop_id}/purchases/{purchase_id}/cancel")
-    def cancel_purchase(actor: Member, purchase_id: str, body: CancelRequest) -> PurchaseResponse:
+    def cancel_purchase(
+        actor: Member, purchase_id: str, body: PurchaseCancelRequest
+    ) -> PurchaseResponse:
         view = purchasing.cancel.execute(actor, PurchaseId.parse(purchase_id), body.reason)
         return purchase_response(view)
 

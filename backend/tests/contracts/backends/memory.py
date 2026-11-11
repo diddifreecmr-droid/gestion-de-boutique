@@ -27,6 +27,7 @@ from app.infrastructure.persistence.memory.joined import ShopJoin
 from app.infrastructure.persistence.memory.platform_store import MemoryPlatformStore
 from app.infrastructure.persistence.memory.purchasing import MEMORY_PURCHASING_REPOSITORIES
 from app.infrastructure.persistence.memory.receivables import MEMORY_RECEIVABLES_REPOSITORIES
+from app.infrastructure.persistence.memory.reporting import MEMORY_REPORTING_ADAPTERS
 from app.infrastructure.persistence.memory.repository import MemoryRepository
 from app.infrastructure.persistence.memory.sales import MEMORY_SALES_REPOSITORIES
 from app.infrastructure.persistence.memory.sales_returns import (
@@ -54,6 +55,7 @@ REGISTRY: RepositoryRegistry = (
     *MEMORY_RECEIVABLES_REPOSITORIES,
     *MEMORY_SALES_REPOSITORIES,
     *MEMORY_SALES_RETURNS_REPOSITORIES,
+    *MEMORY_REPORTING_ADAPTERS,
 )
 
 

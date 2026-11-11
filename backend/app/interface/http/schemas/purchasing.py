@@ -62,7 +62,7 @@ class PurchasePatch(_Strict):
     confirm_price_gap: bool = False
 
 
-class CancelRequest(_Strict):
+class PurchaseCancelRequest(_Strict):
     reason: str = Field(max_length=500)
 
 
@@ -102,7 +102,7 @@ class PaymentResponse(_Strict):
     recorded_by: str
 
 
-class CancellationResponse(_Strict):
+class PurchaseCancellationResponse(_Strict):
     cancelled_at: datetime
     cancelled_by: str
     reason: str
@@ -128,7 +128,7 @@ class PurchaseResponse(_Strict):
     """`to_pay`, `partially_paid` ou `paid` (UC-ACH-06) ; `status` : `valid` ou `cancelled`."""
     payments: list[PaymentResponse]
     status: str
-    cancellation: CancellationResponse | None
+    cancellation: PurchaseCancellationResponse | None
     created_by: str
     device_id: str
     captured_at: datetime

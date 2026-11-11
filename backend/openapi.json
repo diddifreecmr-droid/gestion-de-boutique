@@ -3684,7 +3684,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/app__interface__http__schemas__expenses__CancelRequest"
+                "$ref": "#/components/schemas/ExpenseCancelRequest"
               }
             }
           }
@@ -5884,7 +5884,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/app__interface__http__schemas__purchasing__CancelRequest"
+                "$ref": "#/components/schemas/PurchaseCancelRequest"
               }
             }
           }
@@ -6796,7 +6796,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/app__interface__http__schemas__receipts__ReceiptResponse"
+                  "$ref": "#/components/schemas/SaleReceiptResponse"
                 }
               }
             }
@@ -8782,6 +8782,304 @@
           }
         }
       }
+    },
+    "/api/v1/shops/{shop_id}/dashboard": {
+      "get": {
+        "tags": [
+          "reporting"
+        ],
+        "summary": "Dashboard",
+        "operationId": "dashboard_api_v1_shops__shop_id__dashboard_get",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PeriodKind",
+              "default": "today"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/dashboard/details/{metric}": {
+      "get": {
+        "tags": [
+          "reporting"
+        ],
+        "summary": "Dashboard Detail",
+        "operationId": "dashboard_detail_api_v1_shops__shop_id__dashboard_details__metric__get",
+        "parameters": [
+          {
+            "name": "metric",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/DetailMetric"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PeriodKind",
+              "default": "today"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/home": {
+      "get": {
+        "tags": [
+          "reporting"
+        ],
+        "summary": "Home",
+        "operationId": "home_api_v1_shops__shop_id__home_get",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8800,6 +9098,32 @@
           "version"
         ],
         "title": "AbandonRequest"
+      },
+      "AccountantHomeOut": {
+        "properties": {
+          "transfers_to_receive": {
+            "$ref": "#/components/schemas/NotAvailable"
+          },
+          "low_stock": {
+            "type": "integer",
+            "title": "Low Stock"
+          },
+          "stock_value": {
+            "$ref": "#/components/schemas/Valuation"
+          },
+          "expenses": {
+            "type": "integer",
+            "title": "Expenses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transfers_to_receive",
+          "low_stock",
+          "stock_value",
+          "expenses"
+        ],
+        "title": "AccountantHomeOut"
       },
       "AdjustmentRequest": {
         "properties": {
@@ -9159,6 +9483,24 @@
           "created_at"
         ],
         "title": "AlertResponse"
+      },
+      "AlertsBlock": {
+        "properties": {
+          "error_reports": {
+            "type": "integer",
+            "title": "Error Reports"
+          },
+          "price_requests": {
+            "type": "integer",
+            "title": "Price Requests"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error_reports",
+          "price_requests"
+        ],
+        "title": "AlertsBlock"
       },
       "ArticleCreateRequest": {
         "properties": {
@@ -9821,6 +10163,36 @@
         "title": "ChangePinRequest",
         "description": "Pour l'administrateur plateforme, ces champs portent le mot de passe."
       },
+      "Compared": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "title": "Value"
+          },
+          "previous": {
+            "type": "integer",
+            "title": "Previous"
+          },
+          "change_pct": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "previous",
+          "change_pct"
+        ],
+        "title": "Compared"
+      },
       "CountEntry": {
         "properties": {
           "article_id": {
@@ -10467,6 +10839,184 @@
         ],
         "title": "DamagedStockResponse"
       },
+      "DashboardDetailResponse": {
+        "properties": {
+          "metric": {
+            "type": "string",
+            "title": "Metric"
+          },
+          "period": {
+            "$ref": "#/components/schemas/PeriodOut"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/DetailLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metric",
+          "period",
+          "total",
+          "lines"
+        ],
+        "title": "DashboardDetailResponse"
+      },
+      "DashboardResponse": {
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/PeriodOut"
+          },
+          "previous_period": {
+            "$ref": "#/components/schemas/PeriodOut"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Summary"
+          },
+          "series": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Series"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "receivables": {
+            "$ref": "#/components/schemas/ReceivablesBlock"
+          },
+          "stock": {
+            "$ref": "#/components/schemas/StockBlock"
+          },
+          "trucks": {
+            "$ref": "#/components/schemas/TrucksBlock"
+          },
+          "alerts": {
+            "$ref": "#/components/schemas/AlertsBlock"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "previous_period",
+          "summary",
+          "series",
+          "receivables",
+          "stock",
+          "trucks",
+          "alerts"
+        ],
+        "title": "DashboardResponse"
+      },
+      "DetailLineOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "day": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "id",
+          "label"
+        ],
+        "title": "DetailLineOut"
+      },
+      "DetailMetric": {
+        "type": "string",
+        "enum": [
+          "sales",
+          "payments",
+          "expenses",
+          "receivables",
+          "low_stock"
+        ],
+        "title": "DetailMetric"
+      },
       "DetailRequest": {
         "properties": {
           "color": {
@@ -10578,6 +11128,22 @@
           "size"
         ],
         "title": "DetailResponse"
+      },
+      "DriverHomeOut": {
+        "properties": {
+          "current_trip": {
+            "$ref": "#/components/schemas/NotAvailable"
+          },
+          "trip_expenses": {
+            "$ref": "#/components/schemas/NotAvailable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_trip",
+          "trip_expenses"
+        ],
+        "title": "DriverHomeOut"
       },
       "Entitlement": {
         "type": "string",
@@ -10785,6 +11351,46 @@
           "mode_id"
         ],
         "title": "ExchangeRequest"
+      },
+      "ExpenseCancelRequest": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "title": "ExpenseCancelRequest"
+      },
+      "ExpenseCancellationResponse": {
+        "properties": {
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cancelled At"
+          },
+          "cancelled_by": {
+            "type": "string",
+            "title": "Cancelled By"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cancelled_at",
+          "cancelled_by",
+          "reason"
+        ],
+        "title": "ExpenseCancellationResponse"
       },
       "ExpenseCategoryCreateRequest": {
         "properties": {
@@ -11349,7 +11955,7 @@
           "cancellation": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/app__interface__http__schemas__expenses__CancellationResponse"
+                "$ref": "#/components/schemas/ExpenseCancellationResponse"
               },
               {
                 "type": "null"
@@ -11749,6 +12355,66 @@
           "status"
         ],
         "title": "HealthResponse"
+      },
+      "HomeResponse": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "today": {
+            "type": "string",
+            "format": "date",
+            "title": "Today"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DashboardResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seller": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SellerHomeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "accountant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccountantHomeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "driver": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DriverHomeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "today"
+        ],
+        "title": "HomeResponse",
+        "description": "Un seul bloc rempli, celui du rôle ; les autres sont absents de la réponse."
       },
       "IdDocumentType": {
         "type": "string",
@@ -13300,6 +13966,30 @@
         ],
         "title": "MovementResponse"
       },
+      "NotAvailable": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "const": false,
+            "title": "Available"
+          },
+          "lot": {
+            "type": "integer",
+            "title": "Lot"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available",
+          "lot",
+          "message"
+        ],
+        "title": "NotAvailable"
+      },
       "OpenShopRequest": {
         "properties": {
           "profile_code": {
@@ -13727,6 +14417,48 @@
         ],
         "title": "PerformerResponse"
       },
+      "PeriodKind": {
+        "type": "string",
+        "enum": [
+          "today",
+          "yesterday",
+          "week",
+          "month",
+          "last_month",
+          "custom"
+        ],
+        "title": "PeriodKind"
+      },
+      "PeriodOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "first_day": {
+            "type": "string",
+            "format": "date",
+            "title": "First Day"
+          },
+          "last_day": {
+            "type": "string",
+            "format": "date",
+            "title": "Last Day"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "first_day",
+          "last_day",
+          "days"
+        ],
+        "title": "PeriodOut"
+      },
       "PriceDecisionRequest": {
         "properties": {
           "decision": {
@@ -14101,7 +14833,7 @@
             "title": "Stock Units"
           },
           "receipt": {
-            "$ref": "#/components/schemas/app__interface__http__schemas__shop__ReceiptResponse"
+            "$ref": "#/components/schemas/ReceiptSettingsResponse"
           },
           "min_price_enabled": {
             "type": "boolean",
@@ -14139,6 +14871,46 @@
           "default_location_id"
         ],
         "title": "ProfileResponse"
+      },
+      "PurchaseCancelRequest": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "title": "PurchaseCancelRequest"
+      },
+      "PurchaseCancellationResponse": {
+        "properties": {
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cancelled At"
+          },
+          "cancelled_by": {
+            "type": "string",
+            "title": "Cancelled By"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cancelled_at",
+          "cancelled_by",
+          "reason"
+        ],
+        "title": "PurchaseCancellationResponse"
       },
       "PurchaseCreateRequest": {
         "properties": {
@@ -14544,7 +15316,7 @@
           "cancellation": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/app__interface__http__schemas__purchasing__CancellationResponse"
+                "$ref": "#/components/schemas/PurchaseCancellationResponse"
               },
               {
                 "type": "null"
@@ -14913,6 +15685,71 @@
         ],
         "title": "ReceiptPrintSettings"
       },
+      "ReceiptSettingsResponse": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "title": "Format"
+          },
+          "print_profile": {
+            "type": "string",
+            "title": "Print Profile"
+          },
+          "paper_width_mm": {
+            "type": "integer",
+            "title": "Paper Width Mm"
+          },
+          "printable_width_mm": {
+            "type": "integer",
+            "title": "Printable Width Mm"
+          },
+          "margin_mm": {
+            "type": "integer",
+            "title": "Margin Mm"
+          },
+          "font_size_pt": {
+            "type": "integer",
+            "title": "Font Size Pt"
+          },
+          "show_logo": {
+            "type": "boolean",
+            "title": "Show Logo"
+          },
+          "copies": {
+            "type": "integer",
+            "title": "Copies"
+          },
+          "footer_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Footer Message"
+          },
+          "header": {
+            "$ref": "#/components/schemas/ShopHeaderResponse"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "format",
+          "print_profile",
+          "paper_width_mm",
+          "printable_width_mm",
+          "margin_mm",
+          "font_size_pt",
+          "show_logo",
+          "copies",
+          "footer_message",
+          "header"
+        ],
+        "title": "ReceiptSettingsResponse"
+      },
       "ReceivableListResponse": {
         "properties": {
           "summary": {
@@ -15252,6 +16089,33 @@
           "received_today"
         ],
         "title": "ReceivableSummaryResponse"
+      },
+      "ReceivablesBlock": {
+        "properties": {
+          "total_due": {
+            "type": "integer",
+            "title": "Total Due"
+          },
+          "debtor_count": {
+            "type": "integer",
+            "title": "Debtor Count"
+          },
+          "received": {
+            "$ref": "#/components/schemas/Compared"
+          },
+          "reminders_due": {
+            "type": "integer",
+            "title": "Reminders Due"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_due",
+          "debtor_count",
+          "received",
+          "reminders_due"
+        ],
+        "title": "ReceivablesBlock"
       },
       "RefundRequest": {
         "properties": {
@@ -15614,6 +16478,30 @@
           "label"
         ],
         "title": "RoleResponse"
+      },
+      "SaleCancellationResponse": {
+        "properties": {
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cancelled At"
+          },
+          "cancelled_by": {
+            "type": "string",
+            "title": "Cancelled By"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cancelled_at",
+          "cancelled_by",
+          "reason"
+        ],
+        "title": "SaleCancellationResponse"
       },
       "SaleCreateRequest": {
         "properties": {
@@ -16185,6 +17073,133 @@
         ],
         "title": "SalePaymentResponse"
       },
+      "SaleReceiptResponse": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "header": {
+            "$ref": "#/components/schemas/ReceiptHeader"
+          },
+          "sale_id": {
+            "type": "string",
+            "title": "Sale Id"
+          },
+          "number": {
+            "type": "string",
+            "title": "Number"
+          },
+          "provisional_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provisional Number"
+          },
+          "sold_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Sold At"
+          },
+          "seller_name": {
+            "type": "string",
+            "title": "Seller Name"
+          },
+          "customer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReceiptCustomer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/ReceiptLineResponse"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "paid": {
+            "type": "integer",
+            "title": "Paid"
+          },
+          "payments": {
+            "items": {
+              "$ref": "#/components/schemas/ReceiptPaymentResponse"
+            },
+            "type": "array",
+            "title": "Payments"
+          },
+          "remaining": {
+            "type": "integer",
+            "title": "Remaining"
+          },
+          "mentions": {
+            "items": {
+              "$ref": "#/components/schemas/ReceiptMention"
+            },
+            "type": "array",
+            "title": "Mentions"
+          },
+          "footer_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Footer Message"
+          },
+          "printing": {
+            "$ref": "#/components/schemas/ReceiptPrintSettings"
+          },
+          "print_sequence": {
+            "type": "integer",
+            "title": "Print Sequence"
+          },
+          "printed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Printed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "header",
+          "sale_id",
+          "number",
+          "provisional_number",
+          "sold_at",
+          "seller_name",
+          "customer",
+          "lines",
+          "total",
+          "paid",
+          "payments",
+          "remaining",
+          "mentions",
+          "footer_message",
+          "printing",
+          "print_sequence",
+          "printed_at"
+        ],
+        "title": "SaleReceiptResponse"
+      },
       "SaleResponse": {
         "properties": {
           "id": {
@@ -16307,7 +17322,7 @@
           "cancellation": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/app__interface__http__schemas__sales__CancellationResponse"
+                "$ref": "#/components/schemas/SaleCancellationResponse"
               },
               {
                 "type": "null"
@@ -16620,6 +17635,34 @@
         ],
         "title": "SaleTotalsResponse"
       },
+      "SellerHomeOut": {
+        "properties": {
+          "sales_count": {
+            "type": "integer",
+            "title": "Sales Count"
+          },
+          "sales_amount": {
+            "type": "integer",
+            "title": "Sales Amount"
+          },
+          "reminders_due": {
+            "type": "integer",
+            "title": "Reminders Due"
+          },
+          "pending_uploads": {
+            "type": "integer",
+            "title": "Pending Uploads"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sales_count",
+          "sales_amount",
+          "reminders_due",
+          "pending_uploads"
+        ],
+        "title": "SellerHomeOut"
+      },
       "SeniorityBand": {
         "type": "string",
         "enum": [
@@ -16629,6 +17672,66 @@
           "over_90"
         ],
         "title": "SeniorityBand"
+      },
+      "Series": {
+        "properties": {
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/SeriesPoint"
+            },
+            "type": "array",
+            "title": "Points"
+          },
+          "total_sales": {
+            "type": "integer",
+            "title": "Total Sales"
+          },
+          "total_margin": {
+            "type": "integer",
+            "title": "Total Margin"
+          },
+          "average_sales": {
+            "type": "integer",
+            "title": "Average Sales"
+          },
+          "average_margin": {
+            "type": "integer",
+            "title": "Average Margin"
+          }
+        },
+        "type": "object",
+        "required": [
+          "points",
+          "total_sales",
+          "total_margin",
+          "average_sales",
+          "average_margin"
+        ],
+        "title": "Series"
+      },
+      "SeriesPoint": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "sales": {
+            "type": "integer",
+            "title": "Sales"
+          },
+          "margin": {
+            "type": "integer",
+            "title": "Margin"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "sales",
+          "margin"
+        ],
+        "title": "SeriesPoint"
       },
       "SettingsPatch": {
         "properties": {
@@ -17222,6 +18325,36 @@
         ],
         "title": "StatementResponse"
       },
+      "StockBlock": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Valuation"
+          },
+          "damaged": {
+            "$ref": "#/components/schemas/Valuation"
+          },
+          "low_stock": {
+            "type": "integer",
+            "title": "Low Stock"
+          },
+          "to_verify": {
+            "type": "integer",
+            "title": "To Verify"
+          },
+          "in_transit": {
+            "$ref": "#/components/schemas/NotAvailable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "damaged",
+          "low_stock",
+          "to_verify",
+          "in_transit"
+        ],
+        "title": "StockBlock"
+      },
       "StockCell": {
         "properties": {
           "location_id": {
@@ -17437,6 +18570,64 @@
           "incoming"
         ],
         "title": "StockValueResponse"
+      },
+      "Summary": {
+        "properties": {
+          "sales": {
+            "$ref": "#/components/schemas/Compared"
+          },
+          "sales_count": {
+            "$ref": "#/components/schemas/Compared"
+          },
+          "collected": {
+            "$ref": "#/components/schemas/Compared"
+          },
+          "margin": {
+            "$ref": "#/components/schemas/Compared"
+          },
+          "margin_wac": {
+            "$ref": "#/components/schemas/Compared"
+          },
+          "margin_gap": {
+            "type": "integer",
+            "title": "Margin Gap"
+          },
+          "margin_rate_pct": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Rate Pct"
+          },
+          "without_cost": {
+            "type": "integer",
+            "title": "Without Cost"
+          },
+          "expenses": {
+            "$ref": "#/components/schemas/Compared"
+          },
+          "result": {
+            "$ref": "#/components/schemas/Compared"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sales",
+          "sales_count",
+          "collected",
+          "margin",
+          "margin_wac",
+          "margin_gap",
+          "margin_rate_pct",
+          "without_cost",
+          "expenses",
+          "result"
+        ],
+        "title": "Summary"
       },
       "SupplierListResponse": {
         "properties": {
@@ -17860,6 +19051,22 @@
         ],
         "title": "TotalsResponse"
       },
+      "TrucksBlock": {
+        "properties": {
+          "trucks": {
+            "$ref": "#/components/schemas/NotAvailable"
+          },
+          "transport_expenses": {
+            "$ref": "#/components/schemas/NotAvailable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "trucks",
+          "transport_expenses"
+        ],
+        "title": "TrucksBlock"
+      },
       "UnreadCountResponse": {
         "properties": {
           "unread_count": {
@@ -18049,302 +19256,6 @@
           "by"
         ],
         "title": "WriteOffResponse"
-      },
-      "app__interface__http__schemas__expenses__CancelRequest": {
-        "properties": {
-          "reason": {
-            "type": "string",
-            "maxLength": 2000,
-            "title": "Reason"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "reason"
-        ],
-        "title": "CancelRequest"
-      },
-      "app__interface__http__schemas__expenses__CancellationResponse": {
-        "properties": {
-          "cancelled_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Cancelled At"
-          },
-          "cancelled_by": {
-            "type": "string",
-            "title": "Cancelled By"
-          },
-          "reason": {
-            "type": "string",
-            "title": "Reason"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "cancelled_at",
-          "cancelled_by",
-          "reason"
-        ],
-        "title": "CancellationResponse"
-      },
-      "app__interface__http__schemas__purchasing__CancelRequest": {
-        "properties": {
-          "reason": {
-            "type": "string",
-            "maxLength": 500,
-            "title": "Reason"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "reason"
-        ],
-        "title": "CancelRequest"
-      },
-      "app__interface__http__schemas__purchasing__CancellationResponse": {
-        "properties": {
-          "cancelled_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Cancelled At"
-          },
-          "cancelled_by": {
-            "type": "string",
-            "title": "Cancelled By"
-          },
-          "reason": {
-            "type": "string",
-            "title": "Reason"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "cancelled_at",
-          "cancelled_by",
-          "reason"
-        ],
-        "title": "CancellationResponse"
-      },
-      "app__interface__http__schemas__receipts__ReceiptResponse": {
-        "properties": {
-          "title": {
-            "type": "string",
-            "title": "Title"
-          },
-          "header": {
-            "$ref": "#/components/schemas/ReceiptHeader"
-          },
-          "sale_id": {
-            "type": "string",
-            "title": "Sale Id"
-          },
-          "number": {
-            "type": "string",
-            "title": "Number"
-          },
-          "provisional_number": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Provisional Number"
-          },
-          "sold_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Sold At"
-          },
-          "seller_name": {
-            "type": "string",
-            "title": "Seller Name"
-          },
-          "customer": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ReceiptCustomer"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "lines": {
-            "items": {
-              "$ref": "#/components/schemas/ReceiptLineResponse"
-            },
-            "type": "array",
-            "title": "Lines"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "paid": {
-            "type": "integer",
-            "title": "Paid"
-          },
-          "payments": {
-            "items": {
-              "$ref": "#/components/schemas/ReceiptPaymentResponse"
-            },
-            "type": "array",
-            "title": "Payments"
-          },
-          "remaining": {
-            "type": "integer",
-            "title": "Remaining"
-          },
-          "mentions": {
-            "items": {
-              "$ref": "#/components/schemas/ReceiptMention"
-            },
-            "type": "array",
-            "title": "Mentions"
-          },
-          "footer_message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Footer Message"
-          },
-          "printing": {
-            "$ref": "#/components/schemas/ReceiptPrintSettings"
-          },
-          "print_sequence": {
-            "type": "integer",
-            "title": "Print Sequence"
-          },
-          "printed_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Printed At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "title",
-          "header",
-          "sale_id",
-          "number",
-          "provisional_number",
-          "sold_at",
-          "seller_name",
-          "customer",
-          "lines",
-          "total",
-          "paid",
-          "payments",
-          "remaining",
-          "mentions",
-          "footer_message",
-          "printing",
-          "print_sequence",
-          "printed_at"
-        ],
-        "title": "ReceiptResponse"
-      },
-      "app__interface__http__schemas__sales__CancellationResponse": {
-        "properties": {
-          "cancelled_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Cancelled At"
-          },
-          "cancelled_by": {
-            "type": "string",
-            "title": "Cancelled By"
-          },
-          "reason": {
-            "type": "string",
-            "title": "Reason"
-          }
-        },
-        "type": "object",
-        "required": [
-          "cancelled_at",
-          "cancelled_by",
-          "reason"
-        ],
-        "title": "CancellationResponse"
-      },
-      "app__interface__http__schemas__shop__ReceiptResponse": {
-        "properties": {
-          "format": {
-            "type": "string",
-            "title": "Format"
-          },
-          "print_profile": {
-            "type": "string",
-            "title": "Print Profile"
-          },
-          "paper_width_mm": {
-            "type": "integer",
-            "title": "Paper Width Mm"
-          },
-          "printable_width_mm": {
-            "type": "integer",
-            "title": "Printable Width Mm"
-          },
-          "margin_mm": {
-            "type": "integer",
-            "title": "Margin Mm"
-          },
-          "font_size_pt": {
-            "type": "integer",
-            "title": "Font Size Pt"
-          },
-          "show_logo": {
-            "type": "boolean",
-            "title": "Show Logo"
-          },
-          "copies": {
-            "type": "integer",
-            "title": "Copies"
-          },
-          "footer_message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Footer Message"
-          },
-          "header": {
-            "$ref": "#/components/schemas/ShopHeaderResponse"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "format",
-          "print_profile",
-          "paper_width_mm",
-          "printable_width_mm",
-          "margin_mm",
-          "font_size_pt",
-          "show_logo",
-          "copies",
-          "footer_message",
-          "header"
-        ],
-        "title": "ReceiptResponse"
       }
     }
   }

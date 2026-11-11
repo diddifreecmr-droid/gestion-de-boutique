@@ -37,7 +37,7 @@ export type ErrorReport = Schemas["ErrorReportResponse"];
 export type CustomerSummary = Schemas["CustomerResponse"];
 export type SaleMember = Schemas["MemberResponse"];
 /** DTO du reçu (UC-VEN-04) : aucun coût ni marge, quel que soit le rôle. */
-export type Receipt = Schemas["app__interface__http__schemas__receipts__ReceiptResponse"];
+export type Receipt = Schemas["SaleReceiptResponse"];
 export type ReceiptLine = Schemas["ReceiptLineResponse"];
 
 /** Critères de `GET /sales` (du jour par défaut ; `q` = numéro ou châssis, toutes dates). */

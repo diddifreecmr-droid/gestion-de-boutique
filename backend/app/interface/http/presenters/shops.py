@@ -21,7 +21,7 @@ from app.interface.http.schemas.shop import (
     FieldResponse,
     MenuEntryResponse,
     ProfileResponse,
-    ReceiptResponse,
+    ReceiptSettingsResponse,
     RoleResponse,
     SettingsResponse,
     ShopHeaderResponse,
@@ -75,8 +75,8 @@ def _field(spec: FieldSpec) -> FieldResponse:
     )
 
 
-def _receipt(shop: Shop, values: SettingsValues) -> ReceiptResponse:
-    return ReceiptResponse(
+def _receipt(shop: Shop, values: SettingsValues) -> ReceiptSettingsResponse:
+    return ReceiptSettingsResponse(
         format=values.receipt_format.value,
         print_profile=print_profile_of(values.receipt_format).code.value,
         paper_width_mm=values.paper_width_mm,

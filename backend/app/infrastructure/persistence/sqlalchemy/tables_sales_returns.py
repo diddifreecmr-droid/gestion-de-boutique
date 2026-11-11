@@ -71,6 +71,7 @@ sale_return = sa.Table(
     sa.Column("created_by", sa.Uuid, nullable=False),
     sa.Index("sale_return_sale_idx", "shop_id", "sale_id"),
     sa.Index("sale_return_day_idx", "shop_id", "returned_on"),
+    sa.Index("sale_return_refund_day_idx", "shop_id", "refunded_on"),
     sa.CheckConstraint("version >= 1", name="version_positive"),
     sa.CheckConstraint("amount >= 0", name="amount_non_negative"),
     sa.CheckConstraint("credit_reduction >= 0", name="credit_reduction_non_negative"),

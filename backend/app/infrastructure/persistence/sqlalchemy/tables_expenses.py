@@ -48,6 +48,7 @@ expense = sa.Table(
     sa.CheckConstraint("version >= 1", name="version_positive"),
     sa.CheckConstraint("amount > 0", name="amount_positive"),
     sa.Index("expense_shop_spent_on_idx", "shop_id", "spent_on"),
+    sa.Index("expense_shop_cancelled_idx", "shop_id", "cancelled_at"),
     sa.Index("expense_shop_received_idx", "shop_id", "received_at", "id"),
 )
 

@@ -115,7 +115,7 @@ def sale_response(view: SaleView) -> s.SaleResponse:
         stock_to_verify=sale.stock_to_verify,
         cancellation=None
         if cancel is None
-        else s.CancellationResponse(
+        else s.SaleCancellationResponse(
             cancelled_at=cancel.at, cancelled_by=str(cancel.by), reason=cancel.reason
         ),
         created_by=str(capture.created_by),

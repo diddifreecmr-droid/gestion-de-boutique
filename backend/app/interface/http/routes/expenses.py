@@ -30,7 +30,7 @@ from app.interface.http.presenters.expenses import (
 from app.interface.http.routes.expense_components import ExpensesComponents
 from app.interface.http.routes.expense_inputs import captured_at_of, input_of, patch_of
 from app.interface.http.schemas.expenses import (
-    CancelRequest,
+    ExpenseCancelRequest,
     ExpenseCreateRequest,
     ExpenseDraftResponse,
     ExpensePageResponse,
@@ -103,7 +103,9 @@ def build_expenses_router(expenses: ExpensesComponents) -> APIRouter:
         return expense_response(view)
 
     @router.post("/shops/{shop_id}/expenses/{expense_id}/cancel")
-    def cancel_expense(actor: Member, expense_id: str, body: CancelRequest) -> ExpenseResponse:
+    def cancel_expense(
+        actor: Member, expense_id: str, body: ExpenseCancelRequest
+    ) -> ExpenseResponse:
         view = expenses.cancel.execute(actor, ExpenseId.parse(expense_id), body.reason)
         return expense_response(view)
 

@@ -59,7 +59,7 @@ class CreditResponse(BaseModel):
     terms: str | None
 
 
-class CancellationResponse(BaseModel):
+class SaleCancellationResponse(BaseModel):
     cancelled_at: datetime
     cancelled_by: str
     reason: str
@@ -98,7 +98,7 @@ class SaleResponse(BaseModel):
     credit: CreditResponse | None
     note: str | None
     stock_to_verify: bool
-    cancellation: CancellationResponse | None
+    cancellation: SaleCancellationResponse | None
     created_by: str
     device_id: str
     captured_at: datetime

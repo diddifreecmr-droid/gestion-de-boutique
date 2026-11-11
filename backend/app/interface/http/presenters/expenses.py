@@ -14,8 +14,8 @@ from app.application.expenses.views import ExpenseView
 from app.domain.expenses.tag import Tag
 from app.domain.shops.expense_category import ExpenseCategory
 from app.interface.http.schemas.expenses import (
-    CancellationResponse,
     CategoryTotalResponse,
+    ExpenseCancellationResponse,
     ExpenseCategoryResponse,
     ExpenseDraftResponse,
     ExpensePageResponse,
@@ -59,7 +59,7 @@ def expense_response(view: ExpenseView) -> ExpenseResponse:
         received_at=capture.received_at,
         cancellation=None
         if cancel is None
-        else CancellationResponse(
+        else ExpenseCancellationResponse(
             cancelled_at=cancel.at, cancelled_by=str(cancel.by), reason=cancel.reason
         ),
         editable=view.editable,

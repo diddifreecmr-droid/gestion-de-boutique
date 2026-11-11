@@ -35,7 +35,7 @@ from app.interface.http.routes.expense_inputs import captured_at_of
 from app.interface.http.routes.sales_components import SalesComponents
 from app.interface.http.routes.sales_inputs import optional, sale_input_of, sale_patch_of
 from app.interface.http.schemas import sales_requests as q
-from app.interface.http.schemas.receipts import ReceiptResponse
+from app.interface.http.schemas.receipts import SaleReceiptResponse
 from app.interface.http.schemas.sales import ErrorReportResponse, SalePageResponse, SaleResponse
 
 IdQuery = Annotated[str | None, Query(max_length=64)]
@@ -139,7 +139,7 @@ def build_sales_router(sales: SalesComponents) -> APIRouter:
         return report_response(sales.answer.execute(actor, command))
 
     @router.get("/shops/{shop_id}/sales/{sale_id}/receipt")
-    def get_receipt(actor: Member, sale_id: str) -> ReceiptResponse:
+    def get_receipt(actor: Member, sale_id: str) -> SaleReceiptResponse:
         return receipt_response(sales.receipt.execute(actor, SaleId.parse(sale_id)))
 
     return router

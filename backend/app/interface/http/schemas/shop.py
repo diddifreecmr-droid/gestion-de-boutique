@@ -45,7 +45,7 @@ class ShopHeaderResponse(_Strict):
     rccm: str | None
 
 
-class ReceiptResponse(_Strict):
+class ReceiptSettingsResponse(_Strict):
     format: str
     print_profile: str
     paper_width_mm: int
@@ -71,7 +71,7 @@ class ProfileResponse(_Strict):
     article_fields: list[FieldResponse]
     sale_fields: list[FieldResponse]
     stock_units: list[str]
-    receipt: ReceiptResponse
+    receipt: ReceiptSettingsResponse
     min_price_enabled: bool
     default_location_id: str | None
 

@@ -53,7 +53,7 @@ class ReceiptMention(BaseModel):
     label: str
 
 
-class ReceiptResponse(BaseModel):
+class SaleReceiptResponse(BaseModel):
     title: str
     header: ReceiptHeader
     sale_id: str

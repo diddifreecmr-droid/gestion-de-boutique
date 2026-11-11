@@ -73,6 +73,7 @@ installment = sa.Table(
     sa.UniqueConstraint("shop_id", "number", name="installment_number"),
     sa.Index("installment_receivable_idx", "shop_id", "receivable_id"),
     sa.Index("installment_shop_paid_on_idx", "shop_id", "paid_on"),
+    sa.Index("installment_shop_cancelled_idx", "shop_id", "cancelled_at"),
     sa.CheckConstraint("amount > 0", name="amount_positive"),
 )
 

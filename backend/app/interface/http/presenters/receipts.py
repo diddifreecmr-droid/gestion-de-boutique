@@ -12,10 +12,10 @@ from app.interface.http.schemas import customers as c
 from app.interface.http.schemas import receipts as r
 
 
-def receipt_response(receipt: Receipt) -> r.ReceiptResponse:
+def receipt_response(receipt: Receipt) -> r.SaleReceiptResponse:
     sale, shop, settings = receipt.sale, receipt.shop.identity, receipt.settings
     customer = receipt.customer
-    return r.ReceiptResponse(
+    return r.SaleReceiptResponse(
         title=receipt.title,
         header=r.ReceiptHeader(
             shop_name=shop.name,

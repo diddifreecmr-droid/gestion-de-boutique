@@ -19,6 +19,14 @@ def test_document_lists_auth_journal_alert_and_shop_routes() -> None:
     assert {"LoginRequest", "TokenResponse", "MeResponse"} <= set(schema["components"]["schemas"])
 
 
+def test_schema_names_are_unique_across_modules() -> None:
+    """Deux classes Pydantic de même nom sont renommées en silence par FastAPI
+    (`app__interface__…__X`), ce qui casse les types générés du frontend : on échoue ici."""
+    names = json.loads(build_openapi_document())["components"]["schemas"]
+    prefixed = sorted(name for name in names if "__" in name)
+    assert not prefixed, f"Noms de schémas en double, à renommer : {prefixed}"
+
+
 def test_document_is_stable() -> None:
     assert build_openapi_document() == build_openapi_document()
 

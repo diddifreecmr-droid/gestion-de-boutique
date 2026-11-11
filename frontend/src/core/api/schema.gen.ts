@@ -1334,6 +1334,57 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/shops/{shop_id}/dashboard": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Dashboard */
+    get: operations["dashboard_api_v1_shops__shop_id__dashboard_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/dashboard/details/{metric}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Dashboard Detail */
+    get: operations["dashboard_detail_api_v1_shops__shop_id__dashboard_details__metric__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/home": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Home */
+    get: operations["home_api_v1_shops__shop_id__home_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1342,6 +1393,15 @@ export interface components {
     AbandonRequest: {
       /** Version */
       version: number;
+    };
+    /** AccountantHomeOut */
+    AccountantHomeOut: {
+      transfers_to_receive: components["schemas"]["NotAvailable"];
+      /** Low Stock */
+      low_stock: number;
+      stock_value: components["schemas"]["Valuation"];
+      /** Expenses */
+      expenses: number;
     };
     /** AdjustmentRequest */
     AdjustmentRequest: {
@@ -1461,6 +1521,13 @@ export interface components {
        * Format: date-time
        */
       created_at: string;
+    };
+    /** AlertsBlock */
+    AlertsBlock: {
+      /** Error Reports */
+      error_reports: number;
+      /** Price Requests */
+      price_requests: number;
     };
     /** ArticleCreateRequest */
     ArticleCreateRequest: {
@@ -1656,6 +1723,15 @@ export interface components {
       /** New Pin Confirmation */
       new_pin_confirmation: string;
     };
+    /** Compared */
+    Compared: {
+      /** Value */
+      value: number;
+      /** Previous */
+      previous: number;
+      /** Change Pct */
+      change_pct: string | null;
+    };
     /** CountEntry */
     CountEntry: {
       /** Article Id */
@@ -1815,6 +1891,53 @@ export interface components {
       /** Items */
       items: components["schemas"]["DamagedLine"][];
     };
+    /** DashboardDetailResponse */
+    DashboardDetailResponse: {
+      /** Metric */
+      metric: string;
+      period: components["schemas"]["PeriodOut"];
+      /** Total */
+      total: number;
+      /** Lines */
+      lines: components["schemas"]["DetailLineOut"][];
+    };
+    /** DashboardResponse */
+    DashboardResponse: {
+      period: components["schemas"]["PeriodOut"];
+      previous_period: components["schemas"]["PeriodOut"];
+      summary: components["schemas"]["Summary"];
+      series: components["schemas"]["Series"] | null;
+      receivables: components["schemas"]["ReceivablesBlock"];
+      stock: components["schemas"]["StockBlock"];
+      trucks: components["schemas"]["TrucksBlock"];
+      alerts: components["schemas"]["AlertsBlock"];
+    };
+    /** DetailLineOut */
+    DetailLineOut: {
+      /** Kind */
+      kind: string;
+      /** Id */
+      id: string;
+      /** Label */
+      label: string;
+      /** Day */
+      day?: string | null;
+      /** Amount */
+      amount?: number | null;
+      /** Count */
+      count?: number | null;
+      /** Margin */
+      margin?: number | null;
+      /** Quantity */
+      quantity?: string | null;
+      /** Threshold */
+      threshold?: string | null;
+    };
+    /**
+     * DetailMetric
+     * @enum {string}
+     */
+    DetailMetric: "sales" | "payments" | "expenses" | "receivables" | "low_stock";
     /**
      * DetailRequest
      * @description Détail d'une unité vendue (CDC § 17.3) : tous facultatifs.
@@ -1839,6 +1962,11 @@ export interface components {
       engine_number: string | null;
       /** Size */
       size: string | null;
+    };
+    /** DriverHomeOut */
+    DriverHomeOut: {
+      current_trip: components["schemas"]["NotAvailable"];
+      trip_expenses: components["schemas"]["NotAvailable"];
     };
     /**
      * Entitlement
@@ -1910,6 +2038,23 @@ export interface components {
       sale: components["schemas"]["SaleCreateRequest"];
       /** Mode Id */
       mode_id: string;
+    };
+    /** ExpenseCancelRequest */
+    ExpenseCancelRequest: {
+      /** Reason */
+      reason: string;
+    };
+    /** ExpenseCancellationResponse */
+    ExpenseCancellationResponse: {
+      /**
+       * Cancelled At
+       * Format: date-time
+       */
+      cancelled_at: string;
+      /** Cancelled By */
+      cancelled_by: string;
+      /** Reason */
+      reason: string;
     };
     /** ExpenseCategoryCreateRequest */
     ExpenseCategoryCreateRequest: {
@@ -2074,9 +2219,7 @@ export interface components {
        * Format: date-time
        */
       received_at: string;
-      cancellation:
-        | components["schemas"]["app__interface__http__schemas__expenses__CancellationResponse"]
-        | null;
+      cancellation: components["schemas"]["ExpenseCancellationResponse"] | null;
       /** Editable */
       editable: boolean;
       /**
@@ -2182,6 +2325,23 @@ export interface components {
        * @constant
        */
       status: "ok";
+    };
+    /**
+     * HomeResponse
+     * @description Un seul bloc rempli, celui du rôle ; les autres sont absents de la réponse.
+     */
+    HomeResponse: {
+      /** Role */
+      role: string;
+      /**
+       * Today
+       * Format: date
+       */
+      today: string;
+      owner?: components["schemas"]["DashboardResponse"] | null;
+      seller?: components["schemas"]["SellerHomeOut"] | null;
+      accountant?: components["schemas"]["AccountantHomeOut"] | null;
+      driver?: components["schemas"]["DriverHomeOut"] | null;
     };
     /**
      * IdDocumentType
@@ -2671,6 +2831,18 @@ export interface components {
       /** Unit Cost */
       unit_cost?: number | null;
     };
+    /** NotAvailable */
+    NotAvailable: {
+      /**
+       * Available
+       * @constant
+       */
+      available: false;
+      /** Lot */
+      lot: number;
+      /** Message */
+      message: string;
+    };
     /** OpenShopRequest */
     OpenShopRequest: {
       /**
@@ -2801,6 +2973,28 @@ export interface components {
       /** Device Id */
       device_id: string | null;
     };
+    /**
+     * PeriodKind
+     * @enum {string}
+     */
+    PeriodKind: "today" | "yesterday" | "week" | "month" | "last_month" | "custom";
+    /** PeriodOut */
+    PeriodOut: {
+      /** Kind */
+      kind: string;
+      /**
+       * First Day
+       * Format: date
+       */
+      first_day: string;
+      /**
+       * Last Day
+       * Format: date
+       */
+      last_day: string;
+      /** Days */
+      days: number;
+    };
     /** PriceDecisionRequest */
     PriceDecisionRequest: {
       /**
@@ -2916,11 +3110,28 @@ export interface components {
       sale_fields: components["schemas"]["FieldResponse"][];
       /** Stock Units */
       stock_units: string[];
-      receipt: components["schemas"]["app__interface__http__schemas__shop__ReceiptResponse"];
+      receipt: components["schemas"]["ReceiptSettingsResponse"];
       /** Min Price Enabled */
       min_price_enabled: boolean;
       /** Default Location Id */
       default_location_id: string | null;
+    };
+    /** PurchaseCancelRequest */
+    PurchaseCancelRequest: {
+      /** Reason */
+      reason: string;
+    };
+    /** PurchaseCancellationResponse */
+    PurchaseCancellationResponse: {
+      /**
+       * Cancelled At
+       * Format: date-time
+       */
+      cancelled_at: string;
+      /** Cancelled By */
+      cancelled_by: string;
+      /** Reason */
+      reason: string;
     };
     /** PurchaseCreateRequest */
     PurchaseCreateRequest: {
@@ -3035,9 +3246,7 @@ export interface components {
       payments: components["schemas"]["PaymentResponse"][];
       /** Status */
       status: string;
-      cancellation:
-        | components["schemas"]["app__interface__http__schemas__purchasing__CancellationResponse"]
-        | null;
+      cancellation: components["schemas"]["PurchaseCancellationResponse"] | null;
       /** Created By */
       created_by: string;
       /** Device Id */
@@ -3164,6 +3373,28 @@ export interface components {
       /** Copies */
       copies: number;
     };
+    /** ReceiptSettingsResponse */
+    ReceiptSettingsResponse: {
+      /** Format */
+      format: string;
+      /** Print Profile */
+      print_profile: string;
+      /** Paper Width Mm */
+      paper_width_mm: number;
+      /** Printable Width Mm */
+      printable_width_mm: number;
+      /** Margin Mm */
+      margin_mm: number;
+      /** Font Size Pt */
+      font_size_pt: number;
+      /** Show Logo */
+      show_logo: boolean;
+      /** Copies */
+      copies: number;
+      /** Footer Message */
+      footer_message: string | null;
+      header: components["schemas"]["ShopHeaderResponse"];
+    };
     /** ReceivableListResponse */
     ReceivableListResponse: {
       summary: components["schemas"]["ReceivableSummaryResponse"];
@@ -3264,6 +3495,16 @@ export interface components {
       debtor_count: number;
       /** Received Today */
       received_today: number;
+    };
+    /** ReceivablesBlock */
+    ReceivablesBlock: {
+      /** Total Due */
+      total_due: number;
+      /** Debtor Count */
+      debtor_count: number;
+      received: components["schemas"]["Compared"];
+      /** Reminders Due */
+      reminders_due: number;
     };
     /** RefundRequest */
     RefundRequest: {
@@ -3382,6 +3623,18 @@ export interface components {
       code: string;
       /** Label */
       label: string;
+    };
+    /** SaleCancellationResponse */
+    SaleCancellationResponse: {
+      /**
+       * Cancelled At
+       * Format: date-time
+       */
+      cancelled_at: string;
+      /** Cancelled By */
+      cancelled_by: string;
+      /** Reason */
+      reason: string;
     };
     /** SaleCreateRequest */
     SaleCreateRequest: {
@@ -3524,6 +3777,48 @@ export interface components {
       /** Nature */
       nature: string;
     };
+    /** SaleReceiptResponse */
+    SaleReceiptResponse: {
+      /** Title */
+      title: string;
+      header: components["schemas"]["ReceiptHeader"];
+      /** Sale Id */
+      sale_id: string;
+      /** Number */
+      number: string;
+      /** Provisional Number */
+      provisional_number: string | null;
+      /**
+       * Sold At
+       * Format: date-time
+       */
+      sold_at: string;
+      /** Seller Name */
+      seller_name: string;
+      customer: components["schemas"]["ReceiptCustomer"] | null;
+      /** Lines */
+      lines: components["schemas"]["ReceiptLineResponse"][];
+      /** Total */
+      total: number;
+      /** Paid */
+      paid: number;
+      /** Payments */
+      payments: components["schemas"]["ReceiptPaymentResponse"][];
+      /** Remaining */
+      remaining: number;
+      /** Mentions */
+      mentions: components["schemas"]["ReceiptMention"][];
+      /** Footer Message */
+      footer_message: string | null;
+      printing: components["schemas"]["ReceiptPrintSettings"];
+      /** Print Sequence */
+      print_sequence: number;
+      /**
+       * Printed At
+       * Format: date-time
+       */
+      printed_at: string;
+    };
     /** SaleResponse */
     SaleResponse: {
       /** Id */
@@ -3568,8 +3863,7 @@ export interface components {
       note: string | null;
       /** Stock To Verify */
       stock_to_verify: boolean;
-      cancellation:
-        components["schemas"]["app__interface__http__schemas__sales__CancellationResponse"] | null;
+      cancellation: components["schemas"]["SaleCancellationResponse"] | null;
       /** Created By */
       created_by: string;
       /** Device Id */
@@ -3661,11 +3955,47 @@ export interface components {
       /** Paid */
       paid: number;
     };
+    /** SellerHomeOut */
+    SellerHomeOut: {
+      /** Sales Count */
+      sales_count: number;
+      /** Sales Amount */
+      sales_amount: number;
+      /** Reminders Due */
+      reminders_due: number;
+      /** Pending Uploads */
+      pending_uploads: number;
+    };
     /**
      * SeniorityBand
      * @enum {string}
      */
     SeniorityBand: "under_30" | "31_60" | "61_90" | "over_90";
+    /** Series */
+    Series: {
+      /** Points */
+      points: components["schemas"]["SeriesPoint"][];
+      /** Total Sales */
+      total_sales: number;
+      /** Total Margin */
+      total_margin: number;
+      /** Average Sales */
+      average_sales: number;
+      /** Average Margin */
+      average_margin: number;
+    };
+    /** SeriesPoint */
+    SeriesPoint: {
+      /**
+       * Day
+       * Format: date
+       */
+      day: string;
+      /** Sales */
+      sales: number;
+      /** Margin */
+      margin: number;
+    };
     /** SettingsPatch */
     SettingsPatch: {
       /** Version */
@@ -3827,6 +4157,16 @@ export interface components {
       /** Lines */
       lines: components["schemas"]["StatementLineResponse"][];
     };
+    /** StockBlock */
+    StockBlock: {
+      value: components["schemas"]["Valuation"];
+      damaged: components["schemas"]["Valuation"];
+      /** Low Stock */
+      low_stock: number;
+      /** To Verify */
+      to_verify: number;
+      in_transit: components["schemas"]["NotAvailable"];
+    };
     /** StockCell */
     StockCell: {
       /** Location Id */
@@ -3896,6 +4236,22 @@ export interface components {
       sellable: components["schemas"]["Valuation"];
       damaged: components["schemas"]["Valuation"];
       incoming: components["schemas"]["Valuation"];
+    };
+    /** Summary */
+    Summary: {
+      sales: components["schemas"]["Compared"];
+      sales_count: components["schemas"]["Compared"];
+      collected: components["schemas"]["Compared"];
+      margin: components["schemas"]["Compared"];
+      margin_wac: components["schemas"]["Compared"];
+      /** Margin Gap */
+      margin_gap: number;
+      /** Margin Rate Pct */
+      margin_rate_pct: string | null;
+      /** Without Cost */
+      without_cost: number;
+      expenses: components["schemas"]["Compared"];
+      result: components["schemas"]["Compared"];
     };
     /** SupplierListResponse */
     SupplierListResponse: {
@@ -4025,6 +4381,11 @@ export interface components {
       /** By Category */
       by_category: components["schemas"]["CategoryTotalResponse"][];
     };
+    /** TrucksBlock */
+    TrucksBlock: {
+      trucks: components["schemas"]["NotAvailable"];
+      transport_expenses: components["schemas"]["NotAvailable"];
+    };
     /** UnreadCountResponse */
     UnreadCountResponse: {
       /** Unread Count */
@@ -4089,116 +4450,6 @@ export interface components {
       reason: string;
       /** By */
       by: string;
-    };
-    /** CancelRequest */
-    app__interface__http__schemas__expenses__CancelRequest: {
-      /** Reason */
-      reason: string;
-    };
-    /** CancellationResponse */
-    app__interface__http__schemas__expenses__CancellationResponse: {
-      /**
-       * Cancelled At
-       * Format: date-time
-       */
-      cancelled_at: string;
-      /** Cancelled By */
-      cancelled_by: string;
-      /** Reason */
-      reason: string;
-    };
-    /** CancelRequest */
-    app__interface__http__schemas__purchasing__CancelRequest: {
-      /** Reason */
-      reason: string;
-    };
-    /** CancellationResponse */
-    app__interface__http__schemas__purchasing__CancellationResponse: {
-      /**
-       * Cancelled At
-       * Format: date-time
-       */
-      cancelled_at: string;
-      /** Cancelled By */
-      cancelled_by: string;
-      /** Reason */
-      reason: string;
-    };
-    /** ReceiptResponse */
-    app__interface__http__schemas__receipts__ReceiptResponse: {
-      /** Title */
-      title: string;
-      header: components["schemas"]["ReceiptHeader"];
-      /** Sale Id */
-      sale_id: string;
-      /** Number */
-      number: string;
-      /** Provisional Number */
-      provisional_number: string | null;
-      /**
-       * Sold At
-       * Format: date-time
-       */
-      sold_at: string;
-      /** Seller Name */
-      seller_name: string;
-      customer: components["schemas"]["ReceiptCustomer"] | null;
-      /** Lines */
-      lines: components["schemas"]["ReceiptLineResponse"][];
-      /** Total */
-      total: number;
-      /** Paid */
-      paid: number;
-      /** Payments */
-      payments: components["schemas"]["ReceiptPaymentResponse"][];
-      /** Remaining */
-      remaining: number;
-      /** Mentions */
-      mentions: components["schemas"]["ReceiptMention"][];
-      /** Footer Message */
-      footer_message: string | null;
-      printing: components["schemas"]["ReceiptPrintSettings"];
-      /** Print Sequence */
-      print_sequence: number;
-      /**
-       * Printed At
-       * Format: date-time
-       */
-      printed_at: string;
-    };
-    /** CancellationResponse */
-    app__interface__http__schemas__sales__CancellationResponse: {
-      /**
-       * Cancelled At
-       * Format: date-time
-       */
-      cancelled_at: string;
-      /** Cancelled By */
-      cancelled_by: string;
-      /** Reason */
-      reason: string;
-    };
-    /** ReceiptResponse */
-    app__interface__http__schemas__shop__ReceiptResponse: {
-      /** Format */
-      format: string;
-      /** Print Profile */
-      print_profile: string;
-      /** Paper Width Mm */
-      paper_width_mm: number;
-      /** Printable Width Mm */
-      printable_width_mm: number;
-      /** Margin Mm */
-      margin_mm: number;
-      /** Font Size Pt */
-      font_size_pt: number;
-      /** Show Logo */
-      show_logo: boolean;
-      /** Copies */
-      copies: number;
-      /** Footer Message */
-      footer_message: string | null;
-      header: components["schemas"]["ShopHeaderResponse"];
     };
   };
   responses: never;
@@ -5801,7 +6052,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["app__interface__http__schemas__expenses__CancelRequest"];
+        "application/json": components["schemas"]["ExpenseCancelRequest"];
       };
     };
     responses: {
@@ -6736,7 +6987,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["app__interface__http__schemas__purchasing__CancelRequest"];
+        "application/json": components["schemas"]["PurchaseCancelRequest"];
       };
     };
     responses: {
@@ -7094,7 +7345,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["app__interface__http__schemas__receipts__ReceiptResponse"];
+          "application/json": components["schemas"]["SaleReceiptResponse"];
         };
       };
       /** @description Validation Error */
@@ -7960,6 +8211,117 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["StatementResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  dashboard_api_v1_shops__shop_id__dashboard_get: {
+    parameters: {
+      query?: {
+        period?: components["schemas"]["PeriodKind"];
+        from?: string | null;
+        to?: string | null;
+      };
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DashboardResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  dashboard_detail_api_v1_shops__shop_id__dashboard_details__metric__get: {
+    parameters: {
+      query?: {
+        period?: components["schemas"]["PeriodKind"];
+        from?: string | null;
+        to?: string | null;
+      };
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        metric: components["schemas"]["DetailMetric"];
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DashboardDetailResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  home_api_v1_shops__shop_id__home_get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HomeResponse"];
         };
       };
       /** @description Validation Error */
