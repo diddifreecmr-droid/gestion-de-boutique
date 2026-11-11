@@ -60,6 +60,9 @@ export default defineConfig({
       },
       injectManifest: {
         globPatterns: ["**/*.{js,css,html,svg,png,webmanifest}"],
+        // File hors connexion (Dexie, T23) : hors précache. Elle n'est téléchargée que si le
+        // droit `offline_capture` est actif, puis gardée par le cache d'exécution (cache d'abord).
+        globIgnores: ["**/assets/engine-*.js"],
       },
       devOptions: { enabled: false },
     }),

@@ -4,12 +4,14 @@ Pour **tout membre** (droit `HOME_READ`, chacun son accueil) : type et version d
 modules actifs, rôles proposés et leurs libellés (« Vendeur » ou « Employé »), menu **du rôle
 de l'acteur** (≤ 5 entrées, sans les entrées d'un module désactivé), champs d'article et de
 vente, unités, en-tête et réglages d'impression du reçu (le vendeur imprime ses reçus), prix
-minimum activé, lieu habituel de l'acteur. L'administrateur sous délégation le consulte en
-lecture, sans menu (il n'a pas de rôle).
+minimum activé, lieu habituel de l'acteur, droits d'offre ouverts (`offline_capture`, T23 :
+le frontend n'active la file hors connexion que s'il est vrai, TR-26). L'administrateur
+sous délégation le consulte en lecture, sans menu (il n'a pas de rôle).
 """
 
 from dataclasses import dataclass
 
+from app.application.plans.ports import Entitlements
 from app.application.ports.uow import UnitOfWorkFactory
 from app.application.security.actor import Actor
 from app.application.security.permissions import Permission
@@ -20,6 +22,7 @@ from app.application.shops.ports import (
     ShopRepository,
     ShopSettingsRepository,
 )
+from app.domain.plans.entitlements import Entitlement
 from app.domain.profiles.menus import MenuEntry
 from app.domain.profiles.modules import Module
 from app.domain.profiles.profile import ShopProfile
@@ -38,6 +41,8 @@ class ShopProfileView:
     role: Role | None
     menu: tuple[MenuEntry, ...]
     default_location_id: LocationId | None
+    entitlements: frozenset[Entitlement] = frozenset()
+    """Droits d'offre ouverts pour la boutique (TR-26) ; vide en V1 (offre gratuite)."""
 
 
 def visible_menu(
@@ -54,9 +59,12 @@ def visible_menu(
 
 
 class GetShopProfile:
-    def __init__(self, uow_factory: UnitOfWorkFactory, policy: Policy) -> None:
+    def __init__(
+        self, uow_factory: UnitOfWorkFactory, policy: Policy, entitlements: Entitlements
+    ) -> None:
         self._uow_factory = uow_factory
         self._policy = policy
+        self._entitlements = entitlements
 
     def execute(self, actor: Actor) -> ShopProfileView:
         self._policy.require(actor, Permission.HOME_READ)
@@ -78,4 +86,7 @@ class GetShopProfile:
             role=role,
             menu=menu,
             default_location_id=None if membership is None else membership.default_location_id,
+            entitlements=frozenset(
+                e for e in Entitlement if self._entitlements.is_enabled(shop.id, e)
+            ),
         )

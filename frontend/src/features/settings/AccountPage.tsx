@@ -3,9 +3,10 @@ import { KeyRound, LogOut, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router";
 import { reloadLatestVersion } from "../../core/pwa/reload";
 import { APP_VERSION } from "../../core/pwa/version";
-import { useSession, useSignedIn } from "../../core/services/servicesContext";
+import { useServices, useSession, useSignedIn } from "../../core/services/servicesContext";
 import { Button, ConfirmDialog, ListCard, ListCardRow, useToast } from "../../shared/ui";
 import { CHANGE_PIN_PATH } from "../auth/ChangePinPage";
+import { DiscardQueueDialogs } from "./DiscardQueueDialogs";
 
 export interface AccountPageProps {
   title: string;
@@ -15,12 +16,15 @@ export interface AccountPageProps {
 
 /**
  * PROVISOIRE (T12) — « Mon compte » / Réglages : version de l'application, « Recharger la
- * dernière version », changement de code, déconnexion. Les réglages de la boutique (UC-SOC-06)
+ * dernière version », changement de code, déconnexion — bloquée tant que des saisies hors
+ * connexion attendent, sauf double confirmation (RG-T24, T23 ; jamais en V1). Les réglages de la boutique (UC-SOC-06)
  * arrivent avec T22.
  */
 export function AccountPage({ title, reload = reloadLatestVersion }: AccountPageProps) {
   const me = useSignedIn();
   const session = useSession();
+  const { offline } = useServices();
+  const [waiting, setWaiting] = useState(0);
   const toast = useToast();
   const navigate = useNavigate();
   const [confirming, setConfirming] = useState(false);
@@ -67,7 +71,15 @@ export function AccountPage({ title, reload = reloadLatestVersion }: AccountPage
         fullWidth
         icon={LogOut}
         onClick={() => {
-          setConfirming(true);
+          // V1 (aucun droit hors connexion) : confirmation simple, sans rien lire.
+          if (offline.rights.enabledShops().length === 0) {
+            setConfirming(true);
+            return;
+          }
+          offline.waiting().then((count) => {
+            if (count === 0) setConfirming(true);
+            else setWaiting(count);
+          }, fail("Lecture des saisies en attente impossible"));
         }}
       >
         Se déconnecter
@@ -87,6 +99,19 @@ export function AccountPage({ title, reload = reloadLatestVersion }: AccountPage
       >
         Il faudra votre numéro et votre code pour revenir sur cet appareil.
       </ConfirmDialog>
+      <DiscardQueueDialogs
+        count={waiting}
+        onCancel={() => {
+          setWaiting(0);
+        }}
+        onDiscard={() => {
+          setWaiting(0);
+          offline
+            .discard()
+            .then(() => session.logout())
+            .catch(fail("Déconnexion impossible"));
+        }}
+      />
     </div>
   );
 }

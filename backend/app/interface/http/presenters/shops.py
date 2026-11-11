@@ -7,6 +7,7 @@ seul ; lieux : propriétaire et comptable, celui-ci en lecture → `read_only`).
 from app.application.shops.ports import ShopSummary
 from app.application.shops.use_cases.get_shop_profile import ShopProfileView
 from app.application.shops.use_cases.member_views import MemberView
+from app.domain.plans.entitlements import Entitlement
 from app.domain.profiles.fields import FieldSpec
 from app.domain.profiles.menus import MenuEntry
 from app.domain.profiles.printing import print_profile_of
@@ -110,6 +111,7 @@ def profile_response(view: ShopProfileView) -> ProfileResponse:
         min_price_enabled=view.settings.min_price_enabled,
         min_price_requires_approval=view.settings.min_price_requires_approval,
         default_location_id=None if location is None else str(location),
+        entitlements={e.value: e in view.entitlements for e in Entitlement},
     )
 
 

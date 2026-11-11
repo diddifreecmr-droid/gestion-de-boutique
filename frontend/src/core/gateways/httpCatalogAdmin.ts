@@ -8,13 +8,18 @@ import type { CatalogAdminGateway } from "./catalogAdminContract";
 const ARTICLES = "/api/v1/shops/{shop_id}/articles";
 const ARTICLE = "/api/v1/shops/{shop_id}/articles/{article_id}";
 
-export function createHttpCatalogAdmin({ api, session }: AppServices): CatalogAdminGateway {
+export function createHttpCatalogAdmin({
+  api,
+  session,
+  offline,
+}: AppServices): CatalogAdminGateway {
   const ids = (shopId: string, articleId: string) => ({ shop_id: shopId, article_id: articleId });
   return {
     articleForm: async (shopId) => {
       const profile = await session.authorized((token) =>
         api.get("/api/v1/shops/{shop_id}/profile", { token, params: { shop_id: shopId } }),
       );
+      offline.rights.note(shopId, profile.entitlements); // droit hors connexion (T23, TR-26)
       return { fields: profile.article_fields, minPriceEnabled: profile.min_price_enabled };
     },
     listArticles: (shopId, { text, status, cursor, limit }) => {

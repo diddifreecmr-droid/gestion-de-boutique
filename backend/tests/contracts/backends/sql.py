@@ -46,6 +46,7 @@ from app.infrastructure.persistence.sqlalchemy.sales_returns import (
 )
 from app.infrastructure.persistence.sqlalchemy.shops_members import SQL_SHOP_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.stock_documents import SQL_STOCK_REPOSITORIES
+from app.infrastructure.persistence.sqlalchemy.sync import SQL_SYNC_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.tables import NAMING_CONVENTION, metadata
 from app.infrastructure.persistence.sqlalchemy.uow import SqlRepositoryRegistry, SqlUnitOfWork
 from tests.contracts.widget import Widget, WidgetId, WidgetRepository
@@ -96,6 +97,7 @@ SQL_REGISTRY: SqlRepositoryRegistry = (
     *SQL_SALES_REPOSITORIES,
     *SQL_SALES_RETURNS_REPOSITORIES,
     *SQL_REPORTING_ADAPTERS,
+    *SQL_SYNC_REPOSITORIES,
 )
 
 

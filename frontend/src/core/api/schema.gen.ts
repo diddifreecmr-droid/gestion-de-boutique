@@ -1385,6 +1385,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/shops/{shop_id}/sync": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Synchronize */
+    post: operations["synchronize_api_v1_shops__shop_id__sync_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/offline-snapshot": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Offline Snapshot */
+    get: operations["offline_snapshot_api_v1_shops__shop_id__offline_snapshot_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2843,6 +2877,30 @@ export interface components {
       /** Message */
       message: string;
     };
+    /** OfflineSnapshotResponse */
+    OfflineSnapshotResponse: {
+      /**
+       * Generated At
+       * Format: date-time
+       */
+      generated_at: string;
+      /** Since */
+      since: string | null;
+      /** Full */
+      full: boolean;
+      /** Min Price Enabled */
+      min_price_enabled: boolean;
+      /** Articles */
+      articles: components["schemas"]["SnapshotArticleResponse"][];
+      /** Customers */
+      customers: components["schemas"]["CustomerResponse"][];
+      /** Expense Categories */
+      expense_categories: components["schemas"]["ExpenseCategoryResponse"][];
+      /** Locations */
+      locations: components["schemas"]["LocationResponse"][];
+      /** Payment Modes */
+      payment_modes: components["schemas"]["PaymentModeResponse"][];
+    };
     /** OpenShopRequest */
     OpenShopRequest: {
       /**
@@ -3117,6 +3175,10 @@ export interface components {
       min_price_requires_approval: boolean;
       /** Default Location Id */
       default_location_id: string | null;
+      /** Entitlements */
+      entitlements: {
+        [key: string]: boolean;
+      };
     };
     /** PurchaseCancelRequest */
     PurchaseCancelRequest: {
@@ -4135,6 +4197,27 @@ export interface components {
        */
       created_at: string;
     };
+    /** SnapshotArticleResponse */
+    SnapshotArticleResponse: {
+      /** Id */
+      id: string;
+      /** Display Name */
+      display_name: string;
+      /** Reference */
+      reference: string | null;
+      /** Stock Unit */
+      stock_unit: string;
+      /** Sold By Piece */
+      sold_by_piece: boolean;
+      /** Base Price */
+      base_price: number | null;
+      /** Base Price Piece */
+      base_price_piece: number | null;
+      /** Min Price */
+      min_price: number | null;
+      /** Min Price Piece */
+      min_price_piece: number | null;
+    };
     /** StatementLineResponse */
     StatementLineResponse: {
       /** Kind */
@@ -4331,6 +4414,66 @@ export interface components {
       totals: components["schemas"]["PurchaseTotalsResponse"];
       /** Purchases */
       purchases: components["schemas"]["PurchaseResponse"][];
+    };
+    /** SyncNoticeResponse */
+    SyncNoticeResponse: {
+      /** Code */
+      code: string;
+      /** Message */
+      message: string;
+      /** Details */
+      details: {
+        [key: string]: unknown;
+      };
+    };
+    /** SyncOperationRequest */
+    SyncOperationRequest: {
+      /** Op Id */
+      op_id: string;
+      /** Type */
+      type: string;
+      /** Provisional Number */
+      provisional_number?: string | null;
+      /**
+       * Captured At
+       * Format: date-time
+       */
+      captured_at: string;
+      /** Payload */
+      payload?: {
+        [key: string]: unknown;
+      };
+    };
+    /** SyncRequest */
+    SyncRequest: {
+      /** Device Id */
+      device_id: string;
+      /** Operations */
+      operations: components["schemas"]["SyncOperationRequest"][];
+    };
+    /** SyncResponse */
+    SyncResponse: {
+      /** Results */
+      results: components["schemas"]["SyncResultResponse"][];
+    };
+    /** SyncResultResponse */
+    SyncResultResponse: {
+      /** Op Id */
+      op_id: string;
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: "accepted" | "duplicate" | "rejected";
+      /** Provisional Number */
+      provisional_number: string | null;
+      /** Number */
+      number: string | null;
+      /** Entity Id */
+      entity_id: string | null;
+      /** Warnings */
+      warnings: components["schemas"]["SyncNoticeResponse"][];
+      error: components["schemas"]["SyncNoticeResponse"] | null;
     };
     /** TagMergeRequest */
     TagMergeRequest: {
@@ -8328,6 +8471,80 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["HomeResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  synchronize_api_v1_shops__shop_id__sync_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SyncRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SyncResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  offline_snapshot_api_v1_shops__shop_id__offline_snapshot_get: {
+    parameters: {
+      query?: {
+        since?: string | null;
+      };
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["OfflineSnapshotResponse"];
         };
       };
       /** @description Validation Error */

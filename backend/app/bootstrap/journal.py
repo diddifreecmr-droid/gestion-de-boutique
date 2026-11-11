@@ -26,6 +26,11 @@ from app.interface.http.routes.journal import JournalComponents
 from app.interface.http.security import AuthGuard
 
 
+def shop_entitlements(core: Core) -> Entitlements:
+    """Droits d'offre d'une boutique : offre du compte + surcharges de l'administrateur."""
+    return PlanEntitlements(AccountShopPlans(core.catalog), core.overrides)
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class JournalModule:
     uow_factory: UnitOfWorkFactory
@@ -53,7 +58,7 @@ def build_journal(
     return JournalModule(
         uow_factory=uow_factory,
         alerts=core.alerts,
-        entitlements=PlanEntitlements(AccountShopPlans(core.catalog), core.overrides),
+        entitlements=shop_entitlements(core),
         overrides=core.overrides,
         http=http,
     )

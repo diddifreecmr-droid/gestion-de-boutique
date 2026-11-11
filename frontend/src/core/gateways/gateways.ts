@@ -7,6 +7,7 @@ import { createContext, useContext } from "react";
 import type { AppServices } from "../services/createServices";
 import type { CatalogGateway } from "./catalogContract";
 import { createHttpCatalog } from "./httpCatalog";
+import { offlineDeps, withOfflineSales } from "../offline/offlineGateways";
 import { createHttpSales } from "./httpSales";
 import type { SalesGateway } from "./salesContract";
 
@@ -21,7 +22,8 @@ export interface Gateways {
 export function httpGateways(services: AppServices): Gateways {
   return {
     catalog: createHttpCatalog(services),
-    sales: createHttpSales(services),
+    // Vente : API, ou file hors connexion si `offline_capture` est actif (T23, RG-T22).
+    sales: withOfflineSales(createHttpSales(services), offlineDeps(services)),
     simulated: false,
   };
 }

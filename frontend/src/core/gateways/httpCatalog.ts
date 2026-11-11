@@ -57,7 +57,7 @@ export function toCatalogArticle(
   };
 }
 
-export function createHttpCatalog({ api, session }: AppServices): CatalogGateway {
+export function createHttpCatalog({ api, session, offline }: AppServices): CatalogGateway {
   const shop = (shopId: string) => ({ shop_id: shopId });
   const units = new Map<string, string>();
   const profileOf = async (shopId: string) => {
@@ -65,6 +65,7 @@ export function createHttpCatalog({ api, session }: AppServices): CatalogGateway
       api.get(`${SHOP}/profile`, { token, params: shop(shopId) }),
     );
     units.set(shopId, unitWord(profile.profile_code));
+    offline.rights.note(shopId, profile.entitlements); // droit hors connexion (T23, TR-26)
     return profile;
   };
   return {

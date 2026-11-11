@@ -23,6 +23,7 @@ from app.application.shops.use_cases.platform_shops import PlatformShops
 from app.application.shops.use_cases.shop_settings import ShopSettingsUseCase
 from app.application.stock.probes import LedgerLocationStock
 from app.bootstrap.identity import IdentityModule
+from app.bootstrap.journal import shop_entitlements
 from app.infrastructure.auth.opaque_tokens import RandomPinGenerator
 from app.interface.http.routes.shop_components import ShopsComponents
 
@@ -46,7 +47,7 @@ def build_shops(
     http = ShopsComponents(
         open_shop=OpenShop(platform_uows, policy, hasher, pins, clock),
         platform=PlatformShops(shop_uows, core.catalog, core.overrides, policy, clock),
-        profile=GetShopProfile(shop_uows, policy),
+        profile=GetShopProfile(shop_uows, policy, shop_entitlements(core)),
         settings=ShopSettingsUseCase(shop_uows, policy, clock),
         locations=ManageLocations(shop_uows, policy, stock or LedgerLocationStock(), clock),
         payment_modes=ManagePaymentModes(shop_uows, policy, clock),

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { Role } from "../../core/auth/me";
 import { createHttpExpenses, ExpensesContext } from "../../core/gateways/httpExpenses";
+import { offlineDeps, withOfflineExpenses } from "../../core/offline/offlineGateways";
 import { useServices } from "../../core/services/servicesContext";
 import { ExpensesPage } from "./ExpensesPage";
 
@@ -11,7 +12,11 @@ import { ExpensesPage } from "./ExpensesPage";
 export default function ExpensesRoute({ shopId, role }: { shopId: string; role: Role }) {
   const services = useServices();
   const deps = useMemo(
-    () => ({ gateway: createHttpExpenses(services), now: () => new Date() }),
+    () => ({
+      // Dépense : API, ou file hors connexion si `offline_capture` est actif (T23, RG-T22).
+      gateway: withOfflineExpenses(createHttpExpenses(services), offlineDeps(services)),
+      now: () => new Date(),
+    }),
     [services],
   );
   return (

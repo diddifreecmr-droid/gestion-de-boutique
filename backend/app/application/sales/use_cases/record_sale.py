@@ -98,9 +98,11 @@ class RecordSale:
     ) -> tuple[Sale, SaleView]:
         """Vente neuve dans la transaction de l'appelant, **sans commit** (échange, UC-VEN-09)."""
         sale, view = self._build(uow, actor, command, now)
+        # Sorties d'abord : en différé, elles posent `stock_to_verify` sur la vente (RG-T18),
+        # qui doit être écrit avec elle (T23).
+        post_exits(uow, self._ledger, sale, deferred=command.deferred)
         SaleRepository.within(uow).add(sale)
         sync_claims(uow, sale)
-        post_exits(uow, self._ledger, sale, deferred=command.deferred)
         return sale, view
 
     def _build(

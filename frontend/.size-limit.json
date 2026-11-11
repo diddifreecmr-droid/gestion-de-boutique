@@ -1,7 +1,7 @@
 [
   {
     "name": "Première ouverture : tout dist/ (précache du service worker), non compressé",
-    "path": "dist/**/*",
+    "path": ["dist/**/*", "!dist/assets/engine-*.js"],
     "brotli": false,
     "limit": "3 MB"
   },
@@ -12,9 +12,15 @@
     "limit": "250 kB"
   },
   {
-    "name": "Tout le JavaScript (gzip), écrans chargés à la demande compris",
-    "path": "dist/assets/*.js",
+    "name": "Tout le JavaScript (gzip), écrans chargés à la demande compris, hors file hors connexion",
+    "path": ["dist/assets/*.js", "!dist/assets/engine-*.js"],
     "gzip": true,
     "limit": "500 kB"
+  },
+  {
+    "name": "File hors connexion (Dexie, chargée seulement si offline_capture est actif, gzip)",
+    "path": "dist/assets/engine-*.js",
+    "gzip": true,
+    "limit": "40 kB"
   }
 ]

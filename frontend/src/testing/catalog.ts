@@ -65,6 +65,7 @@ export function profileBody(role: Role, minPriceEnabled = true) {
     min_price_enabled: minPriceEnabled,
     min_price_requires_approval: false,
     default_location_id: null,
+    entitlements: { offline_capture: false },
   };
   return profile;
 }

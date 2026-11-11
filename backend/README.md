@@ -308,6 +308,31 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
   par `EXPLAIN`, sur un volume réaliste, que chaque agrégat passe par son index de période.
 - **Recette** : SCN-09 rejoué par HTTP (`tests/http/reporting/test_scn09_http.py`).
 
+## Ossature hors connexion (T23) — **désactivée en V1**
+
+- **Routes** (`/shops/{id}/…`, `Cache-Control: no-store`) : `POST /sync` `{device_id, operations:
+  [{op_id, type, provisional_number, captured_at, payload}]}` → `{results: [{op_id, status:
+  accepted|duplicate|rejected, number, provisional_number, entity_id, warnings, error}]}` ;
+  `GET /offline-snapshot?since=`. Les deux exigent `offline_capture` : **403
+  `FEATURE_DISABLED`** pour toute boutique (offre gratuite). Ouvrir pour une recette :
+  `PATCH /platform/shops/{id}` `{"entitlements": {"offline_capture": true}}` (`null` = retour à
+  l'offre). Le droit est exposé au frontend par `GET /profile` → `entitlements:
+  {"offline_capture": false}`.
+- **Traitement** (`application/sync/`) : opérations dans l'ordre, une transaction chacune, par
+  les cas d'utilisation en ligne (`RecordSale` en **différé** : stock négatif accepté,
+  `STOCK_TO_VERIFY` + alerte O et C ; `RecordExpense`), document `id` = `op_id`. Refus métier →
+  `rejected` gardé (code, motif), journalisé (`sync`, « Rejeter ») et alerté « Saisie refusée »
+  aux propriétaires ; les suivantes continuent. Lot 2 (`trip_step.create`,
+  `trip_expense.create`) → `AVAILABLE_IN_LOT_2` ; autre type → `OPERATION_NOT_ALLOWED_OFFLINE` ;
+  numéro provisoire d'un autre appareil ou type → `PROVISIONAL_NUMBER_INVALID`. Erreur
+  imprévue → 500 (fail-fast) : renvoyer le lot donne `duplicate` pour ce qui est déjà passé.
+- **Idempotence** : table `sync_operation` (migration `0012_sync`), clé = `op_id` ; un `op_id`
+  connu renvoie le résultat gardé, sans rien rejouer. Numéro provisoire de vente gardé sur la
+  vente (`GET /sales?q=V-HL-…`), celui d'une dépense dans la trace.
+- **Instantané** : complet à chaque appel (`full: true`, `since` renvoyé tel quel) ; articles
+  actifs + prix de vente selon la visibilité du rôle, clients du vendeur, lieux et modes actifs,
+  catégories de dépenses (qui en saisit) ; **jamais aucun coût**, pour aucun rôle.
+
 ## Couches
 
 | Package | Peut importer |

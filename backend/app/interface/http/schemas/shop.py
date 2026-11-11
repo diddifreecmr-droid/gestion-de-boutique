@@ -75,6 +75,9 @@ class ProfileResponse(_Strict):
     min_price_enabled: bool
     min_price_requires_approval: bool
     default_location_id: str | None
+    entitlements: dict[str, bool]
+    """Droits d'offre de la boutique (TR-26) : `{"offline_capture": false}` en V1. Le frontend
+    n'utilise la file d'envoi hors connexion que si `offline_capture` est vrai (T23)."""
 
 
 class SettingsResponse(_Strict):

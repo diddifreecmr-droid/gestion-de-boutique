@@ -35,6 +35,7 @@ from app.infrastructure.persistence.memory.sales_returns import (
 )
 from app.infrastructure.persistence.memory.shops import SHOP_REPOSITORIES
 from app.infrastructure.persistence.memory.stock import MEMORY_STOCK_REPOSITORIES
+from app.infrastructure.persistence.memory.sync import MEMORY_SYNC_REPOSITORIES
 from app.infrastructure.persistence.memory.uow import MemoryUnitOfWork, RepositoryRegistry
 from tests.contracts.widget import Widget, WidgetId, WidgetRepository
 
@@ -56,6 +57,7 @@ REGISTRY: RepositoryRegistry = (
     *MEMORY_SALES_REPOSITORIES,
     *MEMORY_SALES_RETURNS_REPOSITORIES,
     *MEMORY_REPORTING_ADAPTERS,
+    *MEMORY_SYNC_REPOSITORIES,
 )
 
 

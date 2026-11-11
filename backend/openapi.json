@@ -9080,6 +9080,169 @@
           }
         }
       }
+    },
+    "/api/v1/shops/{shop_id}/sync": {
+      "post": {
+        "tags": [
+          "sync"
+        ],
+        "summary": "Synchronize",
+        "operationId": "synchronize_api_v1_shops__shop_id__sync_post",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/offline-snapshot": {
+      "get": {
+        "tags": [
+          "sync"
+        ],
+        "summary": "Offline Snapshot",
+        "operationId": "offline_snapshot_api_v1_shops__shop_id__offline_snapshot_get",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfflineSnapshotResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -13990,6 +14153,83 @@
         ],
         "title": "NotAvailable"
       },
+      "OfflineSnapshotResponse": {
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "full": {
+            "type": "boolean",
+            "title": "Full"
+          },
+          "min_price_enabled": {
+            "type": "boolean",
+            "title": "Min Price Enabled"
+          },
+          "articles": {
+            "items": {
+              "$ref": "#/components/schemas/SnapshotArticleResponse"
+            },
+            "type": "array",
+            "title": "Articles"
+          },
+          "customers": {
+            "items": {
+              "$ref": "#/components/schemas/CustomerResponse"
+            },
+            "type": "array",
+            "title": "Customers"
+          },
+          "expense_categories": {
+            "items": {
+              "$ref": "#/components/schemas/ExpenseCategoryResponse"
+            },
+            "type": "array",
+            "title": "Expense Categories"
+          },
+          "locations": {
+            "items": {
+              "$ref": "#/components/schemas/LocationResponse"
+            },
+            "type": "array",
+            "title": "Locations"
+          },
+          "payment_modes": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentModeResponse"
+            },
+            "type": "array",
+            "title": "Payment Modes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_at",
+          "since",
+          "full",
+          "min_price_enabled",
+          "articles",
+          "customers",
+          "expense_categories",
+          "locations",
+          "payment_modes"
+        ],
+        "title": "OfflineSnapshotResponse"
+      },
       "OpenShopRequest": {
         "properties": {
           "profile_code": {
@@ -14853,6 +15093,13 @@
               }
             ],
             "title": "Default Location Id"
+          },
+          "entitlements": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Entitlements"
           }
         },
         "additionalProperties": false,
@@ -14873,7 +15120,8 @@
           "receipt",
           "min_price_enabled",
           "min_price_requires_approval",
-          "default_location_id"
+          "default_location_id",
+          "entitlements"
         ],
         "title": "ProfileResponse"
       },
@@ -18270,6 +18518,94 @@
         ],
         "title": "ShopSummaryResponse"
       },
+      "SnapshotArticleResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "stock_unit": {
+            "type": "string",
+            "title": "Stock Unit"
+          },
+          "sold_by_piece": {
+            "type": "boolean",
+            "title": "Sold By Piece"
+          },
+          "base_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Price"
+          },
+          "base_price_piece": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Price Piece"
+          },
+          "min_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Price"
+          },
+          "min_price_piece": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Price Piece"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "display_name",
+          "reference",
+          "stock_unit",
+          "sold_by_piece",
+          "base_price",
+          "base_price_piece",
+          "min_price",
+          "min_price_piece"
+        ],
+        "title": "SnapshotArticleResponse"
+      },
       "StatementLineResponse": {
         "properties": {
           "kind": {
@@ -18940,6 +19276,192 @@
           "purchases"
         ],
         "title": "SupplierSheetResponse"
+      },
+      "SyncNoticeResponse": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "details"
+        ],
+        "title": "SyncNoticeResponse"
+      },
+      "SyncOperationRequest": {
+        "properties": {
+          "op_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Op Id"
+          },
+          "type": {
+            "type": "string",
+            "maxLength": 32,
+            "title": "Type"
+          },
+          "provisional_number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provisional Number"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Captured At"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "op_id",
+          "type",
+          "captured_at"
+        ],
+        "title": "SyncOperationRequest"
+      },
+      "SyncRequest": {
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Device Id"
+          },
+          "operations": {
+            "items": {
+              "$ref": "#/components/schemas/SyncOperationRequest"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Operations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "device_id",
+          "operations"
+        ],
+        "title": "SyncRequest"
+      },
+      "SyncResponse": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/SyncResultResponse"
+            },
+            "type": "array",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "results"
+        ],
+        "title": "SyncResponse"
+      },
+      "SyncResultResponse": {
+        "properties": {
+          "op_id": {
+            "type": "string",
+            "title": "Op Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "duplicate",
+              "rejected"
+            ],
+            "title": "Status"
+          },
+          "provisional_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provisional Number"
+          },
+          "number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Number"
+          },
+          "entity_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Id"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/SyncNoticeResponse"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncNoticeResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "op_id",
+          "status",
+          "provisional_number",
+          "number",
+          "entity_id",
+          "warnings",
+          "error"
+        ],
+        "title": "SyncResultResponse"
       },
       "TagMergeRequest": {
         "properties": {

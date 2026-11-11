@@ -33,6 +33,8 @@ from app.interface.http.routes.shop_profile import build_shop_profile_router
 from app.interface.http.routes.stock import build_stock_router
 from app.interface.http.routes.stock_components import StockComponents
 from app.interface.http.routes.suppliers import build_suppliers_router
+from app.interface.http.routes.sync import build_sync_router
+from app.interface.http.routes.sync_components import SyncComponents
 
 
 def create_app(
@@ -47,6 +49,7 @@ def create_app(
     sales: SalesComponents | None = None,
     receivables: ReceivablesComponents | None = None,
     reporting: ReportingComponents | None = None,
+    sync: SyncComponents | None = None,
 ) -> FastAPI:
     """`journal`/`shops` absents : leurs routes ne sont pas montées (outils, tests ciblés)."""
     prefix = config.api_prefix
@@ -91,4 +94,6 @@ def create_app(
         app.include_router(build_installments_router(receivables), prefix=prefix)
     if reporting is not None:
         app.include_router(build_reporting_router(reporting), prefix=prefix)
+    if sync is not None:
+        app.include_router(build_sync_router(sync), prefix=prefix)
     return app
