@@ -10,6 +10,7 @@ from app.interface.http.errors import register_error_handlers
 from app.interface.http.routes import health
 from app.interface.http.routes.auth import AuthComponents, build_auth_router
 from app.interface.http.routes.catalog import CatalogComponents, build_catalog_router
+from app.interface.http.routes.customers import build_customers_router
 from app.interface.http.routes.expense_components import ExpensesComponents
 from app.interface.http.routes.expense_settings import build_expense_settings_router
 from app.interface.http.routes.expenses import build_expenses_router
@@ -20,6 +21,8 @@ from app.interface.http.routes.places import build_places_router
 from app.interface.http.routes.platform import build_platform_router
 from app.interface.http.routes.purchases import build_purchases_router
 from app.interface.http.routes.purchasing_components import PurchasingComponents
+from app.interface.http.routes.sales import build_sales_router
+from app.interface.http.routes.sales_components import SalesComponents
 from app.interface.http.routes.shop_components import ShopsComponents
 from app.interface.http.routes.shop_profile import build_shop_profile_router
 from app.interface.http.routes.stock import build_stock_router
@@ -36,6 +39,7 @@ def create_app(
     expenses: ExpensesComponents | None = None,
     stock: StockComponents | None = None,
     purchasing: PurchasingComponents | None = None,
+    sales: SalesComponents | None = None,
 ) -> FastAPI:
     """`journal`/`shops` absents : leurs routes ne sont pas montées (outils, tests ciblés)."""
     prefix = config.api_prefix
@@ -71,4 +75,7 @@ def create_app(
     if purchasing is not None:
         app.include_router(build_suppliers_router(purchasing), prefix=prefix)
         app.include_router(build_purchases_router(purchasing), prefix=prefix)
+    if sales is not None:
+        app.include_router(build_sales_router(sales), prefix=prefix)
+        app.include_router(build_customers_router(sales), prefix=prefix)
     return app

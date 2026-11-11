@@ -2,7 +2,8 @@
 
 Les tables métier rejoignent `metadata` (`schema.py`) avec leur module : `tables_identity`
 (comptes, sessions, comptes commerçants), `tables_shops` (socle des boutiques) depuis T10,
-`tables_catalog`, `tables_expenses`, `tables_stock` et `tables_purchasing` (T13, T18, T14, T15),
+`tables_catalog`, `tables_expenses`, `tables_stock`, `tables_purchasing` et `tables_sales`
+(T13, T18, T14, T15, T16),
 importés ici pour que ce module expose **tout** le schéma ; chaque ajout s'accompagne d'une
 migration. Conventions (specs § 5.1) : identifiants UUIDv7 fournis par l'application
 (`sa.Uuid`, natif sur PostgreSQL, `CHAR(32)` ailleurs), `shop_id` en tête des index, `version`
@@ -15,6 +16,7 @@ from app.infrastructure.persistence.sqlalchemy import tables_catalog as tables_c
 from app.infrastructure.persistence.sqlalchemy import tables_expenses as tables_expenses
 from app.infrastructure.persistence.sqlalchemy import tables_identity as tables_identity
 from app.infrastructure.persistence.sqlalchemy import tables_purchasing as tables_purchasing
+from app.infrastructure.persistence.sqlalchemy import tables_sales as tables_sales
 from app.infrastructure.persistence.sqlalchemy import tables_shops as tables_shops
 from app.infrastructure.persistence.sqlalchemy import tables_stock as tables_stock
 from app.infrastructure.persistence.sqlalchemy.schema import NAMING_CONVENTION, metadata

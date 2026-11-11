@@ -170,6 +170,33 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
   une correction d'achat ne réécrit jamais une vente.
 - **Migration** `0007_purchasing`.
 
+## Ventes (T16a)
+
+- **Routes** (`/shops/{id}/…`) : `GET/POST /sales` (`?from=&to=&seller_id=&article_id=&payment_mode_id=&kind=&q=&cursor=&limit=`,
+  défaut : le jour ; `q` = numéro définitif/provisoire ou châssis, toutes dates sans période),
+  `GET/PATCH /sales/{sid}` (`version` + `reason`, propriétaire), `POST /sales/{sid}/cancel
+  {reason, refund_payments}`, `POST /sales/{sid}/error-reports`, `POST /error-reports/{rid}/reply`,
+  `GET /sales/{sid}/receipt` (DTO, chaque appel = une impression), `GET/POST /customers?q=`,
+  `GET/PATCH /customers/{cid}`. Créations idempotentes par `id` client (201 puis 200, même si
+  le contenu rejoué diffère, Q-37). Comptable et chauffeur : 403.
+- **Visibilité** : `application/sales/views.py` (`show_costs`) — vendeur sans `frozen_last_cost`,
+  `frozen_wac`, `margin`, `margin_wac` (clés absentes), propriétaire avec ; reçu sans aucun coût
+  (réglage d'impression `margin_mm` exposé en `padding_mm`). Portée OWN du vendeur dans les
+  requêtes (`seller=`), clients « à lui » = créés par lui ou ayant une vente de lui.
+- **Règles tranchées** : comptant payé en entier (`PAYMENT_INCOMPLETE`, Q-12) ; crédit : client
+  obligatoire, acompte < total ; payé ≤ total (`OVERPAYMENT`) ; plafond strict (vendeur
+  `CREDIT_LIMIT_EXCEEDED`, propriétaire avertissement `warnings`) ; vendeur sous le minimum
+  `PRICE_BELOW_MINIMUM` (`request_required`, `price_request_id` accepté mais exploité en T16b) ;
+  vendeur limité à son lieu habituel (`LOCATION_NOT_ALLOWED`, Q-36) ; total de ligne et coût =
+  arrondi au franc demi vers le haut (T04) ; châssis normalisé (lettres et chiffres en
+  majuscules) unique parmi les ventes valides via `sold_chassis.active_key` ; duplicata dès la
+  2ᵉ impression ; totaux de liste = ventes de la période − ventes annulées pendant (Q-09) ;
+  « plus vendus » = quantités des 30 derniers jours hors annulées.
+- **Pour T17** : événements `CreditSaleRecorded`, `CreditSaleAmountsChanged`,
+  `CreditSaleCancelled` (`domain/sales/receivable_events.py`, non journalisés) ; port
+  `CustomerDebt` (dû actuel, aujourd'hui `SalesCustomerDebt`) ; `receivable.id` vaut `null`.
+- **Migration** `0008_sales`.
+
 ## Couches
 
 | Package | Peut importer |

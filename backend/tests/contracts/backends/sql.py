@@ -38,6 +38,7 @@ from app.infrastructure.persistence.sqlalchemy.platform_uow import (
 )
 from app.infrastructure.persistence.sqlalchemy.purchasing import SQL_PURCHASING_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.repository import SqlRepository
+from app.infrastructure.persistence.sqlalchemy.sales_repository import SQL_SALES_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.shops_members import SQL_SHOP_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.stock_documents import SQL_STOCK_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.tables import NAMING_CONVENTION, metadata
@@ -86,6 +87,7 @@ SQL_REGISTRY: SqlRepositoryRegistry = (
     *SQL_EXPENSE_ADAPTERS,
     *SQL_STOCK_REPOSITORIES,
     *SQL_PURCHASING_REPOSITORIES,
+    *SQL_SALES_REPOSITORIES,
 )
 
 

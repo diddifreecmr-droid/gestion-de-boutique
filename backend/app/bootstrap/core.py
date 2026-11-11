@@ -5,7 +5,8 @@ moteur SQL) : c'est ce qui permet la transaction commune plateforme + boutique (
 handlers de boutique (journal puis alertes) sont posés sur les unités de boutique **et** sur
 les unités jointes ; le handler du journal de l'identité, sur l'unité plateforme.
 
-Les règles d'alerte des modules sont branchées **ici, une fois** par répartiteur (stock, T14) :
+Les règles d'alerte des modules sont branchées **ici, une fois** par répartiteur (stock T14,
+ventes T16) :
 assembler un module plusieurs fois (outils, tests) ne double jamais une alerte.
 """
 
@@ -20,6 +21,7 @@ from app.application.identity.uow import IdentityUnitOfWorkFactory
 from app.application.plans.ports import EntitlementOverrides
 from app.application.ports.clock import Clock
 from app.application.ports.uow import UnitOfWorkFactory
+from app.application.sales.alerts import register_sales_alerts
 from app.application.shops.ports import ShopCatalog
 from app.application.stock.alerts import register_stock_alerts
 from app.bootstrap.config import PersistenceBackend, Settings
@@ -65,6 +67,7 @@ class Core:
 def build_core(settings: Settings, clock: Clock) -> Core:
     alerts = AlertDispatcher(clock)
     register_stock_alerts(alerts)
+    register_sales_alerts(alerts)
     handlers = (AuditRecorder(clock), alerts)
     backend = settings.persistence_backend
     if backend is PersistenceBackend.MEMORY:

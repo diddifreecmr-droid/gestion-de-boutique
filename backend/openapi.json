@@ -5999,6 +5999,1143 @@
           }
         }
       }
+    },
+    "/api/v1/shops/{shop_id}/sales": {
+      "get": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "List Sales",
+        "operationId": "list_sales_api_v1_shops__shop_id__sales_get",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "seller_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Seller Id"
+            }
+          },
+          {
+            "name": "article_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Article Id"
+            }
+          },
+          {
+            "name": "payment_mode_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Payment Mode Id"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/SaleKind"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 256
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 200,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalePageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Record Sale",
+        "operationId": "record_sale_api_v1_shops__shop_id__sales_post",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "x-captured-at",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Captured-At"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaleCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/sales/{sale_id}": {
+      "get": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Get Sale",
+        "operationId": "get_sale_api_v1_shops__shop_id__sales__sale_id__get",
+        "parameters": [
+          {
+            "name": "sale_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sale Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Modify Sale",
+        "operationId": "modify_sale_api_v1_shops__shop_id__sales__sale_id__patch",
+        "parameters": [
+          {
+            "name": "sale_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sale Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SalePatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/sales/{sale_id}/cancel": {
+      "post": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Cancel Sale",
+        "operationId": "cancel_sale_api_v1_shops__shop_id__sales__sale_id__cancel_post",
+        "parameters": [
+          {
+            "name": "sale_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sale Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelSaleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/sales/{sale_id}/error-reports": {
+      "post": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Report Error",
+        "operationId": "report_error_api_v1_shops__shop_id__sales__sale_id__error_reports_post",
+        "parameters": [
+          {
+            "name": "sale_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sale Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorReportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorReportResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/error-reports/{report_id}/reply": {
+      "post": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Answer Report",
+        "operationId": "answer_report_api_v1_shops__shop_id__error_reports__report_id__reply_post",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorReplyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorReportResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/sales/{sale_id}/receipt": {
+      "get": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Get Receipt",
+        "operationId": "get_receipt_api_v1_shops__shop_id__sales__sale_id__receipt_get",
+        "parameters": [
+          {
+            "name": "sale_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sale Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__interface__http__schemas__receipts__ReceiptResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/customers": {
+      "get": {
+        "tags": [
+          "customers"
+        ],
+        "summary": "Search Customers",
+        "operationId": "search_customers_api_v1_shops__shop_id__customers_get",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "customers"
+        ],
+        "summary": "Create Customer",
+        "operationId": "create_customer_api_v1_shops__shop_id__customers_post",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/customers/{customer_id}": {
+      "get": {
+        "tags": [
+          "customers"
+        ],
+        "summary": "Get Customer",
+        "operationId": "get_customer_api_v1_shops__shop_id__customers__customer_id__get",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Customer Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerSheetResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "customers"
+        ],
+        "summary": "Update Customer",
+        "operationId": "update_customer_api_v1_shops__shop_id__customers__customer_id__patch",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Customer Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6963,30 +8100,25 @@
         ],
         "title": "AuditPageResponse"
       },
-      "CancellationResponse": {
+      "CancelSaleRequest": {
         "properties": {
-          "cancelled_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Cancelled At"
-          },
-          "cancelled_by": {
-            "type": "string",
-            "title": "Cancelled By"
-          },
           "reason": {
             "type": "string",
+            "maxLength": 500,
             "title": "Reason"
+          },
+          "refund_payments": {
+            "type": "boolean",
+            "title": "Refund Payments",
+            "default": false
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "cancelled_at",
-          "cancelled_by",
           "reason"
         ],
-        "title": "CancellationResponse"
+        "title": "CancelSaleRequest"
       },
       "CategoryTotalResponse": {
         "properties": {
@@ -7097,6 +8229,497 @@
         ],
         "title": "CountsRequest"
       },
+      "CreditRequest": {
+        "properties": {
+          "reminder_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reminder On"
+          },
+          "terms": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms"
+          },
+          "guarantor": {
+            "type": "null",
+            "title": "Guarantor"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CreditRequest"
+      },
+      "CreditResponse": {
+        "properties": {
+          "reminder_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reminder On"
+          },
+          "terms": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reminder_on",
+          "terms"
+        ],
+        "title": "CreditResponse"
+      },
+      "CustomerCreateRequest": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 32,
+            "title": "Phone"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CustomerKind",
+            "default": "individual"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "id_doc_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdDocumentType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id_doc_number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Doc Number"
+          },
+          "id_doc_photo_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Doc Photo Id"
+          },
+          "credit_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credit Limit"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "phone"
+        ],
+        "title": "CustomerCreateRequest"
+      },
+      "CustomerKind": {
+        "type": "string",
+        "enum": [
+          "individual",
+          "company"
+        ],
+        "title": "CustomerKind"
+      },
+      "CustomerListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CustomerResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "CustomerListResponse"
+      },
+      "CustomerPatch": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CustomerKind"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "id_doc_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdDocumentType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id_doc_number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Doc Number"
+          },
+          "id_doc_photo_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Doc Photo Id"
+          },
+          "credit_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credit Limit"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "title": "CustomerPatch"
+      },
+      "CustomerResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "id_doc_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Doc Type"
+          },
+          "id_doc_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Doc Number"
+          },
+          "id_doc_photo_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Doc Photo Id"
+          },
+          "credit_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credit Limit"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "created_by": {
+            "type": "string",
+            "title": "Created By"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "phone",
+          "kind",
+          "city",
+          "address",
+          "id_doc_type",
+          "id_doc_number",
+          "id_doc_photo_id",
+          "credit_limit",
+          "note",
+          "created_by",
+          "version"
+        ],
+        "title": "CustomerResponse"
+      },
+      "CustomerSheetResponse": {
+        "properties": {
+          "customer": {
+            "$ref": "#/components/schemas/CustomerResponse"
+          },
+          "total_bought": {
+            "type": "integer",
+            "title": "Total Bought"
+          },
+          "total_due": {
+            "type": "integer",
+            "title": "Total Due"
+          },
+          "sales": {
+            "items": {
+              "$ref": "#/components/schemas/SaleResponse"
+            },
+            "type": "array",
+            "title": "Sales"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer",
+          "total_bought",
+          "total_due",
+          "sales"
+        ],
+        "title": "CustomerSheetResponse"
+      },
       "DamagedLine": {
         "properties": {
           "article_id": {
@@ -7175,6 +8798,118 @@
         ],
         "title": "DamagedStockResponse"
       },
+      "DetailRequest": {
+        "properties": {
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color"
+          },
+          "chassis_number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chassis Number"
+          },
+          "engine_number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Engine Number"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DetailRequest",
+        "description": "Détail d'une unité vendue (CDC § 17.3) : tous facultatifs."
+      },
+      "DetailResponse": {
+        "properties": {
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color"
+          },
+          "chassis_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chassis Number"
+          },
+          "engine_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Engine Number"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          }
+        },
+        "type": "object",
+        "required": [
+          "color",
+          "chassis_number",
+          "engine_number",
+          "size"
+        ],
+        "title": "DetailResponse"
+      },
       "Entitlement": {
         "type": "string",
         "enum": [
@@ -7230,6 +8965,138 @@
           "YARD"
         ],
         "title": "EntryUnit"
+      },
+      "ErrorReplyRequest": {
+        "properties": {
+          "reply": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Reply"
+          },
+          "handled": {
+            "type": "boolean",
+            "title": "Handled",
+            "default": true
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "reply"
+        ],
+        "title": "ErrorReplyRequest"
+      },
+      "ErrorReportRequest": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Description"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "description"
+        ],
+        "title": "ErrorReportRequest"
+      },
+      "ErrorReportResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "sale_id": {
+            "type": "string",
+            "title": "Sale Id"
+          },
+          "sale_number": {
+            "type": "string",
+            "title": "Sale Number"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "reported_by": {
+            "type": "string",
+            "title": "Reported By"
+          },
+          "reported_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Reported At"
+          },
+          "owner_reply": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Reply"
+          },
+          "replied_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replied At"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sale_id",
+          "sale_number",
+          "description",
+          "status",
+          "reported_by",
+          "reported_at",
+          "owner_reply",
+          "replied_at",
+          "version"
+        ],
+        "title": "ErrorReportResponse"
       },
       "ExpenseCategoryCreateRequest": {
         "properties": {
@@ -7794,7 +9661,7 @@
           "cancellation": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/CancellationResponse"
+                "$ref": "#/components/schemas/app__interface__http__schemas__expenses__CancellationResponse"
               },
               {
                 "type": "null"
@@ -8047,6 +9914,17 @@
         ],
         "title": "HealthResponse"
       },
+      "IdDocumentType": {
+        "type": "string",
+        "enum": [
+          "national_id",
+          "passport",
+          "driving_license",
+          "residence_permit",
+          "other"
+        ],
+        "title": "IdDocumentType"
+      },
       "InventoryLineResponse": {
         "properties": {
           "article_id": {
@@ -8275,6 +10153,64 @@
           "location_id"
         ],
         "title": "InventoryStartRequest"
+      },
+      "LinePatchRequest": {
+        "properties": {
+          "article_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Article Id"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "unit_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Price"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DetailRequest"
+                },
+                "type": "array",
+                "maxItems": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "LinePatchRequest",
+        "description": "Ligne modifiée, dans l'ordre des lignes : prix et détails ; article / quantité\nfacultatifs, comparés à ceux de la ligne (différents → `LINE_CHANGE_NOT_ALLOWED`)."
       },
       "LineRequest": {
         "properties": {
@@ -9757,7 +11693,7 @@
             "title": "Stock Units"
           },
           "receipt": {
-            "$ref": "#/components/schemas/ReceiptResponse"
+            "$ref": "#/components/schemas/app__interface__http__schemas__shop__ReceiptResponse"
           },
           "min_price_enabled": {
             "type": "boolean",
@@ -10200,7 +12136,7 @@
           "cancellation": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/CancellationResponse"
+                "$ref": "#/components/schemas/app__interface__http__schemas__purchasing__CancellationResponse"
               },
               {
                 "type": "null"
@@ -10331,6 +12267,24 @@
         ],
         "title": "ReasonEntry"
       },
+      "ReceiptCustomer": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "phone"
+        ],
+        "title": "ReceiptCustomer"
+      },
       "ReceiptFormat": {
         "type": "string",
         "enum": [
@@ -10341,15 +12295,164 @@
         ],
         "title": "ReceiptFormat"
       },
-      "ReceiptResponse": {
+      "ReceiptHeader": {
         "properties": {
-          "format": {
+          "shop_name": {
             "type": "string",
-            "title": "Format"
+            "title": "Shop Name"
           },
-          "print_profile": {
+          "city": {
             "type": "string",
-            "title": "Print Profile"
+            "title": "City"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "niu": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Niu"
+          },
+          "rccm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rccm"
+          },
+          "show_logo": {
+            "type": "boolean",
+            "title": "Show Logo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shop_name",
+          "city",
+          "phone",
+          "address",
+          "niu",
+          "rccm",
+          "show_logo"
+        ],
+        "title": "ReceiptHeader"
+      },
+      "ReceiptLineResponse": {
+        "properties": {
+          "article_name": {
+            "type": "string",
+            "title": "Article Name"
+          },
+          "sale_mode": {
+            "type": "string",
+            "title": "Sale Mode"
+          },
+          "quantity": {
+            "type": "string",
+            "title": "Quantity"
+          },
+          "unit_price": {
+            "type": "integer",
+            "title": "Unit Price"
+          },
+          "line_total": {
+            "type": "integer",
+            "title": "Line Total"
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/DetailResponse"
+            },
+            "type": "array",
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "article_name",
+          "sale_mode",
+          "quantity",
+          "unit_price",
+          "line_total",
+          "details"
+        ],
+        "title": "ReceiptLineResponse"
+      },
+      "ReceiptMention": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "ReceiptMention"
+      },
+      "ReceiptPaymentResponse": {
+        "properties": {
+          "mode_name": {
+            "type": "string",
+            "title": "Mode Name"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode_name",
+          "amount",
+          "reference"
+        ],
+        "title": "ReceiptPaymentResponse"
+      },
+      "ReceiptPrintSettings": {
+        "properties": {
+          "receipt_format": {
+            "type": "string",
+            "title": "Receipt Format"
           },
           "paper_width_mm": {
             "type": "integer",
@@ -10359,23 +12462,33 @@
             "type": "integer",
             "title": "Printable Width Mm"
           },
-          "margin_mm": {
+          "padding_mm": {
             "type": "integer",
-            "title": "Margin Mm"
+            "title": "Padding Mm"
           },
           "font_size_pt": {
             "type": "integer",
             "title": "Font Size Pt"
           },
-          "show_logo": {
-            "type": "boolean",
-            "title": "Show Logo"
-          },
           "copies": {
             "type": "integer",
             "title": "Copies"
-          },
-          "footer_message": {
+          }
+        },
+        "type": "object",
+        "required": [
+          "receipt_format",
+          "paper_width_mm",
+          "printable_width_mm",
+          "padding_mm",
+          "font_size_pt",
+          "copies"
+        ],
+        "title": "ReceiptPrintSettings"
+      },
+      "ReceivableRef": {
+        "properties": {
+          "id": {
             "anyOf": [
               {
                 "type": "string"
@@ -10384,27 +12497,20 @@
                 "type": "null"
               }
             ],
-            "title": "Footer Message"
+            "title": "Id"
           },
-          "header": {
-            "$ref": "#/components/schemas/ShopHeaderResponse"
+          "remaining": {
+            "type": "integer",
+            "title": "Remaining"
           }
         },
-        "additionalProperties": false,
         "type": "object",
         "required": [
-          "format",
-          "print_profile",
-          "paper_width_mm",
-          "printable_width_mm",
-          "margin_mm",
-          "font_size_pt",
-          "show_logo",
-          "copies",
-          "footer_message",
-          "header"
+          "id",
+          "remaining"
         ],
-        "title": "ReceiptResponse"
+        "title": "ReceivableRef",
+        "description": "Créance liée (T17) : `id` posé quand le module Créances l'aura ouverte."
       },
       "RevokedDevicesResponse": {
         "properties": {
@@ -10449,6 +12555,802 @@
           "label"
         ],
         "title": "RoleResponse"
+      },
+      "SaleCreateRequest": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "location_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Id"
+          },
+          "sold_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sold On"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SaleKind"
+          },
+          "customer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaleCustomerRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/SaleLineRequest"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Lines"
+          },
+          "payments": {
+            "items": {
+              "$ref": "#/components/schemas/SalePaymentRequest"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Payments"
+          },
+          "credit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CreditRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "price_request_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Request Id"
+          },
+          "seller_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seller Id"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "lines"
+        ],
+        "title": "SaleCreateRequest"
+      },
+      "SaleCustomerRequest": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CustomerKind",
+            "default": "individual"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SaleCustomerRequest",
+        "description": "Client existant (`id`) ou créé à la volée (`id: null` + nom + téléphone + type)."
+      },
+      "SaleKind": {
+        "type": "string",
+        "enum": [
+          "cash",
+          "credit"
+        ],
+        "title": "SaleKind"
+      },
+      "SaleLineRequest": {
+        "properties": {
+          "article_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Article Id"
+          },
+          "sale_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaleMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "quantity": {
+            "type": "string",
+            "maxLength": 16,
+            "title": "Quantity"
+          },
+          "unit_price": {
+            "type": "integer",
+            "title": "Unit Price"
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/DetailRequest"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Details"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "article_id",
+          "quantity",
+          "unit_price"
+        ],
+        "title": "SaleLineRequest"
+      },
+      "SaleLineResponse": {
+        "properties": {
+          "article_id": {
+            "type": "string",
+            "title": "Article Id"
+          },
+          "article_name": {
+            "type": "string",
+            "title": "Article Name"
+          },
+          "sale_mode": {
+            "type": "string",
+            "title": "Sale Mode"
+          },
+          "quantity": {
+            "type": "string",
+            "title": "Quantity"
+          },
+          "stock_quantity": {
+            "type": "string",
+            "title": "Stock Quantity"
+          },
+          "stock_unit": {
+            "type": "string",
+            "title": "Stock Unit"
+          },
+          "base_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Price"
+          },
+          "unit_price": {
+            "type": "integer",
+            "title": "Unit Price"
+          },
+          "line_total": {
+            "type": "integer",
+            "title": "Line Total"
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/DetailResponse"
+            },
+            "type": "array",
+            "title": "Details"
+          },
+          "frozen_last_cost": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frozen Last Cost"
+          },
+          "frozen_wac": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frozen Wac"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin"
+          },
+          "margin_wac": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Wac"
+          }
+        },
+        "type": "object",
+        "required": [
+          "article_id",
+          "article_name",
+          "sale_mode",
+          "quantity",
+          "stock_quantity",
+          "stock_unit",
+          "base_price",
+          "unit_price",
+          "line_total",
+          "details"
+        ],
+        "title": "SaleLineResponse"
+      },
+      "SaleMode": {
+        "type": "string",
+        "enum": [
+          "unit",
+          "meter",
+          "piece"
+        ],
+        "title": "SaleMode"
+      },
+      "SalePageResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SaleResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "first_day": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Day"
+          },
+          "last_day": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Day"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/SaleTotalsResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor",
+          "first_day",
+          "last_day",
+          "totals"
+        ],
+        "title": "SalePageResponse"
+      },
+      "SalePatch": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Reason"
+          },
+          "lines": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/LinePatchRequest"
+                },
+                "type": "array",
+                "maxItems": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lines"
+          },
+          "payments": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/SalePaymentRequest"
+                },
+                "type": "array",
+                "maxItems": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payments"
+          },
+          "customer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaleCustomerRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sold_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sold On"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version",
+          "reason"
+        ],
+        "title": "SalePatch"
+      },
+      "SalePaymentRequest": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "mode_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Mode Id"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mode_id",
+          "amount"
+        ],
+        "title": "SalePaymentRequest"
+      },
+      "SalePaymentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "mode_id": {
+            "type": "string",
+            "title": "Mode Id"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "nature": {
+            "type": "string",
+            "title": "Nature"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "mode_id",
+          "amount",
+          "reference",
+          "nature"
+        ],
+        "title": "SalePaymentResponse"
+      },
+      "SaleResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "number": {
+            "type": "string",
+            "title": "Number"
+          },
+          "provisional_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provisional Number"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "sold_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Sold On"
+          },
+          "sold_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Sold At"
+          },
+          "location_id": {
+            "type": "string",
+            "title": "Location Id"
+          },
+          "seller_id": {
+            "type": "string",
+            "title": "Seller Id"
+          },
+          "customer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Id"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "paid": {
+            "type": "integer",
+            "title": "Paid"
+          },
+          "remaining": {
+            "type": "integer",
+            "title": "Remaining"
+          },
+          "receivable": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReceivableRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/SaleLineResponse"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "payments": {
+            "items": {
+              "$ref": "#/components/schemas/SalePaymentResponse"
+            },
+            "type": "array",
+            "title": "Payments"
+          },
+          "credit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CreditResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "stock_to_verify": {
+            "type": "boolean",
+            "title": "Stock To Verify"
+          },
+          "cancellation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/app__interface__http__schemas__sales__CancellationResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_by": {
+            "type": "string",
+            "title": "Created By"
+          },
+          "device_id": {
+            "type": "string",
+            "title": "Device Id"
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Captured At"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Received At"
+          },
+          "editable": {
+            "type": "boolean",
+            "title": "Editable"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/WarningResponse"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "error_reports": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorReportResponse"
+            },
+            "type": "array",
+            "title": "Error Reports"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "provisional_number",
+          "status",
+          "kind",
+          "sold_on",
+          "sold_at",
+          "location_id",
+          "seller_id",
+          "customer_id",
+          "total",
+          "paid",
+          "remaining",
+          "receivable",
+          "lines",
+          "payments",
+          "credit",
+          "note",
+          "stock_to_verify",
+          "cancellation",
+          "created_by",
+          "device_id",
+          "captured_at",
+          "received_at",
+          "editable",
+          "version",
+          "warnings",
+          "error_reports"
+        ],
+        "title": "SaleResponse"
+      },
+      "SaleTotalsResponse": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "paid": {
+            "type": "integer",
+            "title": "Paid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "total",
+          "paid"
+        ],
+        "title": "SaleTotalsResponse"
       },
       "SettingsPatch": {
         "properties": {
@@ -11738,6 +14640,30 @@
         ],
         "title": "Valuation"
       },
+      "WarningResponse": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "details"
+        ],
+        "title": "WarningResponse"
+      },
       "app__interface__http__schemas__expenses__CancelRequest": {
         "properties": {
           "reason": {
@@ -11753,6 +14679,31 @@
         ],
         "title": "CancelRequest"
       },
+      "app__interface__http__schemas__expenses__CancellationResponse": {
+        "properties": {
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cancelled At"
+          },
+          "cancelled_by": {
+            "type": "string",
+            "title": "Cancelled By"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cancelled_at",
+          "cancelled_by",
+          "reason"
+        ],
+        "title": "CancellationResponse"
+      },
       "app__interface__http__schemas__purchasing__CancelRequest": {
         "properties": {
           "reason": {
@@ -11767,6 +14718,247 @@
           "reason"
         ],
         "title": "CancelRequest"
+      },
+      "app__interface__http__schemas__purchasing__CancellationResponse": {
+        "properties": {
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cancelled At"
+          },
+          "cancelled_by": {
+            "type": "string",
+            "title": "Cancelled By"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cancelled_at",
+          "cancelled_by",
+          "reason"
+        ],
+        "title": "CancellationResponse"
+      },
+      "app__interface__http__schemas__receipts__ReceiptResponse": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "header": {
+            "$ref": "#/components/schemas/ReceiptHeader"
+          },
+          "sale_id": {
+            "type": "string",
+            "title": "Sale Id"
+          },
+          "number": {
+            "type": "string",
+            "title": "Number"
+          },
+          "provisional_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provisional Number"
+          },
+          "sold_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Sold At"
+          },
+          "seller_name": {
+            "type": "string",
+            "title": "Seller Name"
+          },
+          "customer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReceiptCustomer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/ReceiptLineResponse"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "paid": {
+            "type": "integer",
+            "title": "Paid"
+          },
+          "payments": {
+            "items": {
+              "$ref": "#/components/schemas/ReceiptPaymentResponse"
+            },
+            "type": "array",
+            "title": "Payments"
+          },
+          "remaining": {
+            "type": "integer",
+            "title": "Remaining"
+          },
+          "mentions": {
+            "items": {
+              "$ref": "#/components/schemas/ReceiptMention"
+            },
+            "type": "array",
+            "title": "Mentions"
+          },
+          "footer_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Footer Message"
+          },
+          "printing": {
+            "$ref": "#/components/schemas/ReceiptPrintSettings"
+          },
+          "print_sequence": {
+            "type": "integer",
+            "title": "Print Sequence"
+          },
+          "printed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Printed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "header",
+          "sale_id",
+          "number",
+          "provisional_number",
+          "sold_at",
+          "seller_name",
+          "customer",
+          "lines",
+          "total",
+          "paid",
+          "payments",
+          "remaining",
+          "mentions",
+          "footer_message",
+          "printing",
+          "print_sequence",
+          "printed_at"
+        ],
+        "title": "ReceiptResponse"
+      },
+      "app__interface__http__schemas__sales__CancellationResponse": {
+        "properties": {
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cancelled At"
+          },
+          "cancelled_by": {
+            "type": "string",
+            "title": "Cancelled By"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cancelled_at",
+          "cancelled_by",
+          "reason"
+        ],
+        "title": "CancellationResponse"
+      },
+      "app__interface__http__schemas__shop__ReceiptResponse": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "title": "Format"
+          },
+          "print_profile": {
+            "type": "string",
+            "title": "Print Profile"
+          },
+          "paper_width_mm": {
+            "type": "integer",
+            "title": "Paper Width Mm"
+          },
+          "printable_width_mm": {
+            "type": "integer",
+            "title": "Printable Width Mm"
+          },
+          "margin_mm": {
+            "type": "integer",
+            "title": "Margin Mm"
+          },
+          "font_size_pt": {
+            "type": "integer",
+            "title": "Font Size Pt"
+          },
+          "show_logo": {
+            "type": "boolean",
+            "title": "Show Logo"
+          },
+          "copies": {
+            "type": "integer",
+            "title": "Copies"
+          },
+          "footer_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Footer Message"
+          },
+          "header": {
+            "$ref": "#/components/schemas/ShopHeaderResponse"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "format",
+          "print_profile",
+          "paper_width_mm",
+          "printable_width_mm",
+          "margin_mm",
+          "font_size_pt",
+          "show_logo",
+          "copies",
+          "footer_message",
+          "header"
+        ],
+        "title": "ReceiptResponse"
       }
     }
   }

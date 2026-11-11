@@ -2,8 +2,8 @@
 
 - `ArticleStock` : `LedgerArticleStock` du module Stock (T14), sur la projection `stock_level`
   (les tests peuvent en injecter un autre).
-- `SalesRanking` : absent jusqu'au module Ventes (T16) ; le tri « plus vendus » répond alors
-  400 `SORT_UNAVAILABLE`.
+- `SalesRanking` : servi par le module Ventes (`bootstrap/sales.sales_ranking`, T16) ; absent
+  (outils, tests ciblés), le tri « plus vendus » répond 400 `SORT_UNAVAILABLE`.
 """
 
 from dataclasses import dataclass
