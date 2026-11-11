@@ -32,6 +32,7 @@ Arborescence :
 - `src/core/pwa/` : politique de cache (specs § 7.3), nouvelle version, « Recharger la dernière version », numéro de version ;
 - `src/core/gateways/` : passerelles des écrans (specs § 4.6) — contrats `CatalogGateway` / `SalesGateway` calqués sur specs § 6.4, et implémentation **simulée** en mémoire (`simulated/`) branchée tant que `POST /sales` n'existe pas (remplacée en T21 dans `appGateways`, sans toucher aux écrans) ;
 - `src/features/sales/` : « Nouvelle vente » comptant et crédit (`/s/{shopId}/nouvelle-vente`, chargé à la demande) ;
+- `src/features/catalog/` : catalogue (UC-STK-01 à 04) dans la section « Stock » du propriétaire et du comptable (`/s/{shopId}/stock`, fiche `?article={id}`, création `?article=nouveau`, chargé à la demande), branché sur l'API réelle via `core/gateways/httpCatalogAdmin.ts` ; le vendeur garde « Stock » provisoire (module Stock) ;
 - `src/features/auth/` (connexion, connexion admin, changement de code), `src/features/settings/` (Mon compte / Réglages provisoires) ;
 - `src/shared/ui/`, `src/shared/format/` ; `src/sw.ts` (service worker) ; `src/testing/` (faux serveur, axe — tests seulement).
 

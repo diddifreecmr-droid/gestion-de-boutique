@@ -1,11 +1,13 @@
 /** Assemblage des services de l'application (client API, session, réseau). */
 import { createAuthApi } from "../api/auth";
-import { createApiClient } from "../api/client";
+import { createApiClient, type ApiClient } from "../api/client";
 import { deviceLabel, readDeviceId } from "../api/device";
 import { Session } from "../auth/session";
 import { createConnectivity, type Connectivity } from "../offline/connectivity";
 
 export interface AppServices {
+  /** Client HTTP typé ; les appels authentifiés passent par `session.authorized`. */
+  api: ApiClient;
   session: Session;
   connectivity: Connectivity;
 }
@@ -37,5 +39,5 @@ export function createServices(options: ServicesOptions = {}): AppServices {
     ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
   });
   const session = new Session(createAuthApi(client), deviceLabel(target.navigator.userAgent));
-  return { session, connectivity };
+  return { api: client, session, connectivity };
 }

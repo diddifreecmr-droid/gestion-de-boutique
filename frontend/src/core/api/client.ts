@@ -7,12 +7,13 @@
  * - Erreur : `ApiError` (enveloppe lue) ou `NetworkError` (serveur injoignable). Rien d'avalé.
  */
 import { ApiError, NetworkError, parseErrorEnvelope } from "./errors";
+import { fillPath, queryString, type PathParams, type QueryParams } from "./pathParams";
 import type { paths } from "./schema.gen";
 
 /** Préfixe des chemins du contrat, remplacé par `base` à l'appel. */
 export const CONTRACT_PREFIX = "/api";
 
-type Method = "get" | "post";
+type Method = "get" | "post" | "patch" | "put";
 type PathsWith<M extends Method> = {
   [P in keyof paths]: paths[P][M] extends { responses: unknown } ? P : never;
 }[keyof paths];
@@ -23,10 +24,12 @@ type Operation<P extends keyof paths, M extends Method> = Extract<
 type JsonContent<T> = T extends { content: { "application/json": infer J } } ? J : undefined;
 type Responses<P extends keyof paths, M extends Method> = Operation<P, M>["responses"];
 
-/** Corps de la réponse 200 (ou `undefined` pour une 204). */
+/** Corps de la réponse 200 (201 pour une création ; `undefined` pour une 204). */
 export type ResponseOf<P extends keyof paths, M extends Method> = 200 extends keyof Responses<P, M>
   ? JsonContent<Responses<P, M>[200]>
-  : undefined;
+  : 201 extends keyof Responses<P, M>
+    ? JsonContent<Responses<P, M>[201]>
+    : undefined;
 /** Corps JSON attendu par l'opération (`undefined` si elle n'en prend pas). */
 export type BodyOf<P extends keyof paths, M extends Method> =
   Operation<P, M> extends { requestBody: infer B } ? JsonContent<NonNullable<B>> : undefined;
@@ -35,6 +38,10 @@ export interface CallOptions<B> {
   body?: B;
   /** Jeton d'accès (gardé en mémoire par la session, jamais persisté). */
   token?: string;
+  /** Valeurs des `{nom}` du chemin (`shop_id`, `article_id`…). */
+  params?: PathParams;
+  /** Paramètres `?clé=valeur` (omis si `null` ou `undefined`). */
+  query?: QueryParams;
 }
 
 export interface ClientHooks {
@@ -59,6 +66,14 @@ export interface ApiClient {
     path: P,
     options?: CallOptions<BodyOf<P, "post">>,
   ): Promise<ResponseOf<P, "post">>;
+  patch<P extends PathsWith<"patch">>(
+    path: P,
+    options?: CallOptions<BodyOf<P, "patch">>,
+  ): Promise<ResponseOf<P, "patch">>;
+  put<P extends PathsWith<"put">>(
+    path: P,
+    options?: CallOptions<BodyOf<P, "put">>,
+  ): Promise<ResponseOf<P, "put">>;
 }
 
 export function resolveUrl(base: string, path: string): string {
@@ -90,9 +105,11 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     const headers = new Headers({ Accept: "application/json", "X-Device-Id": options.deviceId() });
     if (init.token !== undefined) headers.set("Authorization", `Bearer ${init.token}`);
     if (init.body !== undefined) headers.set("Content-Type", "application/json");
+    // Hors du `try` : un chemin mal câblé est une erreur de code, pas une coupure réseau.
+    const url = resolveUrl(options.base, fillPath(path, init.params)) + queryString(init.query);
     let response: Response;
     try {
-      response = await fetchImpl(resolveUrl(options.base, path), {
+      response = await fetchImpl(url, {
         method: method.toUpperCase(),
         headers,
         credentials: "include",
@@ -114,5 +131,7 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
   return {
     get: (path, init = {}) => call("get", path, init) as never,
     post: (path, init = {}) => call("post", path, init) as never,
+    patch: (path, init = {}) => call("patch", path, init) as never,
+    put: (path, init = {}) => call("put", path, init) as never,
   };
 }
