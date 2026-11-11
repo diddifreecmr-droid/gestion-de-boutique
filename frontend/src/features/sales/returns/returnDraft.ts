@@ -19,6 +19,8 @@ import {
 } from "./returnMath";
 
 export type ReturnKind = "refund" | "exchange";
+/** Nouvelle vente de l'échange : comptant, ou à crédit pour le client d'origine. */
+export type ExchangeKind = "cash" | "credit";
 
 export interface LinePick {
   quantity: number;
@@ -40,6 +42,9 @@ export interface ReturnDraft {
   refundOn: string;
   /** Nouvelle vente de l'échange (mêmes lignes et contrôles que « Nouvelle vente »). */
   exchange: SaleDraft;
+  exchangeKind: ExchangeKind;
+  /** Acompte d'un échange à crédit, versé dans le mode de l'échange. */
+  deposit: number | null;
 }
 
 export function newReturnDraft(modeId: string | null, now: Date = new Date()): ReturnDraft {
@@ -52,6 +57,8 @@ export function newReturnDraft(modeId: string | null, now: Date = new Date()): R
     modeId,
     refundOn: businessDay(now),
     exchange: newDraft(modeId),
+    exchangeKind: "cash",
+    deposit: null,
   };
 }
 
@@ -91,19 +98,39 @@ export interface ReturnChecks {
   mode?: string;
   refundOn?: string;
   exchangeLines?: string;
+  /** Échange à crédit impossible (vente d'origine sans client, rien à payer). */
+  credit?: string;
+  deposit?: string;
+  /** Reste dû d'un échange à crédit (la créance), 0 au comptant. */
+  creditDue: number;
   blocking: boolean;
+}
+
+function checkCredit(sale: SaleResult, draft: ReturnDraft, checks: ReturnChecks): void {
+  const { toPay } = checks.balance;
+  const deposit = draft.deposit ?? 0;
+  if (sale.customer_id === null) {
+    checks.credit = "La vente d'origine n'a pas de client : l'échange à crédit est impossible";
+  } else if (toPay === 0 && draft.exchange.lines.length > 0) {
+    checks.credit = "L'avoir couvre la nouvelle vente : choisissez « Comptant »";
+  }
+  if (toPay > 0 && deposit >= toPay) {
+    checks.deposit = `L'acompte doit rester inférieur à ${formatMoney(toPay)} (sinon « Comptant »)`;
+  }
+  checks.creditDue = Math.max(0, toPay - deposit);
 }
 
 export function checkReturn(sale: SaleResult, listing: SaleReturns, draft: ReturnDraft) {
   const value = returnValue(sale, listing, draft.picks);
   const settled = settlement(sale, listing, value);
-  const exchange = checkSale(draft.exchange, "owner");
+  const exchange = checkSale(draft.exchange, "owner", false);
   const checks: ReturnChecks = {
     value,
     settlement: settled,
     exchange,
     balance: exchangeBalance(settled.refundMax, exchange.total),
     chassis: {},
+    creditDue: 0,
     blocking: false,
   };
   const chosen = Object.entries(draft.picks).filter(([, pick]) => pick.quantity > 0);
@@ -129,6 +156,7 @@ export function checkReturn(sale: SaleResult, listing: SaleReturns, draft: Retur
     if (draft.exchange.lines.length === 0)
       checks.exchangeLines = "Ajoutez l'article remis au client";
     if (draft.modeId === null) checks.mode = "Choisissez le mode de paiement de la différence";
+    if (draft.exchangeKind === "credit") checkCredit(sale, draft, checks);
   }
   const exchangeBlocking =
     draft.kind === "exchange" &&
@@ -145,6 +173,8 @@ export function checkReturn(sale: SaleResult, listing: SaleReturns, draft: Retur
       checks.mode,
       checks.refundOn,
       checks.exchangeLines,
+      checks.credit,
+      checks.deposit,
     ].some((error) => error !== undefined);
   return checks;
 }

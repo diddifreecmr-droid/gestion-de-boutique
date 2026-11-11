@@ -1,8 +1,9 @@
 """Agrégat `Article` (CDC § 20.2 ; UC-STK-01 à UC-STK-04 ; recette CAT-01 à CAT-13).
 
 - Nom affiché calculé « Marque Modèle » (Motos) ou saisi (`ProfileFields.display_name`).
-- Unicité dans la boutique : marque + modèle (profil avec « modèle ») ou référence ; clés
-  pliées (`keys.py`), contraintes `article_brand_model` / `article_reference` des dépôts.
+- Unicité dans la boutique : marque + modèle (profil avec « modèle »), nom affiché (profil sans
+  « modèle » : prêt-à-porter, textile ; décision client specs § 15.1) et référence ; clés pliées
+  (`keys.py`), contraintes `article_brand_model` / `article_name` / `article_reference`.
 - Changer le nom ne réécrit rien d'autre : les ventes gardent un instantané (T16, CAT-06).
 - Statut Actif / Archivé : un article archivé sort des listes de vente et d'achat mais reste
   lisible (historique, rapports). La règle « pas d'archivage avec du stock » regarde le stock :

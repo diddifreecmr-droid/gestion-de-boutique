@@ -30,7 +30,7 @@ const REFRESH = "Actualiser l'état de la demande";
 
 /** Vendeur : Haojue HJ125-8 à 700 000 (minimum 720 000), demande envoyée. */
 async function askBelowMinimum() {
-  const view = renderSale();
+  const view = renderSale("seller", { priceApproval: true });
   await view.user.click(await articleButton("Haojue HJ125-8"));
   await replaceText(view.user, priceField(), "700000");
   await view.user.click(screen.getByRole("button", { name: ASK }));
@@ -117,7 +117,7 @@ describe("accord du propriétaire, côté vendeur (UC-VEN-03)", () => {
   });
 
   it("deux articles sous le minimum : une demande n'en couvre qu'un", async () => {
-    const { user } = renderSale();
+    const { user } = renderSale("seller", { priceApproval: true });
     await user.click(await articleButton("Haojue HJ125-8"));
     await replaceText(user, priceField(), "700000");
     await user.click(screen.getByRole("button", { name: ASK }));

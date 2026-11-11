@@ -49,6 +49,11 @@ export interface SaleDraft {
   note: string;
   /** Minimums révélés par le serveur (PRICE_BELOW_MINIMUM) quand le catalogue les taisait. */
   serverMinimums: Record<string, number>;
+  /**
+   * Le serveur a exigé l'accord (`request_required`) alors que l'écran lisait le réglage
+   * désactivé (changé entre-temps) : l'écran passe au parcours « Demander l'accord ».
+   */
+  approvalRequired: boolean;
 }
 
 export const EMPTY_UNIT: UnitDetail = { color: "", chassis: "", engine: "" };
@@ -68,6 +73,7 @@ export function newDraft(payment: string | null): SaleDraft {
     terms: "",
     note: "",
     serverMinimums: {},
+    approvalRequired: false,
   };
 }
 

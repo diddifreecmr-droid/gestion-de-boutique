@@ -24,7 +24,9 @@ const ASK = "Demander l'accord du propriétaire";
 
 describe("prix sous le minimum (UC-VEN-03)", () => {
   it("vendeur : « Valider » devient « Demander l'accord du propriétaire », puis en attente", async () => {
-    const { user, recordSale, requestPriceApproval, container } = renderSale();
+    const { user, recordSale, requestPriceApproval, container } = renderSale("seller", {
+      priceApproval: true,
+    });
     await user.click(await articleButton("Haojue HJ125-8"));
     await replaceText(user, priceField(), "700000");
     expect(screen.getByText(/Prix inférieur au minimum \(720 000 FCFA\)/)).toBeVisible();
@@ -61,7 +63,7 @@ describe("prix sous le minimum (UC-VEN-03)", () => {
   });
 
   it("minimum tu par le catalogue : le serveur refuse, le bouton bascule", async () => {
-    const { user } = renderSale();
+    const { user } = renderSale("seller", { priceApproval: true });
     await user.click(await articleButton("Sanya SY150-3"));
     await replaceText(user, priceField(), "650000");
     await user.click(validateButton());

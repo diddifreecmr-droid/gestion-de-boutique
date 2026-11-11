@@ -8,7 +8,9 @@ retour au journal ; vente à crédit → `CreditSaleReturned` (baisse de la cré
 - **Retour simple** : remboursement facultatif `{amount, mode_id, refunded_on}` borné par
   `sale_return.settlement` (`OVERPAYMENT`).
 - **Échange** (`exchange`) : le retour d'abord (stock et châssis rendus disponibles), puis la
-  nouvelle vente par **les règles de `RecordSale`** (lieu de la vente d'origine par défaut).
+  nouvelle vente par **les règles de `RecordSale`** (lieu de la vente d'origine par défaut),
+  au comptant ou **à crédit** (client de la vente d'origine imposé ; la différence non payée
+  devient une créance par `CreditSaleRecorded`, `returning.exchange_sale_input`).
   La part de la valeur rendue non imputée sur la créance est un avoir : remboursée dans le
   mode `exchange.mode_id` et versée à la nouvelle vente dans ce même mode, plafonnée à son
   total ; le client ne paie (`sale.payments`) que la différence, ou la reçoit (avoir > total).
@@ -140,8 +142,7 @@ class RecordReturn:
                 reference=f"Échange {sale.number}",
             )
             data = replace(data, payments=(*data.payments, avoir_payment))
-        if data.location_id is None:
-            data = replace(data, location_id=sale.location_id)
+        data = rt.exchange_sale_input(sale, data)
         _, view = self._record.record_in(
             uow, actor, RecordSaleCommand(data=data, sale_id=new_id), now
         )

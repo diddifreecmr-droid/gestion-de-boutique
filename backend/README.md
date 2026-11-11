@@ -99,8 +99,11 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
 - **Champs du profil** dans `fields` (codes de `GET /profile`), validés par le domaine
   (`domain/catalog/schema.py`) ; non promus → colonne JSON `attributes`. Nom affiché « Marque
   Modèle » (motos) ou saisi. Unicité par boutique sur clés **pliées** (casse, accents, espaces,
-  ponctuation ignorés) : marque + modèle, référence. Doublon → 409 `DUPLICATE` +
-  `details.existing_id`. Référence vide (prêt-à-porter, textile) → `REF-000001` (compteur par boutique).
+  ponctuation ignorés) : marque + modèle (motos), **nom affiché** pour les profils sans modèle
+  (prêt-à-porter, textile : contrainte `article_name` sur `name_key`, décision client specs
+  § 15.1), référence. Doublon → 409 `DUPLICATE` + `details.existing_id` / `existing_name` /
+  `constraint`. Migration `0012_min_price_rules` : une base qui a déjà deux articles de même nom
+  dans une boutique **échoue** en les listant (à renommer avant de relancer). Référence vide (prêt-à-porter, textile) → `REF-000001` (compteur par boutique).
 - **Recherche** portable : sous-chaîne dans `search_key` (pliée par le domaine), ordre et curseur
   sur `(sort_key, id)`. Tri « plus vendus » : port `SalesRanking` (T16), sinon 400 `SORT_UNAVAILABLE`.
 - **Prix** (propriétaire, `PRICE_SET`) : historique `price_history` ; minimum ≤ base ; minimum
@@ -186,7 +189,13 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
 - **Règles tranchées** : comptant payé en entier (`PAYMENT_INCOMPLETE`, Q-12) ; crédit : client
   obligatoire, acompte < total ; payé ≤ total (`OVERPAYMENT`) ; plafond strict (vendeur
   `CREDIT_LIMIT_EXCEEDED`, propriétaire avertissement `warnings`) ; vendeur sous le minimum
-  `PRICE_BELOW_MINIMUM` (`request_required` ; débloqué par une demande acceptée, T16b) ;
+  (décision client specs § 15.1) : par défaut **accepté** avec l'avertissement
+  `{code: "PRICE_BELOW_MINIMUM", message: "Prix inférieur au minimum de 720 000 FCFA",
+  details: {article_id, line, min_price}}` dans `warnings` ; si le réglage
+  `min_price_requires_approval` (« Accord du propriétaire sous le prix minimum », faux par
+  défaut, `PATCH /settings`, journalisé, lu aussi dans `GET /profile`) est vrai : refus
+  `PRICE_BELOW_MINIMUM` (`request_required` ; débloqué par une demande acceptée, T16b). Toute
+  vente acceptée sous le minimum est journalisée **sensible** (`SaleRecordedBelowMinimum`) ;
   vendeur limité à son lieu habituel (`LOCATION_NOT_ALLOWED`, Q-36) ; total de ligne et coût =
   arrondi au franc demi vers le haut (T04) ; châssis normalisé (lettres et chiffres en
   majuscules) unique parmi les ventes valides via `sold_chassis.active_key` ; duplicata dès la
@@ -205,6 +214,9 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
   `POST /sales/{sid}/returns` (propriétaire ; retour simple ou `exchange`), `GET
   /sales/{sid}/returns` (retours + `balances` : vendu / rendu / rendable par ligne ; vendeur sur
   ses ventes, sans coût ni marge). Créations idempotentes par `id` client. Comptable : 403.
+- **Seulement si `min_price_requires_approval` est vrai** : sinon `POST /price-requests` →
+  422 `PRICE_APPROVAL_DISABLED` (la vente passe déjà avec un avertissement) ; un
+  `price_request_id` envoyé avec une vente est alors ignoré. Les autres routes restent.
 - **Demande de prix (Q-44 tranchée)** : expire 30 min après la demande (à 30:00 pile :
   expirée) ; acceptée, elle vaut 30 min **dès l'accord** ; usage unique (liée à la vente) ;
   couvre les lignes de **son article** dont le prix est **≥ prix accordé**, pour **son vendeur**.
@@ -225,7 +237,12 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
 - **Échange** : retour d'abord (stock, châssis), puis nouvelle vente par `RecordSale.record_in`
   (mêmes règles, lieu d'origine par défaut). L'avoir (valeur − baisse de créance) est remboursé
   dans `exchange.mode_id` **et** versé à la nouvelle vente dans ce mode (plafonné à son total) :
-  le client ne paie que la différence (`exchange.sale.payments`) ou la reçoit.
+  le client ne paie que la différence (`exchange.sale.payments`) ou la reçoit. **À crédit**
+  (`exchange.sale.kind: "credit"`, décision client) : client = celui de la vente d'origine,
+  imposé (`exchange.sale.customer` facultatif ; vente d'origine sans client → 400
+  `VALIDATION_ERROR` `field: customer` ; autre client → 400 `field: exchange.sale.customer`),
+  règles de crédit habituelles (acompte < total, plafond) ; le reste devient une créance par
+  `CreditSaleRecorded` (ex. 780 000 → 900 000, acompte 0 : créance 120 000).
 - **Pour T19** : `SaleReturnRepository.between(jour, jour)` → `amount`, `margin`, `margin_wac`,
   `refund` (montant, mode, `refunded_on`), `credit_reduction`, `returned_on`.
 - **Points ouverts** : la baisse de créance est calculée sur le reste **à la vente** (sans les

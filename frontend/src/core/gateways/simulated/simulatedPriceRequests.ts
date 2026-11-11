@@ -3,9 +3,11 @@
  * que T16b. Expiration 30 min après la demande, puis 30 min après l'accord ; statut lu
  * **effectif** à l'horloge ; usage unique ; couvre les lignes de son article à un prix ≥ prix
  * accordé, pour son vendeur. Sinon `PRICE_BELOW_MINIMUM` + `details.price_request`.
+ * Seulement si la boutique exige l'accord (`world.settings`, faux par défaut) : sinon la vente
+ * sous le minimum passe avec un avertissement et une demande → `PRICE_APPROVAL_DISABLED`.
  */
 import { ApiError } from "../../api/errors";
-import type { PriceRequest, RecordSaleCommand, SalesGateway } from "../salesContract";
+import type { PriceRequest, RecordSaleCommand, SalesGateway, SaleWarning } from "../salesContract";
 import { GAROUA } from "./seed";
 import { reach, requireArticle, type World } from "./world";
 
@@ -42,6 +44,11 @@ export function createSimulatedPriceRequests(world: World): PriceRequestMethods 
       const id = command.id ?? `pr-${String(world.priceRequests.size + 1)}`;
       const replay = world.priceRequests.get(id);
       if (replay !== undefined) return effective(replay, Date.now());
+      if (!world.settings.minPriceRequiresApproval) {
+        throw new ApiError(422, "PRICE_APPROVAL_DISABLED", "Accord du propriétaire non exigé", {
+          setting: "min_price_requires_approval",
+        });
+      }
       if (command.requested_price >= article.min_price) {
         throw new ApiError(400, "VALIDATION_ERROR", "Aucune demande nécessaire", {
           field: "requested_price",
@@ -137,6 +144,7 @@ function problem(
  */
 export function checkApproval(world: World, shopId: string, command: RecordSaleCommand): boolean {
   if (world.options.roleIn(shopId) === "owner") return false;
+  if (!world.settings.minPriceRequiresApproval) return false;
   const asked = command.price_request_id !== null && command.price_request_id !== undefined;
   let covered = false;
   command.lines.forEach((line, index) => {
@@ -154,6 +162,28 @@ export function checkApproval(world: World, shopId: string, command: RecordSaleC
     });
   });
   return covered;
+}
+
+/** Accord non exigé : un avertissement par ligne d'un vendeur sous le minimum (comme l'API). */
+export function minimumWarnings(
+  world: World,
+  shopId: string,
+  command: RecordSaleCommand,
+): SaleWarning[] {
+  if (world.options.roleIn(shopId) === "owner" || world.settings.minPriceRequiresApproval)
+    return [];
+  return command.lines.flatMap((line, index) => {
+    const article = requireArticle(world, line.article_id);
+    if (line.unit_price >= article.min_price) return [];
+    const min = String(article.min_price).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return [
+      {
+        code: "PRICE_BELOW_MINIMUM",
+        message: `Prix inférieur au minimum de ${min} FCFA`,
+        details: { article_id: article.id, line: index + 1, min_price: article.min_price },
+      },
+    ];
+  });
 }
 
 /** La vente enregistrée consomme la demande (usage unique). */

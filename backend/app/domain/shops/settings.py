@@ -54,6 +54,8 @@ class SettingsValues:
     copies: int = 1
     low_stock_threshold: Decimal = Decimal(2)
     min_price_enabled: bool = False
+    min_price_requires_approval: bool = False
+    """Faux (défaut, décision client) : sous le minimum = avertissement ; vrai : accord (T16b)."""
     exchange_days: int | None = None
     truck_silent_hours: int | None = None
     transfer_in_transit_days: int | None = 7
@@ -66,9 +68,10 @@ class SettingsValues:
         object.__setattr__(self, "footer_message", footer)
         require_int(self.copies, "copies", low=COPIES_RANGE[0], high=COPIES_RANGE[1])
         object.__setattr__(self, "low_stock_threshold", _threshold(self.low_stock_threshold))
-        if not isinstance(self.min_price_enabled, bool):
-            msg = "Oui/Non attendu"
-            raise ValidationFailed(msg, details={"field": "min_price_enabled"})
+        for flag in ("min_price_enabled", "min_price_requires_approval"):
+            if not isinstance(getattr(self, flag), bool):
+                msg = "Oui/Non attendu"
+                raise ValidationFailed(msg, details={"field": flag})
         for name, (low, high) in _OPTIONAL_BOUNDS.items():
             value = getattr(self, name)
             if value is not None:

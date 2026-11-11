@@ -81,6 +81,7 @@ export function createHttpCatalog({ api, session }: AppServices): CatalogGateway
           .filter((column) => column.is_point_of_sale)
           .map((column) => ({ id: column.location_id, name: column.name })),
         default_location_id: profile.default_location_id,
+        min_price_requires_approval: profile.min_price_requires_approval,
         payment_modes: modes
           .filter((mode) => mode.active)
           .sort((a, b) => a.display_order - b.display_order),

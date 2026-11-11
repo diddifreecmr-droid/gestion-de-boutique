@@ -47,6 +47,11 @@ export interface SaleSetup {
   locations: SaleLocation[];
   /** Lieu habituel de l'utilisateur (`default_location_id` du profil), s'il en a un. */
   default_location_id: string | null;
+  /**
+   * Réglage « Accord du propriétaire sous le prix minimum » (`GET /profile`, faux par défaut) :
+   * faux → un prix sous le minimum est un simple avertissement ; vrai → « Demander l'accord ».
+   */
+  min_price_requires_approval: boolean;
   /** Modes de paiement **actifs**, dans l'ordre d'affichage. */
   payment_modes: PaymentMode[];
 }

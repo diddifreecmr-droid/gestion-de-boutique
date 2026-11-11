@@ -24,9 +24,10 @@ type World = tuple[SalesWorld, Actor, Actor, Actor, Article]
 
 
 def minimum_world() -> World:
-    """HJ : base 780 000, minimum 720 000 (réglage actif)."""
+    """HJ : base 780 000, minimum 720 000 (réglage actif, accord du propriétaire exigé)."""
     world, owner, accountant, seller, hj = bought()
     world.enable_min_price(owner)
+    world.require_price_approval(owner)
     prices = ArticlePrices(base_price=Money(780_000), min_price=Money(720_000))
     world.catalog.prices.execute(owner, hj.id, prices, world.article(owner, hj).version)
     return world, owner, accountant, seller, world.article(owner, hj)

@@ -2,8 +2,8 @@
 
 Dans **une** transaction : numéro `V-000001` (RG-T05), lieu et vendeur (`resolver.py`), client
 (création rapide comprise), lignes à instantanés et **coûts figés** (`lines.py`), paiements,
-contrôles (prix minimum avec accord du propriétaire : `price_approval.py` ; plafond de
-crédit : `checks.py`), règles de paiement (`rules.py`),
+contrôles (prix minimum : avertissement par défaut, accord du propriétaire si le réglage
+l'exige, `price_approval.py` ; plafond de crédit : `checks.py`), règles de paiement (`rules.py`),
 châssis réservés (RG-M01), une « Sortie vente » par article (grand livre, RG-T17), journal.
 Une vente à crédit publie `CreditSaleRecorded` (créance de T17) ; `remaining` est dans la vue.
 
@@ -116,10 +116,11 @@ class RecordSale:
         settings = ShopSettingsRepository.within(uow).current().values
         profile = profile_for(ShopRepository.within(uow).current().profile_code.value)
         resolved = [resolve_line(uow, item, profile) for item in data.lines]
-        below, request = approve_minimums(
+        below, request, warnings = approve_minimums(
             uow,
             resolved,
             enabled=settings.min_price_enabled,
+            requires_approval=settings.min_price_requires_approval,
             actor=actor,
             request_id=data.price_request_id,
             now=now,
@@ -153,9 +154,6 @@ class RecordSale:
         if request is not None:
             request.use(sale.id, now)
             PriceRequestRepository.within(uow).update(request)
-        warnings = (
-            []
-            if customer is None or sale.kind is SaleKind.CASH
-            else check_credit_limit(uow, self._debt, actor, customer, sale.remaining)
-        )
+        if customer is not None and sale.kind is SaleKind.CREDIT:
+            warnings += check_credit_limit(uow, self._debt, actor, customer, sale.remaining)
         return sale, view_of(self._policy, actor, sale, warnings=tuple(warnings))

@@ -3113,6 +3113,8 @@ export interface components {
       receipt: components["schemas"]["ReceiptSettingsResponse"];
       /** Min Price Enabled */
       min_price_enabled: boolean;
+      /** Min Price Requires Approval */
+      min_price_requires_approval: boolean;
       /** Default Location Id */
       default_location_id: string | null;
     };
@@ -4019,6 +4021,8 @@ export interface components {
       low_stock_threshold?: number | string | null;
       /** Min Price Enabled */
       min_price_enabled?: boolean | null;
+      /** Min Price Requires Approval */
+      min_price_requires_approval?: boolean | null;
       /** Exchange Days */
       exchange_days?: number | null;
       /** Truck Silent Hours */
@@ -4064,6 +4068,8 @@ export interface components {
       low_stock_threshold: string;
       /** Min Price Enabled */
       min_price_enabled: boolean;
+      /** Min Price Requires Approval */
+      min_price_requires_approval: boolean;
       /** Exchange Days */
       exchange_days: number | null;
       /** Truck Silent Hours */

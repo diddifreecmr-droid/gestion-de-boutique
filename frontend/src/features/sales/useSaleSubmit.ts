@@ -51,6 +51,7 @@ export function useSaleSubmit(options: Options) {
       const details = priceBelowMinimum(error);
       update({
         serverMinimums: { ...draft.serverMinimums, [details.article_id]: details.min_price },
+        approvalRequired: true,
       });
       if (details.price_request === null) setMessage(BELOW_MINIMUM);
       else {

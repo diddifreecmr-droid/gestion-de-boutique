@@ -1,6 +1,6 @@
 """UC-VEN-01 / 02 — Enregistrer une vente : SCN-01 étape 7 (§ 17.5), coût inconnu (RG-T15),
-paiements (SAL-01, ERR-OVR-02/03, Q-12), crédit (SAL-07, ERR-CRD-01 à 04), prix minimum
-(ERR-PRM-01 à 03), numéros continus (RG-T05)."""
+paiements (SAL-01, ERR-OVR-02/03, Q-12), crédit (SAL-07, ERR-CRD-01 à 04), numéros continus
+(RG-T05) ; prix minimum : `test_min_price_rules.py`."""
 
 import pytest
 
@@ -8,13 +8,11 @@ from app.application.audit.ports import AuditQuery
 from app.application.sales.inputs import CustomerInput
 from app.application.security.actor import Actor
 from app.domain.catalog.article import Article
-from app.domain.catalog.prices import ArticlePrices
 from app.domain.purchasing.lines import FeeKind
 from app.domain.sales.errors import (
     CreditLimitExceeded,
     CustomerRequired,
     PaymentIncomplete,
-    PriceBelowMinimum,
     SaleOverpayment,
 )
 from app.domain.sales.values import SaleKind
@@ -115,22 +113,3 @@ def test_quick_customer_is_merged_by_phone() -> None:
     line = world.line(hj, 700_000)
     again, _ = world.record(seller, line, kind=SaleKind.CREDIT, customer=twin, payments=())
     assert again.sale.content.customer_id == first.sale.content.customer_id  # UC-VEN-10
-
-
-def test_minimum_price_seller_refused_owner_accepted() -> None:
-    world, owner, _, seller, hj = bought()
-    world.enable_min_price(owner)
-    prices = ArticlePrices(base_price=Money(780_000), min_price=Money(720_000))
-    world.catalog.prices.execute(owner, hj.id, prices, world.article(owner, hj).version)
-    with pytest.raises(PriceBelowMinimum) as refused:  # ERR-PRM-01
-        world.cash(seller, hj, 719_999)
-    assert refused.value.details == {
-        "article_id": str(hj.id),
-        "line": 1,
-        "min_price": 720_000,
-        "request_required": True,
-    }
-    world.cash(seller, hj, 720_000)  # ERR-PRM-02 : « en dessous » est strict
-    world.cash(owner, hj, 600_000)  # ERR-PRM-03
-    journal = world.journal(world.shop_of(owner), AuditQuery(modules={"sales"}))
-    assert [e.sensitive for e in journal if "minimum" in e.summary] == [True]

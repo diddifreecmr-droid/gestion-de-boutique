@@ -9,8 +9,10 @@ import { normalizePhone } from "./phone";
 
 export interface LineIssues {
   price?: string;
-  /** Prix sous le minimum, vu par un vendeur : il faut l'accord du propriétaire. */
+  /** Prix sous le minimum (vu par un vendeur) : le minimum, pour l'avertissement. */
   belowMinimum?: number;
+  /** Vrai si la boutique exige l'accord du propriétaire pour ce prix (sinon simple avertissement). */
+  approvalRequired?: boolean;
   chassis: (string | undefined)[];
 }
 
@@ -44,7 +46,12 @@ export function splitSum(split: Record<string, number | null>): number {
   return Object.values(split).reduce<number>((sum, amount) => sum + (amount ?? 0), 0);
 }
 
-function checkLines(draft: SaleDraft, role: Role, checks: SaleChecks): void {
+function checkLines(
+  draft: SaleDraft,
+  role: Role,
+  requiresApproval: boolean,
+  checks: SaleChecks,
+): void {
   const seen = new Set<string>();
   draft.lines.forEach((line) => {
     const issues: LineIssues = { chassis: [] };
@@ -53,7 +60,10 @@ function checkLines(draft: SaleDraft, role: Role, checks: SaleChecks): void {
     else if (line.unitPrice < 1) issues.price = "Le prix doit être supérieur à 0";
     else if (role !== "owner" && minimum !== null && line.unitPrice < minimum) {
       issues.belowMinimum = minimum;
-      checks.needsApproval.push(line);
+      if (requiresApproval) {
+        issues.approvalRequired = true;
+        checks.needsApproval.push(line);
+      }
     }
     issues.chassis = line.units.map((unit) => {
       const chassis = unit.chassis.trim().toUpperCase();
@@ -113,7 +123,11 @@ function checkOptionalCustomer(draft: SaleDraft, checks: SaleChecks): void {
   }
 }
 
-export function checkSale(draft: SaleDraft, role: Role): SaleChecks {
+/**
+ * `requiresApproval` : réglage « Accord du propriétaire sous le prix minimum » (faux par défaut,
+ * décision client) — faux, un prix sous le minimum n'est qu'un avertissement non bloquant.
+ */
+export function checkSale(draft: SaleDraft, role: Role, requiresApproval: boolean): SaleChecks {
   const checks: SaleChecks = {
     total: draft.lines.reduce((sum, line) => sum + lineTotal(line), 0),
     paid: 0,
@@ -123,7 +137,7 @@ export function checkSale(draft: SaleDraft, role: Role): SaleChecks {
     needsApproval: [],
     blocking: false,
   };
-  checkLines(draft, role, checks);
+  checkLines(draft, role, requiresApproval, checks);
   if (draft.payment === null) checks.payment = "Choisissez un mode de paiement";
   else if (draft.payment === CREDIT_CHOICE) checkCredit(draft, checks);
   else {

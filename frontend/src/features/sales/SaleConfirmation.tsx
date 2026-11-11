@@ -60,9 +60,9 @@ export function SaleConfirmation({ sale, onPrint, onNewSale }: SaleConfirmationP
           />
         ))}
       </ListCard>
-      {sale.warnings.map((warning) => (
+      {sale.warnings.map((warning, index) => (
         <p
-          key={warning.code}
+          key={`${warning.code}-${String(index)}`}
           role="status"
           className="m-0 flex items-start gap-2 text-body text-warning-text"
         >

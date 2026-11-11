@@ -61,8 +61,9 @@ export function SaleLineCard({
         <p className="m-0 flex items-start gap-2 text-body text-warning-text">
           <AlertTriangle aria-hidden="true" className="size-6 shrink-0" />
           <span>
-            Prix inférieur au minimum ({formatMoney(issues.belowMinimum)}) : validation du
-            propriétaire nécessaire.
+            {issues.approvalRequired === true
+              ? `Prix inférieur au minimum (${formatMoney(issues.belowMinimum)}) : validation du propriétaire nécessaire.`
+              : `Prix inférieur au minimum de ${formatMoney(issues.belowMinimum)}`}
           </span>
         </p>
       )}

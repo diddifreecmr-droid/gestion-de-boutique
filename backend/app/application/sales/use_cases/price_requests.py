@@ -1,9 +1,12 @@
 """UC-VEN-03 — Demandes de prix sous le minimum : demander, décider, lister, lire (T16b).
 
-- `RequestPriceApproval` (`PRICE_REQUEST_CREATE`, vendeur) : article actif dont le minimum est
-  actif (réglage H9), prix demandé **strictement** sous ce minimum (sinon 400 : rien à
-  demander), lieu = lieu de vente habituel du vendeur (Q-36). Alerte « Demande de prix » aux
-  propriétaires (`sales/alerts.py`). Idempotent par `request_id` client (201 puis 200).
+- `RequestPriceApproval` (`PRICE_REQUEST_CREATE`, vendeur) : seulement si la boutique exige
+  l'accord (réglage `min_price_requires_approval`, faux par défaut ; sinon 422
+  `PRICE_APPROVAL_DISABLED`, la vente sous le minimum passe avec un avertissement) ; article
+  actif dont le minimum est actif (réglage H9), prix demandé **strictement** sous ce minimum
+  (sinon 400 : rien à demander), lieu = lieu de vente habituel du vendeur (Q-36). Alerte
+  « Demande de prix » aux propriétaires (`sales/alerts.py`). Idempotent par
+  `request_id` client (201 puis 200).
 - `DecidePriceRequest` (`PRICE_REQUEST_DECIDE`, propriétaire) : accepter / refuser une demande
   **en attente** ; décidée ou expirée → `INVALID_STATE_TRANSITION`. L'alerte est résolue.
 - `ListPriceRequests` (`PRICE_REQUEST_READ`) : vendeur → les siennes (portée OWN dans la
@@ -29,6 +32,7 @@ from app.application.shops.context import actor_shop, performer_of, require_vers
 from app.application.shops.ports import ShopSettingsRepository
 from app.domain.catalog.ids import ArticleId
 from app.domain.catalog.prices import PriceKind
+from app.domain.sales.errors import PriceApprovalDisabled
 from app.domain.sales.ids import PriceRequestId
 from app.domain.sales.lines import SaleMode
 from app.domain.sales.price_request import PriceRequest, PriceRequestStatus
@@ -74,11 +78,14 @@ class RequestPriceApproval(_PriceRequests):
                     if existing.seller_id != actor.user_id:
                         raise not_found(command.request_id)
                     return self._view(existing), False
+            settings = ShopSettingsRepository.within(uow).current().values
+            if not settings.min_price_requires_approval:
+                raise PriceApprovalDisabled
             article = ArticleRepository.within(uow).get(command.article_id)
             if not article.is_active:
                 msg = "Article archivé : il ne se vend plus"
                 raise ValidationFailed(msg, details={"field": "article_id"})
-            enabled = ShopSettingsRepository.within(uow).current().values.min_price_enabled
+            enabled = settings.min_price_enabled
             kind = (
                 PriceKind.MINIMUM_PIECE
                 if command.sale_mode is SaleMode.PIECE

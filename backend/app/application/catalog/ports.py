@@ -1,7 +1,8 @@
 """Ports du catalogue (T13) : dépôt des articles, historique des prix en ajout seul.
 
-- `ArticleRepository` (gabarit `Repository`, `Port.within(uow)`) : deux unicités par boutique,
-  marque + modèle et référence, sur les clés pliées ; leurs noms sont ceux des contraintes SQL
+- `ArticleRepository` (gabarit `Repository`, `Port.within(uow)`) : trois unicités par
+  boutique, marque + modèle (motos), nom affiché (profils sans modèle : prêt-à-porter, textile)
+  et référence, sur les clés pliées ; leurs noms sont ceux des contraintes SQL
   (`tables_catalog.py`). `find_by_key` sert à **proposer** l'article existant (UC-STK-01).
 - `PriceHistoryLog` : historique des prix (UC-STK-03), sans `update` ni suppression, comme le
   journal ; écrit dans la transaction du changement de prix.
@@ -21,12 +22,14 @@ from app.domain.catalog.prices import PriceHistory
 
 ARTICLE_BRAND_MODEL = "article_brand_model"
 ARTICLE_REFERENCE = "article_reference"
+ARTICLE_NAME = "article_name"
 
 
 class ArticleRepository(ShopRecordRepository[ArticleId, Article]):
     def unique_keys(self) -> Sequence[UniqueKey[Article]]:
         return (
             UniqueKey(ARTICLE_BRAND_MODEL, lambda article: article.details.brand_model_key),
+            UniqueKey(ARTICLE_NAME, lambda article: article.details.name_key),
             UniqueKey(ARTICLE_REFERENCE, lambda article: article.details.reference_key),
         )
 

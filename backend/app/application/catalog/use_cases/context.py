@@ -2,7 +2,8 @@
 
 - `ArticleInput` : ce que l'utilisateur saisit (champs du profil + seuil, photo, notes) ; le
   domaine le valide contre le schéma du profil de la boutique (`read_profile_fields`).
-- `require_unique` : un article de même marque + modèle (ou même référence) existe déjà →
+- `require_unique` : un article de même marque + modèle, de même nom (profil sans modèle) ou de
+  même référence existe déjà →
   `DuplicateArticle` avec `existing_id` : l'écran le **propose** au lieu d'en créer un second
   (UC-STK-01). Une course entre deux créations simultanées reste arbitrée par la contrainte du
   dépôt (`Duplicate`, 409, sans `existing_id`).
@@ -18,6 +19,7 @@ from decimal import Decimal
 
 from app.application.catalog.ports import (
     ARTICLE_BRAND_MODEL,
+    ARTICLE_NAME,
     ARTICLE_REFERENCE,
     ArticleRepository,
     PriceHistoryLog,
@@ -75,6 +77,7 @@ def require_unique(
 ) -> None:
     for constraint, key in (
         (ARTICLE_BRAND_MODEL, details.brand_model_key),
+        (ARTICLE_NAME, details.name_key),
         (ARTICLE_REFERENCE, details.reference_key),
     ):
         if key is None:

@@ -78,8 +78,18 @@ def test_reference_generated_when_empty() -> None:
     taken = ArticleInput(fields={"name": "X", "reference": "ref 000001"})
     with pytest.raises(DuplicateArticle):
         create(owner, CreateArticleCommand(data=taken))
-    same_name, _ = create(owner, CreateArticleCommand(data=ArticleInput(fields={"name": "Jupe"})))
-    assert same_name.id != skirt.id  # prêt-à-porter : seule la référence est unique
+    for name in ("Jupe", "  JUPÉ ", "jupe."):  # nom unique (décision client, specs § 15.1)
+        with pytest.raises(DuplicateArticle) as twice:
+            create(owner, CreateArticleCommand(data=ArticleInput(fields={"name": name})))
+        assert twice.value.details == {
+            "existing_id": str(skirt.id),
+            "existing_name": "Jupe",
+            "constraint": "article_name",
+        }
+    with pytest.raises(DuplicateArticle):  # renommer vers un nom pris
+        world.catalog.update.execute(owner, shirt.id, {"name": "jupe"}, 1, None)
+    renamed = world.catalog.update.execute(owner, skirt.id, {"name": "JUPE"}, 1, None)
+    assert renamed.display_name == "JUPE"  # son propre nom : pas un doublon
 
 
 def test_update_logs_changes_and_checks_version() -> None:

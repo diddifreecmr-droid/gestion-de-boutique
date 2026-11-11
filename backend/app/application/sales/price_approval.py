@@ -1,24 +1,27 @@
 """Prix minimum avec accord du propriétaire (UC-VEN-03 ; ERR-PRM-05 à 08 ; Q-44 tranchée).
 
-Une ligne d'un **vendeur** strictement sous le minimum actif n'est acceptée qu'avec un
-`price_request_id` qui la couvre : demande **Acceptée**, non expirée (horloge `Clock`), jamais
-utilisée, du **même vendeur**, du **même article**, et prix de la ligne **≥ prix accordé**.
+**Seulement si le réglage `min_price_requires_approval` est vrai** (faux par défaut, décision
+client specs § 15.1 : sinon la ligne est acceptée avec un avertissement, `checks.py`, et un
+`price_request_id` éventuel est ignoré). Réglage vrai : une ligne d'un **vendeur** strictement
+sous le minimum actif n'est acceptée qu'avec un `price_request_id` qui la couvre : demande
+**Acceptée**, non expirée (horloge `Clock`), jamais utilisée, du **même vendeur**, du **même
+article**, et prix de la ligne **≥ prix accordé**.
 Sinon `PRICE_BELOW_MINIMUM` (`request_required: true`) avec `price_request` = la raison :
 `not_found`, `other_seller`, `other_article`, `pending`, `refused`, `expired`, `used`,
 `price_too_low`. Une même demande couvre toutes les lignes de son article ; une fois la vente
 enregistrée, elle y est liée (`PriceRequest.use`) et ne ressert plus. La vente est alors
 journalisée « sous le minimum » (sensible), comme celle du propriétaire.
 
-Le propriétaire vend librement (la demande éventuelle est ignorée). Hors connexion : sans
-objet tant que le mode différé n'est pas exposé (une vente différée d'un vendeur sous le
-minimum est refusée par `check_minimums`, RG-T18 / OFF-07).
+Le propriétaire vend librement (la demande éventuelle est ignorée). Hors connexion : une vente
+différée d'un vendeur sous le minimum est refusée par `check_minimums` quand l'accord est
+exigé (RG-T18 / OFF-07), acceptée avec avertissement sinon.
 """
 
 from collections.abc import Sequence
 from datetime import datetime
 
 from app.application.ports.uow import UnitOfWork
-from app.application.sales.checks import check_minimums
+from app.application.sales.checks import SaleWarning, check_minimums
 from app.application.sales.lines import minimum_of
 from app.application.sales.return_ports import PriceRequestRepository
 from app.application.security.actor import Actor
@@ -48,13 +51,17 @@ def approve_minimums(
     lines: Sequence[tuple[SaleLine, Article]],
     *,
     enabled: bool,
+    requires_approval: bool,
     actor: Actor,
     request_id: PriceRequestId | None,
     now: datetime,
-) -> tuple[bool, PriceRequest | None]:
-    """(vente sous le minimum ?, demande à lier) ; lève si une ligne n'est pas couverte."""
-    if actor.role is Role.OWNER or request_id is None:
-        return check_minimums(lines, enabled=enabled, actor=actor), None
+) -> tuple[bool, PriceRequest | None, list[SaleWarning]]:
+    """(sous le minimum ?, demande à lier, avertissements) ; lève sur une ligne non couverte."""
+    if actor.role is Role.OWNER or request_id is None or not requires_approval:
+        below, warnings = check_minimums(
+            lines, enabled=enabled, actor=actor, requires_approval=requires_approval
+        )
+        return below, None, warnings
     request = PriceRequestRepository.within(uow).find(request_id)
     problem = _problem(request, actor, now)
     used: PriceRequest | None = None
@@ -76,4 +83,4 @@ def approve_minimums(
                 price_request=why or "not_found",
             )
         used = request
-    return used is not None, used
+    return used is not None, used, []

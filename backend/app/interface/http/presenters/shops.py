@@ -108,6 +108,7 @@ def profile_response(view: ShopProfileView) -> ProfileResponse:
         stock_units=[unit.value for unit in profile.stock_units],
         receipt=_receipt(shop, view.settings),
         min_price_enabled=view.settings.min_price_enabled,
+        min_price_requires_approval=view.settings.min_price_requires_approval,
         default_location_id=None if location is None else str(location),
     )
 
@@ -127,6 +128,7 @@ def settings_response(shop: Shop, values: SettingsValues, version: int) -> Setti
         copies=values.copies,
         low_stock_threshold=str(values.low_stock_threshold),
         min_price_enabled=values.min_price_enabled,
+        min_price_requires_approval=values.min_price_requires_approval,
         exchange_days=values.exchange_days,
         truck_silent_hours=values.truck_silent_hours,
         transfer_in_transit_days=values.transfer_in_transit_days,

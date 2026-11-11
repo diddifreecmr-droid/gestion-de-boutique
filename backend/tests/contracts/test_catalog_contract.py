@@ -4,6 +4,7 @@ import pytest
 
 from app.application.catalog.ports import (
     ARTICLE_BRAND_MODEL,
+    ARTICLE_NAME,
     ARTICLE_REFERENCE,
     ArticleRepository,
     PriceHistoryLog,
@@ -38,7 +39,7 @@ def test_article_round_trip(backend: ContractBackend, shop_a: ShopId) -> None:
         assert (after.created_at, after.version) == (before.created_at, 1)
 
 
-def test_brand_model_and_reference_unique_per_shop(
+def test_brand_model_name_and_reference_unique_per_shop(
     backend: ContractBackend, shop_a: ShopId, shop_b: ShopId
 ) -> None:
     first = moto(shop_a)
@@ -51,12 +52,15 @@ def test_brand_model_and_reference_unique_per_shop(
     clashes = [
         (moto(shop_a, model="hj125 8", brand="HAOJUE"), ARTICLE_BRAND_MODEL),
         (apparel(shop_a, "Autre chemise", "ch 0142"), ARTICLE_REFERENCE),
+        (apparel(shop_a, " CHÉMISE! ", "CH-9999"), ARTICLE_NAME),  # sans modèle : nom unique
     ]
     for article, constraint in clashes:
         with pytest.raises(Duplicate) as caught:
             run_in_uow(backend, shop_a, lambda uow, a=article: ArticleRepository.within(uow).add(a))  # type: ignore[misc]
         assert caught.value.details["constraint"] == constraint
     run_in_uow(backend, shop_b, lambda uow: ArticleRepository.within(uow).add(moto(shop_b)))
+    same_name = apparel(shop_b, "Chemise", "CH-0142")  # autre boutique : libre
+    run_in_uow(backend, shop_b, lambda uow: ArticleRepository.within(uow).add(same_name))
     with backend.uow(shop_a) as uow:
         articles = ArticleRepository.within(uow)
         found = articles.find_by_key(ARTICLE_BRAND_MODEL, first.details.brand_model_key or "")
@@ -64,6 +68,10 @@ def test_brand_model_and_reference_unique_per_shop(
         assert found.id == first.id
         assert articles.find_by_key(ARTICLE_REFERENCE, "ch 0142") is not None
         assert articles.find_by_key(ARTICLE_REFERENCE, "absent") is None
+        named = articles.find_by_key(ARTICLE_NAME, "chemise")
+        assert named is not None
+        assert named.id == shirt.id
+        assert first.details.name_key is None  # motos : marque + modèle
 
 
 def test_isolation_between_shops(backend: ContractBackend, shop_a: ShopId, shop_b: ShopId) -> None:

@@ -76,3 +76,8 @@ class CatalogWorld(World):
     def enable_min_price(self, owner: Actor) -> None:
         version = self.http.settings.get(owner).version
         self.http.settings.update(owner, {"min_price_enabled": True}, version)
+
+    def require_price_approval(self, owner: Actor) -> None:
+        """Réglage « Accord du propriétaire sous le prix minimum » (faux par défaut)."""
+        version = self.http.settings.get(owner).version
+        self.http.settings.update(owner, {"min_price_requires_approval": True}, version)

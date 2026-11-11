@@ -1,9 +1,12 @@
 """Contrôles de la vente qui dépendent du rôle : prix minimum (H9) et plafond de crédit.
 
-- **Prix minimum** (UC-VEN-03, ERR-PRM-01 à 04) : réglage actif et prix vendu **strictement**
-  sous le minimum de l'article. Vendeur → `PRICE_BELOW_MINIMUM` (`request_required: true`) ;
-  une demande acceptée le débloque (`price_approval.py`, T16b).
-  Propriétaire → accepté, journal « sensible » (`SaleRecordedBelowMinimum`).
+- **Prix minimum** (UC-VEN-03, ERR-PRM-01 à 04, décision client specs § 15.1) : réglage actif
+  et prix vendu **strictement** sous le minimum de l'article. Par défaut (réglage
+  `min_price_requires_approval` faux) : vente acceptée, un avertissement `PRICE_BELOW_MINIMUM`
+  par ligne (`details` : `article_id`, `line`, `min_price`) pour le vendeur. Réglage vrai :
+  vendeur → refus `PRICE_BELOW_MINIMUM` (`request_required: true`) qu'une demande acceptée
+  débloque (`price_approval.py`, T16b). Propriétaire → toujours accepté. Dans tous les cas
+  acceptés sous le minimum, journal « sensible » (`SaleRecordedBelowMinimum`).
 - **Plafond de crédit (Q-45 tranchée)** : dette après la vente = dû actuel + reste de cette
   vente ; « dépasser » est **strict** (égalité acceptée, ERR-CRD-02). Vendeur → refus
   `CREDIT_LIMIT_EXCEEDED` ; propriétaire → vente acceptée avec l'avertissement
@@ -58,19 +61,44 @@ class SalesCustomerDebt(CustomerDebt):
         )
 
 
-def check_minimums(
-    lines: Iterable[tuple[SaleLine, Article]], *, enabled: bool, actor: Actor
-) -> bool:
-    """Vrai si une ligne est sous le minimum (propriétaire) ; lève pour tout autre rôle."""
-    below = False
+def below_minimum(
+    lines: Iterable[tuple[SaleLine, Article]], *, enabled: bool
+) -> list[tuple[int, Article, Money]]:
+    """Lignes (position, article, minimum) strictement sous le minimum actif."""
+    found = []
     for position, (line, article) in enumerate(lines, start=1):
         minimum = minimum_of(article, line, enabled=enabled)
-        if minimum is None or line.unit_price >= minimum:
-            continue
-        if actor.role is not Role.OWNER:
-            raise PriceBelowMinimum(article_id=str(article.id), line=position, min_price=minimum)
-        below = True
-    return below
+        if minimum is not None and line.unit_price < minimum:
+            found.append((position, article, minimum))
+    return found
+
+
+def minimum_warning(article: Article, position: int, minimum: Money) -> SaleWarning:
+    details: dict[str, object] = {
+        "article_id": str(article.id),
+        "line": position,
+        "min_price": minimum.amount,
+    }
+    return SaleWarning(PriceBelowMinimum.code, f"Prix inférieur au minimum de {minimum}", details)
+
+
+def check_minimums(
+    lines: Iterable[tuple[SaleLine, Article]],
+    *,
+    enabled: bool,
+    actor: Actor,
+    requires_approval: bool,
+) -> tuple[bool, list[SaleWarning]]:
+    """(sous le minimum ?, avertissements) ; lève pour un vendeur si l'accord est exigé."""
+    below = below_minimum(lines, enabled=enabled)
+    if not below or actor.role is Role.OWNER:
+        return bool(below), []
+    if requires_approval:
+        position, article, minimum = below[0]
+        raise PriceBelowMinimum(article_id=str(article.id), line=position, min_price=minimum)
+    return True, [
+        minimum_warning(article, position, minimum) for position, article, minimum in below
+    ]
 
 
 def check_credit_limit(

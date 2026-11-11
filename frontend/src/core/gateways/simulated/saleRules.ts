@@ -48,11 +48,11 @@ export function checkShape(command: RecordSaleCommand): void {
   if (command.kind === "credit") {
     const customer = command.customer;
     const blank = (text: string | null | undefined) => (text ?? "").trim() === "";
+    // Client existant (`id`, comme l'échange à crédit) ou création rapide (nom et téléphone).
+    const known = customer !== null && customer !== undefined && !blank(customer.id);
     if (
-      customer === null ||
-      customer === undefined ||
-      blank(customer.name) ||
-      blank(customer.phone)
+      !known &&
+      (customer === null || customer === undefined || blank(customer.name) || blank(customer.phone))
     ) {
       invalid("Client obligatoire (nom et téléphone) pour une vente à crédit", "customer");
     }

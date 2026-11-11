@@ -22,6 +22,8 @@ export interface NewSaleFormProps {
   role: Role;
   location: SaleLocation;
   modes: readonly PaymentMode[];
+  /** Réglage « Accord du propriétaire sous le prix minimum » (`SaleSetup`). */
+  requiresApproval: boolean;
   onRecorded: (sale: SaleResult) => void;
   /** Mention sous le titre (ex. « Démonstration » tant que la passerelle est simulée). */
   notice?: ReactNode;
@@ -37,13 +39,13 @@ function initialPayment(shopId: string, modes: readonly PaymentMode[]): string {
 
 /** Formulaire « Nouvelle vente » (design-system § 7.1) : article, prix, paiement, valider. */
 export function NewSaleForm(props: NewSaleFormProps) {
-  const { shopId, role, location, modes, onRecorded, notice } = props;
+  const { shopId, role, location, modes, requiresApproval, onRecorded, notice } = props;
   const [draft, setDraft] = useState<SaleDraft>(() => newDraft(initialPayment(shopId, modes)));
   const [picking, setPicking] = useState(false);
   const update = (patch: Partial<SaleDraft>) => {
     setDraft((current) => ({ ...current, ...patch }));
   };
-  const checks = checkSale(draft, role);
+  const checks = checkSale(draft, role, requiresApproval || draft.approvalRequired);
   const approval = usePriceApproval(shopId, checks.needsApproval);
   const submit = useSaleSubmit({ shopId, location, draft, checks, approval, update, onRecorded });
   const showPicker = picking || draft.lines.length === 0;

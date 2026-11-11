@@ -2,7 +2,8 @@
 
 | Erreur | Code | HTTP | Cas |
 | --- | --- | --- | --- |
-| `PriceBelowMinimum` | `PRICE_BELOW_MINIMUM` | 422 | vendeur sous le minimum (UC-VEN-03) |
+| `PriceBelowMinimum` | `PRICE_BELOW_MINIMUM` | 422 | vendeur sous le minimum, accord exigé |
+| `PriceApprovalDisabled` | `PRICE_APPROVAL_DISABLED` | 422 | demande de prix, accord non exigé |
 | `CreditLimitExceeded` | `CREDIT_LIMIT_EXCEEDED` | 422 | vendeur au-delà du plafond (UC-VEN-02) |
 | `SaleOverpayment` | `OVERPAYMENT` | 422 | paiements > total (RG-T20) |
 | `PaymentIncomplete` | `PAYMENT_INCOMPLETE` | 422 | comptant non intégralement payé (Q-12) |
@@ -42,6 +43,19 @@ class PriceBelowMinimum(DomainError):
             details["price_request"] = price_request
         super().__init__(
             "Prix inférieur au minimum : validation du propriétaire nécessaire", details=details
+        )
+
+
+class PriceApprovalDisabled(DomainError):
+    """Demande de prix alors que la boutique n'exige pas l'accord (réglage
+    `min_price_requires_approval` faux, défaut) : la vente sous le minimum passe déjà."""
+
+    code = "PRICE_APPROVAL_DISABLED"
+
+    def __init__(self) -> None:
+        super().__init__(
+            "L'accord du propriétaire n'est pas exigé dans cette boutique : vendez directement",
+            details={"setting": "min_price_requires_approval"},
         )
 
 

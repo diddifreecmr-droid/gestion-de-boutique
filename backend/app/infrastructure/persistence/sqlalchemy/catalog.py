@@ -12,6 +12,7 @@ import sqlalchemy as sa
 
 from app.application.catalog.ports import (
     ARTICLE_BRAND_MODEL,
+    ARTICLE_NAME,
     ARTICLE_REFERENCE,
     ArticleRepository,
     PriceHistoryLog,
@@ -31,7 +32,11 @@ from app.infrastructure.persistence.sqlalchemy.columns import from_db, to_db
 from app.infrastructure.persistence.sqlalchemy.shop_store import SqlShopStore
 from app.infrastructure.persistence.sqlalchemy.shops import SqlListing
 
-_KEY_COLUMNS = {ARTICLE_BRAND_MODEL: "brand_model_key", ARTICLE_REFERENCE: "reference_key"}
+_KEY_COLUMNS = {
+    ARTICLE_BRAND_MODEL: "brand_model_key",
+    ARTICLE_NAME: "name_key",
+    ARTICLE_REFERENCE: "reference_key",
+}
 
 
 def _amount(value: Money | None) -> int | None:
@@ -57,6 +62,7 @@ class SqlArticleRepository(SqlListing[ArticleId, Article], ArticleRepository):
             "model": fields.model,
             "reference": fields.reference,
             "brand_model_key": details.brand_model_key,
+            "name_key": details.name_key,
             "reference_key": details.reference_key,
             "search_key": details.search_key,
             "sort_key": details.sort_key,

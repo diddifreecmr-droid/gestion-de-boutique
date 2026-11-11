@@ -9,20 +9,25 @@
 - `post_entries` : un « Retour client » par ligne rendue, au lieu de la vente, dans l'état
   choisi (grand livre, TR-12) ; source = le retour. Le CMP ne change pas (RG-T12).
 - `release_returned` : châssis rendus libérés (RG-M01) : ils peuvent être revendus.
+- `exchange_sale_input` : nouvelle vente d'un échange **à crédit** (décision client specs
+  § 15.1) : client = celui de la vente d'origine, imposé (absent → `CustomerRequired` ; un
+  autre client → 400). Les règles du crédit (acompte, plafond) sont celles de `RecordSale`.
 - `require_no_returns` : une vente qui a un retour ne se modifie ni ne s'annule plus
   (`INVALID_STATE_TRANSITION`) — ses lignes, prix et châssis sont la base des retours.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from decimal import Decimal
 
 from app.application.ports.uow import UnitOfWork
+from app.application.sales.inputs import CustomerInput, SaleInput
 from app.application.sales.ports import ChassisClaimRepository
 from app.application.sales.return_ports import SaleReturnRepository
 from app.application.shops.ports import PaymentModeRepository
 from app.application.stock.ledger import StockLedger
 from app.application.stock.postings import Posting
+from app.domain.sales.errors import CustomerRequired
 from app.domain.sales.return_lines import (
     AlreadyReturned,
     ReturnedLine,
@@ -31,6 +36,7 @@ from app.domain.sales.return_lines import (
 )
 from app.domain.sales.sale import Sale
 from app.domain.sales.sale_return import Refund, SaleReturn
+from app.domain.sales.values import SaleKind
 from app.domain.shared.business_day import validate_entry_date
 from app.domain.shared.errors import InvalidStateTransition, ValidationFailed
 from app.domain.shared.money import Money
@@ -132,3 +138,19 @@ def require_no_returns(uow: UnitOfWork, sale: Sale) -> None:
     if count:
         msg = "Cette vente a un retour : elle ne se modifie ni ne s'annule plus"
         raise InvalidStateTransition(msg, details={"returns": count})
+
+
+def exchange_sale_input(sale: Sale, data: SaleInput) -> SaleInput:
+    """Nouvelle vente d'un échange : lieu d'origine par défaut, client d'origine si à crédit."""
+    if data.location_id is None:
+        data = replace(data, location_id=sale.location_id)
+    if data.kind is not SaleKind.CREDIT:
+        return data
+    customer_id = sale.content.customer_id
+    if customer_id is None:
+        raise CustomerRequired
+    wanted = data.customer
+    if wanted is not None and wanted.customer_id != customer_id:
+        msg = "Échange à crédit : le client est celui de la vente d'origine"
+        raise ValidationFailed(msg, details={"field": "exchange.sale.customer"})
+    return replace(data, customer=CustomerInput(customer_id=customer_id))

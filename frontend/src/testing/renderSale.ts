@@ -29,12 +29,15 @@ export interface RenderSaleOptions {
   path?: string;
   /** Routes exactes qui remplacent celles du faux serveur. */
   extra?: Routes;
+  /** Réglage « Accord du propriétaire sous le prix minimum » (faux par défaut, comme l'API). */
+  priceApproval?: boolean;
 }
 
 export function renderSale(role: SaleRole = "seller", options: RenderSaleOptions = {}) {
-  const { online = true, path = NEW_SALE_PATH, extra = {} } = options;
+  const { online = true, path = NEW_SALE_PATH, extra = {}, priceApproval = false } = options;
   const server = saleServer(role, extra);
   server.network.online = online;
+  server.world.settings.minPriceRequiresApproval = priceApproval;
   const view = renderApp(path, server.routes);
   const gateways = appGateways(view.services);
   const requestPriceApproval = vi.spyOn(gateways.sales, "requestPriceApproval");

@@ -39,7 +39,8 @@ def _without_cost_sale(desk: Desk) -> str:
 def _price_request(desk: Desk, article: str) -> None:
     settings = desk.ok("GET", "/settings", desk.owner)
     desk.ok("PATCH", "/settings", desk.owner,
-            json={"version": settings["version"], "min_price_enabled": True})  # fmt: skip
+            json={"version": settings["version"], "min_price_enabled": True,
+                  "min_price_requires_approval": True})  # fmt: skip
     version = desk.ok("GET", f"/articles/{article}", desk.owner)["version"]
     prices = {"version": version, "base_price": 780_000, "min_price": 720_000}
     desk.ok("PUT", f"/articles/{article}/prices", desk.owner, json=prices)

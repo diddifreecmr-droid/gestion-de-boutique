@@ -22,6 +22,8 @@ export interface SimulationOptions {
   onNetworkFailure?: () => void;
   /** Délai simulé de chaque appel, en ms (0 par défaut : tests déterministes). */
   latencyMs?: number;
+  /** Réglage « Accord du propriétaire sous le prix minimum » (faux par défaut, comme l'API). */
+  minPriceRequiresApproval?: boolean;
 }
 
 export interface World {
@@ -34,6 +36,8 @@ export interface World {
   nextNumber: number;
   /** Demandes d'accord de prix, par `id` (statut tenu ; le statut effectif se lit à l'heure). */
   priceRequests: Map<string, PriceRequest>;
+  /** Réglages de la boutique lus par l'écran de vente (modifiables par les tests). */
+  settings: { minPriceRequiresApproval: boolean };
 }
 
 export function createWorld(options: SimulationOptions): World {
@@ -47,6 +51,7 @@ export function createWorld(options: SimulationOptions): World {
     sales: new Map(),
     nextNumber: FIRST_SALE_NUMBER,
     priceRequests: new Map(),
+    settings: { minPriceRequiresApproval: options.minPriceRequiresApproval ?? false },
   };
 }
 

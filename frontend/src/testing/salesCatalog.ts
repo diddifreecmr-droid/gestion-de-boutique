@@ -14,8 +14,12 @@ type WorldArticle = World["articles"] extends Map<string, infer A> ? A : never;
 
 const decimal = (value: number) => `${String(value)}.000`;
 
-export function saleProfile(role: "owner" | "seller") {
-  return { ...profileBody(role), default_location_id: role === "seller" ? GAROUA.id : null };
+export function saleProfile(role: "owner" | "seller", requiresApproval = false) {
+  return {
+    ...profileBody(role),
+    default_location_id: role === "seller" ? GAROUA.id : null,
+    min_price_requires_approval: requiresApproval,
+  };
 }
 
 export const paymentModes = () => PAYMENT_MODES.map((mode) => ({ ...mode }));

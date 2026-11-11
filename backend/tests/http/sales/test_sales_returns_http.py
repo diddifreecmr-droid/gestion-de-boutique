@@ -10,9 +10,15 @@ from tests.http.sales.test_sales_http import cash_mode, leaked
 from tests.http.shops.conftest import Api
 
 
-def minimum(shop: Shop, article: dict[str, Any]) -> None:
+def minimum(shop: Shop, article: dict[str, Any], *, approval: bool = True) -> None:
+    """Minimum 720 000 actif ; `approval` : accord du propriétaire exigé (faux par défaut)."""
     settings = shop.call("GET", "/settings", shop.owner).json()
-    patch = {"version": settings["version"], "min_price_enabled": True}
+    assert settings["min_price_requires_approval"] is False  # défaut (décision client)
+    patch = {
+        "version": settings["version"],
+        "min_price_enabled": True,
+        "min_price_requires_approval": approval,
+    }
     assert shop.call("PATCH", "/settings", shop.owner, json=patch).status_code == 200
     path = f"/articles/{article['id']}"
     version = shop.call("GET", path, shop.owner).json()["version"]

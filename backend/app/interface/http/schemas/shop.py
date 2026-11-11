@@ -73,6 +73,7 @@ class ProfileResponse(_Strict):
     stock_units: list[str]
     receipt: ReceiptSettingsResponse
     min_price_enabled: bool
+    min_price_requires_approval: bool
     default_location_id: str | None
 
 
@@ -89,6 +90,7 @@ class SettingsResponse(_Strict):
     copies: int
     low_stock_threshold: str
     min_price_enabled: bool
+    min_price_requires_approval: bool
     exchange_days: int | None
     truck_silent_hours: int | None
     transfer_in_transit_days: int | None
@@ -108,6 +110,7 @@ class SettingsPatch(_Strict):
     copies: int | None = None
     low_stock_threshold: Decimal | None = None
     min_price_enabled: bool | None = None
+    min_price_requires_approval: bool | None = None
     exchange_days: int | None = None
     truck_silent_hours: int | None = None
     transfer_in_transit_days: int | None = None

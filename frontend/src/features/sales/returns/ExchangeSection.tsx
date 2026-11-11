@@ -5,6 +5,7 @@ import { Button, ChoiceChips } from "../../../shared/ui";
 import { ArticlePicker } from "../ArticlePicker";
 import { newLine, type SaleDraft } from "../draft";
 import { SaleLineCard } from "../SaleLineCard";
+import { ExchangeCreditFields } from "./ExchangeCreditFields";
 import type { ReturnChecks, ReturnDraft } from "./returnDraft";
 
 export interface ExchangeSectionProps {
@@ -96,6 +97,7 @@ export function ExchangeSection(props: ExchangeSectionProps) {
       {showErrors && checks.mode !== undefined && (
         <p className="m-0 text-body text-danger-text">{checks.mode}</p>
       )}
+      <ExchangeCreditFields draft={draft} checks={checks} showErrors={showErrors} update={update} />
       <dl
         aria-label="Différence de l'échange"
         className="m-0 grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg bg-surface p-4 text-body text-text shadow-card"

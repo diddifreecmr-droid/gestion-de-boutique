@@ -57,6 +57,7 @@ shop_settings = _base(
     sa.Column("copies", sa.Integer, nullable=False),
     sa.Column("low_stock_threshold", sa.Numeric(12, 1), nullable=False),
     sa.Column("min_price_enabled", sa.Boolean, nullable=False),
+    sa.Column("min_price_requires_approval", sa.Boolean, nullable=False, server_default=sa.false()),
     sa.Column("exchange_days", sa.Integer, nullable=True),
     sa.Column("truck_silent_hours", sa.Integer, nullable=True),
     sa.Column("transfer_in_transit_days", sa.Integer, nullable=True),

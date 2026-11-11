@@ -19,6 +19,7 @@ import {
 } from "./saleRules";
 import {
   checkApproval,
+  minimumWarnings,
   consumeApproval,
   createSimulatedPriceRequests,
 } from "./simulatedPriceRequests";
@@ -62,7 +63,10 @@ export function createSimulatedSales(world: World): SalesGateway {
           if (chassis !== null) world.soldChassis.set(chassis, number);
         });
       });
-      const warnings = warning === null ? [] : [warning];
+      const warnings = [
+        ...minimumWarnings(world, shopId, command),
+        ...(warning === null ? [] : [warning]),
+      ];
       const result = saleOf(world, command, {
         number,
         total,

@@ -5,9 +5,10 @@ import { buildCommand } from "../buildCommand";
 import { needsChassis, type ReturnChecks, type ReturnDraft } from "./returnDraft";
 
 /**
- * Nouvelle vente de l'échange : les lignes de « Nouvelle vente », au comptant, au lieu de la
- * vente d'origine, pour le même client et le même vendeur. Le serveur y verse l'avoir ; le
- * client ne paie que la différence (`payments`).
+ * Nouvelle vente de l'échange : les lignes de « Nouvelle vente », au lieu de la vente d'origine,
+ * pour le même client et le même vendeur. Le serveur y verse l'avoir ; le client ne paie que la
+ * différence (`payments`) — ou, **à crédit**, un acompte facultatif : le reste devient une
+ * créance (le serveur impose le client d'origine).
  */
 function exchangeSale(
   sale: SaleResult,
@@ -22,12 +23,15 @@ function exchangeSale(
     checks.exchange.total,
     now,
   );
-  const { toPay } = checks.balance;
+  const credit = draft.exchangeKind === "credit";
+  const paid = credit ? (draft.deposit ?? 0) : checks.balance.toPay;
   return {
     ...command,
+    kind: credit ? "credit" : "cash",
     customer: sale.customer_id === null ? null : { id: sale.customer_id, kind: "individual" },
     seller_id: sale.seller_id,
-    payments: toPay > 0 ? [{ mode_id: modeId, amount: toPay, reference: null }] : [],
+    payments: paid > 0 ? [{ mode_id: modeId, amount: paid, reference: null }] : [],
+    credit: credit ? { reminder_on: null, terms: null, guarantor: null } : null,
   };
 }
 

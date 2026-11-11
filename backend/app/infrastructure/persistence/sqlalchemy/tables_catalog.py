@@ -2,9 +2,10 @@
 
 - Champs propres au profil (cylindrée, catégorie, type…) dans `attributes` (JSON), validés par
   le **domaine** (`domain/catalog/schema.py`), jamais par la base.
-- Champs à unicité promus en colonnes : `brand_model_key` et `reference_key` (clés pliées,
-  `NULL` = non contraint) portent les contraintes `article_brand_model` / `article_reference`,
-  noms des `UniqueKey` du port (`application/catalog/ports.py`).
+- Champs à unicité promus en colonnes : `brand_model_key`, `name_key` (profils sans modèle) et
+  `reference_key` (clés pliées, `NULL` = non contraint) portent les contraintes
+  `article_brand_model` / `article_name` / `article_reference`, noms des `UniqueKey` du port
+  (`application/catalog/ports.py`).
 - `search_key` (recherche en sous-chaîne) et `sort_key` (ordre et curseur) sont calculés par
   le domaine : index `(shop_id, sort_key, id)` pour la liste paginée.
 - Montants `BIGINT` ≥ 0 (`CHECK`) ; quantités `NUMERIC(12,1)` ; aucune clé étrangère
@@ -29,6 +30,7 @@ article = sa.Table(
     sa.Column("model", sa.String(120), nullable=True),
     sa.Column("reference", sa.String(120), nullable=True),
     sa.Column("brand_model_key", sa.String(250), nullable=True),
+    sa.Column("name_key", sa.String(250), nullable=True),
     sa.Column("reference_key", sa.String(250), nullable=True),
     sa.Column("search_key", sa.String(250), nullable=False),
     sa.Column("sort_key", sa.String(250), nullable=False),
@@ -43,6 +45,7 @@ article = sa.Table(
     sa.Column("status", sa.String(16), nullable=False),
     sa.Column("created_at", _TS, nullable=False),
     sa.UniqueConstraint("shop_id", "brand_model_key", name="article_brand_model"),
+    sa.UniqueConstraint("shop_id", "name_key", name="article_name"),
     sa.UniqueConstraint("shop_id", "reference_key", name="article_reference"),
     sa.Index("article_shop_sort_idx", "shop_id", "sort_key", "id"),
     sa.CheckConstraint("version >= 1", name="version_positive"),

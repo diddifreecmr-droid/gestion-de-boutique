@@ -61,6 +61,13 @@ class ArticleDetails:
         return None if brand is None or model is None else identity_key(brand, model)
 
     @property
+    def name_key(self) -> str | None:
+        """Unicité du nom affiché (prêt-à-porter, textile) : profils **sans** « modèle »."""
+        if self.fields.model is not None:
+            return None
+        return identity_key(self.fields.display_name)
+
+    @property
     def reference_key(self) -> str | None:
         reference = self.fields.reference
         return None if reference is None else identity_key(reference)

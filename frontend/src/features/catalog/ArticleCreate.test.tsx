@@ -9,6 +9,7 @@ import {
   HAOJUE_ID,
   listUrl,
   ownerArticle,
+  profileBody,
 } from "../../testing/catalog";
 import { apiError, json, SHOP_A } from "../../testing/fakeApi";
 import { renderApp } from "../../testing/renderApp";
@@ -114,6 +115,27 @@ describe("« Nouvel article »", () => {
     await user.click(screen.getByRole("button", { name: "Ouvrir « Haojue HJ125-8 »" }));
     expect(router.state.location.search).toBe(`?article=${HAOJUE_ID}`);
     expect(await screen.findByRole("heading", { name: "Haojue HJ125-8" })).toBeVisible();
+  });
+
+  it("prêt-à-porter : nom déjà pris (sans casse ni accent) → même parcours de doublon", async () => {
+    const name = { code: "name", label: "Nom", kind: "text", required: true, unique: false };
+    const apparel = { ...profileBody("owner"), profile_code: "apparel" };
+    const profile = { ...apparel, article_fields: [{ ...name, choices: [] }] };
+    const { user } = renderApp(
+      NEW,
+      catalogRoutes("owner", {
+        [`GET ${API}/profile`]: json(200, profile),
+        [POST]: apiError(409, "DUPLICATE", "Cet article existe déjà", {
+          existing_id: HAOJUE_ID,
+          existing_name: "Robe Wax",
+          constraint: "article_name",
+        }),
+      }),
+    );
+    await user.type(await screen.findByLabelText("Nom"), "ROBE WAX");
+    await user.click(screen.getByRole("button", { name: "Créer l'article" }));
+    expect(await screen.findByText("Cet article existe déjà : Robe Wax")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Ouvrir « Robe Wax »" })).toBeVisible();
   });
 
   it("comptable : aucun champ de prix, aucun prix envoyé", async () => {

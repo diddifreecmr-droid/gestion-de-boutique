@@ -44,6 +44,7 @@ export function createSimulatedCatalog(world: World): CatalogGateway {
           ...place,
         })),
         default_location_id: GAROUA.id,
+        min_price_requires_approval: world.settings.minPriceRequiresApproval,
         payment_modes: PAYMENT_MODES.map((mode) => ({ ...mode })),
       };
     },

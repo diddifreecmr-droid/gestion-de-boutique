@@ -14839,6 +14839,10 @@
             "type": "boolean",
             "title": "Min Price Enabled"
           },
+          "min_price_requires_approval": {
+            "type": "boolean",
+            "title": "Min Price Requires Approval"
+          },
           "default_location_id": {
             "anyOf": [
               {
@@ -14868,6 +14872,7 @@
           "stock_units",
           "receipt",
           "min_price_enabled",
+          "min_price_requires_approval",
           "default_location_id"
         ],
         "title": "ProfileResponse"
@@ -17853,6 +17858,17 @@
             ],
             "title": "Min Price Enabled"
           },
+          "min_price_requires_approval": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Price Requires Approval"
+          },
           "exchange_days": {
             "anyOf": [
               {
@@ -18023,6 +18039,10 @@
             "type": "boolean",
             "title": "Min Price Enabled"
           },
+          "min_price_requires_approval": {
+            "type": "boolean",
+            "title": "Min Price Requires Approval"
+          },
           "exchange_days": {
             "anyOf": [
               {
@@ -18086,6 +18106,7 @@
           "copies",
           "low_stock_threshold",
           "min_price_enabled",
+          "min_price_requires_approval",
           "exchange_days",
           "truck_silent_hours",
           "transfer_in_transit_days",

@@ -124,6 +124,7 @@ function SaleFlow({ shopId, role, setup }: NewSalePageProps & { setup: SaleSetup
       role={role}
       location={location}
       modes={setup.payment_modes}
+      requiresApproval={setup.min_price_requires_approval}
       onRecorded={setRecorded}
       notice={notice}
     />

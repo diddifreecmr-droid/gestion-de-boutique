@@ -16,6 +16,7 @@ const NGAOUNDERE = { id: "n", name: "Ngaoundéré" };
 const setup = (overrides: Partial<SaleSetup> = {}): SaleSetup => ({
   locations: [GAROUA, NGAOUNDERE],
   default_location_id: "n",
+  min_price_requires_approval: false,
   payment_modes: [],
   ...overrides,
 });
