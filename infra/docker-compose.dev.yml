@@ -1,0 +1,79 @@
+# Infrastructure de développement locale — Gestion de boutiques
+# Usage : docker compose --env-file infra/.env -f infra/docker-compose.dev.yml up -d
+# (ou depuis infra/ : docker compose -f docker-compose.dev.yml up -d)
+#
+# Fail-fast : toute variable requise absente fait échouer `docker compose`
+# avec un message explicite (syntaxe ${VAR:?message}). Aucun secret par défaut.
+# Ports publiés sur 127.0.0.1 uniquement (jamais sur le réseau local).
+
+name: boutique-dev
+
+services:
+  postgres:
+    # Dernière majeure stable au 11/11/2026 : 18.6 (19 encore en rc1).
+    image: postgres:18.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER manquant (voir infra/.env.example)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant (voir infra/.env.example)}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB manquant (voir infra/.env.example)}
+      # Lu par le script d'init : base séparée pour les tests de contrat.
+      POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:?POSTGRES_TEST_DB manquant (voir infra/.env.example)}
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:?POSTGRES_PORT manquant}:5432"
+    volumes:
+      # Postgres >= 18 : le volume se monte sur /var/lib/postgresql
+      # (PGDATA = /var/lib/postgresql/18/docker), plus sur .../data.
+      - pg_data:/var/lib/postgresql
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  minio:
+    # Le projet MinIO ne publie plus d'image (minio/minio retirée de Docker Hub,
+    # quay.io fermé aux pulls anonymes). Silo = fork communautaire de MinIO
+    # maintenu par PGSTY, même API S3, mêmes variables MINIO_*.
+    image: pgsty/silo:RELEASE.2026-11-09T00-00-00Z
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER manquant (voir infra/.env.example)}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD manquant (voir infra/.env.example)}
+    ports:
+      - "127.0.0.1:${MINIO_API_PORT:?MINIO_API_PORT manquant}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:?MINIO_CONSOLE_PORT manquant}:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  minio-init:
+    # One-shot : crée le bucket privé des pièces jointes puis s'arrête.
+    image: pgsty/mc:RELEASE.2026-11-09T00-00-00Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+    environment:
+      MC_HOST_local: http://${MINIO_ROOT_USER:?MINIO_ROOT_USER manquant}:${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD manquant}@minio:9000
+      S3_BUCKET: ${S3_BUCKET:?S3_BUCKET manquant (voir infra/.env.example)}
+    entrypoint: ["/bin/sh", "-euc"]
+    command:
+      - |
+        mc mb --ignore-existing "local/$${S3_BUCKET}"
+        mc anonymous set none "local/$${S3_BUCKET}"
+        echo "bucket $${S3_BUCKET} prêt (accès anonyme : $$(mc anonymous get "local/$${S3_BUCKET}"))"
+
+volumes:
+  pg_data:
+  minio_data:
