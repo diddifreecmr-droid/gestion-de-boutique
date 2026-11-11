@@ -91,3 +91,42 @@ jobs:
       - run: npm run build
       - run: npm run check:no-showcase
       - run: npm run size
+
+  e2e:
+    # Playwright Chromium 360 × 800 + 1280 px, axe-core (recette § 5, specs § 12.1). Backend
+    # jetable (mémoire, port 8100) et frontend Vite (5273) démarrés par playwright.config.ts.
+    name: E2E (Playwright, Chromium)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: e2e
+    env:
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            e2e/package-lock.json
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+        working-directory: backend
+      - run: npm ci
+        working-directory: frontend
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx tsc --noEmit
+      - run: npx playwright test
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+          retention-days: 14
