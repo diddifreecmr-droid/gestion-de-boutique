@@ -8,6 +8,7 @@ import { AccountPage } from "../features/settings/AccountPage";
 import { EXPENSES_KEY } from "../features/expenses/expenseNav";
 import { STOCK_KEY } from "../features/catalog/catalogRights";
 import { STOCK_ROLES } from "../features/stock/stockRoles";
+import { PURCHASE_ROLES, PURCHASES_KEY } from "../features/purchasing/purchasingNav";
 import { ComingSoon } from "./ComingSoon";
 import { NotFoundPage } from "./NotFoundPage";
 import { MorePage } from "./MorePage";
@@ -19,6 +20,7 @@ import { Skeleton } from "../shared/ui";
 const NewSaleRoute = lazy(() => import("../features/sales/NewSaleRoute"));
 const ExpensesRoute = lazy(() => import("../features/expenses/ExpensesRoute"));
 const StockRoute = lazy(() => import("../features/stock/StockRoute"));
+const PurchasingRoute = lazy(() => import("../features/purchasing/PurchasingRoute"));
 
 /** Écrans communs à tous les rôles, hors barre du bas. */
 const SETTINGS_KEY = "reglages";
@@ -50,6 +52,14 @@ export function SectionPage() {
     return (
       <Suspense fallback={<Skeleton lines={4} label="Ouverture des dépenses…" />}>
         <ExpensesRoute shopId={shopId} role={role} />
+      </Suspense>
+    );
+  }
+  // « Achats » : entrée du comptable, « Plus → Achats » du propriétaire (CDC § 17.4).
+  if (entry.key === PURCHASES_KEY && PURCHASE_ROLES.includes(role)) {
+    return (
+      <Suspense fallback={<Skeleton lines={4} label="Ouverture des achats…" />}>
+        <PurchasingRoute shopId={shopId} role={role} />
       </Suspense>
     );
   }
