@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Première ouverture : tout dist/ (précache du service worker), non compressé",
+    "path": "dist/**/*",
+    "brotli": false,
+    "limit": "3 MB"
+  },
+  {
+    "name": "JS initial (gzip)",
+    "path": "dist/assets/*.js",
+    "gzip": true,
+    "limit": "250 kB"
+  }
+]

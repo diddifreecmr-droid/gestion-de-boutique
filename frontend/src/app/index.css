@@ -1,0 +1,13 @@
+/* Styles globaux : uniquement des tokens (design-system.md § 9). */
+@import "../shared/ui/tokens.css";
+
+@layer base {
+  html {
+    /* Base 16 px héritée du navigateur : le zoom à 200 % reste possible (§ 8). */
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-bg text-text font-sans text-body;
+    margin: 0;
+  }
+}

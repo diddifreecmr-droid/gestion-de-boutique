@@ -1,0 +1,72 @@
+/*
+ * Design tokens — copie de design-system.md § 9.1 (approuvé).
+ * Seule source autorisée de couleurs, tailles et espacements.
+ * Écart signalé : `--text-*: initial` ajouté (comme `--color-*`) pour que les tailles
+ * Tailwind par défaut (`text-xs`, `text-sm`…) n'existent réellement pas (§ 9.2-2).
+ */
+@import "tailwindcss";
+
+@theme {
+  --color-*: initial; /* retire la palette Tailwind par défaut */
+  --color-bg: #F6F7F9;
+  --color-surface: #FFFFFF;
+  --color-text: #1A2230;
+  --color-text-muted: #4A5568;
+  --color-border: #D5DAE1;
+  --color-border-strong: #8A94A6;
+  --color-primary: #0B5D7A;
+  --color-primary-hover: #084A62;
+  --color-primary-soft: #E3F1F6;
+  --color-on-primary: #FFFFFF;
+  --color-success: #1E7A3C;
+  --color-success-text: #17602F;
+  --color-success-soft: #E4F4E9;
+  --color-warning-text: #8A3B00;
+  --color-warning-soft: #FFF1DB;
+  --color-warning-dot: #F59E0B;
+  --color-danger: #B42318;
+  --color-danger-text: #9A1C13;
+  --color-danger-soft: #FDE8E6;
+  --color-credit: #5B3FA6;
+  --color-credit-text: #4C3391;
+  --color-credit-soft: #EFEAFB;
+
+  --font-sans: system-ui, Roboto, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Roboto Mono", Consolas, monospace;
+
+  --text-*: initial; /* retire l'échelle Tailwind par défaut (text-xs, text-sm…) */
+  --text-body: 1rem;
+  --text-body--line-height: 1.5rem;
+  --text-label: 1rem;
+  --text-label--line-height: 1.5rem;
+  --text-lead: 1.125rem;
+  --text-lead--line-height: 1.75rem;
+  --text-title-sm: 1.25rem;
+  --text-title-sm--line-height: 1.75rem;
+  --text-title: 1.5rem;
+  --text-title--line-height: 2rem;
+  --text-amount: 1.75rem;
+  --text-amount--line-height: 2.25rem;
+  --text-kpi: 2.5rem;
+  --text-kpi--line-height: 3rem;
+
+  --spacing: 4px; /* p-1 = 4 px, p-2 = 8 px, p-4 = 16 px, p-6 = 24 px… */
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --shadow-card: 0 1px 2px rgb(26 34 48 / 0.08);
+  --shadow-sheet: 0 -4px 16px rgb(26 34 48 / 0.12);
+}
+
+:root {
+  --control-md: 3rem;
+  --control-lg: 3.5rem;
+  --duration-fast: 120ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+  }
+}
