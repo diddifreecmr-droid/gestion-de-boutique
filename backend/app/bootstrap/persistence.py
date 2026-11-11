@@ -19,7 +19,11 @@ from app.infrastructure.persistence.memory.catalog import MEMORY_CATALOG_REPOSIT
 from app.infrastructure.persistence.memory.database import MemoryDatabase
 from app.infrastructure.persistence.memory.expenses import EXPENSE_REPOSITORIES
 from app.infrastructure.persistence.memory.purchasing import MEMORY_PURCHASING_REPOSITORIES
+from app.infrastructure.persistence.memory.receivables import MEMORY_RECEIVABLES_REPOSITORIES
 from app.infrastructure.persistence.memory.sales import MEMORY_SALES_REPOSITORIES
+from app.infrastructure.persistence.memory.sales_returns import (
+    MEMORY_SALES_RETURNS_REPOSITORIES,
+)
 from app.infrastructure.persistence.memory.shops import SHOP_REPOSITORIES
 from app.infrastructure.persistence.memory.stock import MEMORY_STOCK_REPOSITORIES
 from app.infrastructure.persistence.memory.uow import MemoryUnitOfWorkFactory, RepositoryRegistry
@@ -29,7 +33,11 @@ from app.infrastructure.persistence.sqlalchemy.catalog import SQL_CATALOG_REPOSI
 from app.infrastructure.persistence.sqlalchemy.engine import create_sql_engine
 from app.infrastructure.persistence.sqlalchemy.expense_query import SQL_EXPENSE_ADAPTERS
 from app.infrastructure.persistence.sqlalchemy.purchasing import SQL_PURCHASING_REPOSITORIES
+from app.infrastructure.persistence.sqlalchemy.receivables import SQL_RECEIVABLES_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.sales_repository import SQL_SALES_REPOSITORIES
+from app.infrastructure.persistence.sqlalchemy.sales_returns import (
+    SQL_SALES_RETURNS_REPOSITORIES,
+)
 from app.infrastructure.persistence.sqlalchemy.shops_members import SQL_SHOP_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.stock_documents import SQL_STOCK_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.uow import (
@@ -45,7 +53,9 @@ MEMORY_REPOSITORIES: RepositoryRegistry = (
     *EXPENSE_REPOSITORIES,
     *MEMORY_STOCK_REPOSITORIES,
     *MEMORY_PURCHASING_REPOSITORIES,
+    *MEMORY_RECEIVABLES_REPOSITORIES,
     *MEMORY_SALES_REPOSITORIES,
+    *MEMORY_SALES_RETURNS_REPOSITORIES,
 )
 SQL_REPOSITORIES: SqlRepositoryRegistry = (
     SqlAuditLog,
@@ -55,7 +65,9 @@ SQL_REPOSITORIES: SqlRepositoryRegistry = (
     *SQL_EXPENSE_ADAPTERS,
     *SQL_STOCK_REPOSITORIES,
     *SQL_PURCHASING_REPOSITORIES,
+    *SQL_RECEIVABLES_REPOSITORIES,
     *SQL_SALES_REPOSITORIES,
+    *SQL_SALES_RETURNS_REPOSITORIES,
 )
 
 

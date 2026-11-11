@@ -72,7 +72,7 @@ class SaleCreateRequest(_Strict):
     payments: list[SalePaymentRequest] = Field(default_factory=list, max_length=10)
     credit: CreditRequest | None = None
     price_request_id: str | None = ID
-    """Accord de prix sous le minimum (UC-VEN-03) : accepté, exploité en T16b."""
+    """Accord de prix sous le minimum (UC-VEN-03) : demande acceptée qui couvre la ligne."""
     seller_id: str | None = ID
     note: str | None = TEXT
 

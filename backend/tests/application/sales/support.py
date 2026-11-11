@@ -14,7 +14,7 @@ from app.application.security.actor import Actor
 from app.application.shops.ports import PaymentModeRepository
 from app.bootstrap.sales import build_sales
 from app.domain.catalog.article import Article
-from app.domain.sales.ids import SaleId
+from app.domain.sales.ids import PriceRequestId, SaleId
 from app.domain.sales.lines import SoldDetail
 from app.domain.sales.values import CreditTerms, SaleKind
 from app.domain.shops.ids import PaymentModeId
@@ -27,7 +27,8 @@ MOUSSA = CustomerInput(name="Moussa A.", phone="+237690000000")
 class SalesWorld(PurchasingWorld):
     def __post_init__(self) -> None:
         super().__post_init__()
-        self.sales = build_sales(self.identity, self.ledger).http
+        self.sales_module = build_sales(self.identity, self.ledger)
+        self.sales = self.sales_module.http
 
     def mode(self, actor: Actor, name: str = "Espèces") -> PaymentModeId:
         with self.core.shop_uow_factory(self.shop_of(actor)) as uow:
@@ -59,6 +60,7 @@ class SalesWorld(PurchasingWorld):
         sold_on: date | None = None,
         sale_id: SaleId | None = None,
         credit: CreditTerms | None = None,
+        price_request_id: PriceRequestId | None = None,
     ) -> tuple[SaleView, bool]:
         if payments is None:
             total = sum(int(line.quantity) * line.unit_price for line in lines)
@@ -71,6 +73,7 @@ class SalesWorld(PurchasingWorld):
             sold_on=sold_on,
             location_id=self.loc(actor, "Garoua"),
             credit=credit,
+            price_request_id=price_request_id,
         )
         return self.sales.record.execute(actor, RecordSaleCommand(data=data, sale_id=sale_id))
 

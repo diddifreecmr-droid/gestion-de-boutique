@@ -2,23 +2,35 @@
 
 - Les ventes postent leurs sorties par **le** grand livre de l'application
   (`StockModule.ledger`) dans leur propre transaction (journal et alertes branchés, TR-09).
-- `CustomerDebt` : `SalesCustomerDebt` (restes à payer des ventes à crédit) jusqu'à T17.
+- `CustomerDebt` : `ReceivableCustomerDebt` (restes des créances En cours, T17).
 - `ranking` : le port `SalesRanking` servi au catalogue (`sort=best_selling`, 30 jours).
-- La règle d'alerte « Erreur signalée » est branchée par le noyau (`bootstrap/core.py`).
+- Les règles d'alerte « Erreur signalée » et « Demande de prix » sont branchées par le noyau
+  (`bootstrap/core.py`).
+- T16b : demandes de prix, retours / échanges (l'échange réutilise **le même** `RecordSale`) ;
+  `expire_price_requests` : tâche planifiée du futur worker (TR-19), par boutique.
 """
 
 from dataclasses import dataclass
 
 from app.application.catalog.ranking import SalesRanking
 from app.application.ports.clock import Clock
-from app.application.sales.checks import SalesCustomerDebt
+from app.application.receivables.debt import ReceivableCustomerDebt
 from app.application.sales.ranking import LedgerSalesRanking
 from app.application.sales.use_cases.cancel_sale import CancelSale
 from app.application.sales.use_cases.error_reports import AnswerErrorReport, ReportSaleError
+from app.application.sales.use_cases.expire_price_requests import ExpirePriceRequests
 from app.application.sales.use_cases.get_receipt import GetReceipt
 from app.application.sales.use_cases.manage_customers import ManageCustomers
 from app.application.sales.use_cases.modify_sale import ModifySale
+from app.application.sales.use_cases.price_requests import (
+    DecidePriceRequest,
+    GetPriceRequest,
+    ListPriceRequests,
+    RequestPriceApproval,
+)
+from app.application.sales.use_cases.read_returns import ListSaleReturns
 from app.application.sales.use_cases.read_sales import GetSale, ListSales
+from app.application.sales.use_cases.record_return import RecordReturn
 from app.application.sales.use_cases.record_sale import RecordSale
 from app.application.security.policy import Policy
 from app.application.stock.ledger import StockLedger
@@ -29,6 +41,7 @@ from app.interface.http.routes.sales_components import SalesComponents
 @dataclass(frozen=True, slots=True, kw_only=True)
 class SalesModule:
     http: SalesComponents
+    expire_price_requests: ExpirePriceRequests
 
 
 def sales_ranking(clock: Clock) -> SalesRanking:
@@ -40,8 +53,9 @@ def build_sales(identity: IdentityModule, ledger: StockLedger) -> SalesModule:
     core, clock = identity.core, identity.clock
     uows = core.shop_uow_factory
     policy = Policy(clock=clock.now)
+    record = RecordSale(uows, policy, ledger, clock, ReceivableCustomerDebt())
     http = SalesComponents(
-        record=RecordSale(uows, policy, ledger, clock, SalesCustomerDebt()),
+        record=record,
         get=GetSale(uows, policy),
         list=ListSales(uows, policy, clock),
         modify=ModifySale(uows, policy, clock),
@@ -50,6 +64,12 @@ def build_sales(identity: IdentityModule, ledger: StockLedger) -> SalesModule:
         answer=AnswerErrorReport(uows, policy, clock),
         receipt=GetReceipt(uows, core.platform_uow_factory, policy, clock),
         customers=ManageCustomers(uows, policy, clock),
+        request_price=RequestPriceApproval(uows, policy, clock),
+        decide_price=DecidePriceRequest(uows, policy, clock),
+        list_price_requests=ListPriceRequests(uows, policy, clock),
+        get_price_request=GetPriceRequest(uows, policy, clock),
+        record_return=RecordReturn(uows, policy, ledger, clock, record),
+        list_returns=ListSaleReturns(uows, policy),
         guard=identity.auth.guard,
     )
-    return SalesModule(http=http)
+    return SalesModule(http=http, expire_price_requests=ExpirePriceRequests(uows))

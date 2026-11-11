@@ -2,7 +2,7 @@
 
 - **Prix minimum** (UC-VEN-03, ERR-PRM-01 à 04) : réglage actif et prix vendu **strictement**
   sous le minimum de l'article. Vendeur → `PRICE_BELOW_MINIMUM` (`request_required: true`) ;
-  tant que les demandes de prix (T16b) n'existent pas, un `price_request_id` ne débloque rien.
+  une demande acceptée le débloque (`price_approval.py`, T16b).
   Propriétaire → accepté, journal « sensible » (`SaleRecordedBelowMinimum`).
 - **Plafond de crédit (Q-45 tranchée)** : dette après la vente = dû actuel + reste de cette
   vente ; « dépasser » est **strict** (égalité acceptée, ERR-CRD-02). Vendeur → refus

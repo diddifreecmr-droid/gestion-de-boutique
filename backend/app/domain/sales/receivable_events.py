@@ -10,7 +10,9 @@ La vente elle-même est journalisée (`SaleRecorded`, `SaleModified`, `SaleCance
 - `CreditSaleAmountsChanged` (UC-VEN-07, MOD-01) : total ou acompte modifié → recalculer le
   montant initial (780 000 → 760 000 : créance 480 000 → 460 000) ; client changé ;
 - `CreditSaleCancelled` (UC-VEN-08, SCN-06) : la créance passe « Annulée » (hors total à
-  recevoir) ; `refund_payments` vrai → ses versements deviennent « à rembourser ».
+  recevoir) ; `refund_payments` vrai → ses versements deviennent « à rembourser » ;
+- `CreditSaleReturned` (UC-VEN-09, T16b) : retour ou échange sur une vente à crédit → la
+  créance baisse de `amount` (> 0 : valeur rendue imputée sur le reste dû de la vente).
 
 Tant que T17 n'est pas livré, aucun handler ne les consomme : ils sont simplement remis.
 """
@@ -50,3 +52,9 @@ class CreditSaleAmountsChanged(DomainEvent, NotAudited):
 class CreditSaleCancelled(DomainEvent, NotAudited):
     sale_id: SaleId
     refund_payments: bool
+
+
+@dataclass(frozen=True, kw_only=True)
+class CreditSaleReturned(DomainEvent, NotAudited):
+    sale_id: SaleId
+    amount: Money

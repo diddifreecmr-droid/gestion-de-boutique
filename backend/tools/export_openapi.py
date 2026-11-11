@@ -26,6 +26,7 @@ from app.bootstrap.expenses import build_expenses
 from app.bootstrap.identity import build_identity
 from app.bootstrap.journal import build_journal
 from app.bootstrap.purchasing import build_purchasing
+from app.bootstrap.receivables import build_receivables
 from app.bootstrap.sales import build_sales, sales_ranking
 from app.bootstrap.shops import build_shops
 from app.bootstrap.stock import build_stock
@@ -55,6 +56,7 @@ def build_openapi_document() -> str:
     stock = build_stock(identity)
     purchasing = build_purchasing(identity, stock.ledger)
     sales = build_sales(identity, stock.ledger)
+    receivables = build_receivables(identity)
     app = create_app(
         http_config_from(settings),
         identity.auth,
@@ -65,6 +67,7 @@ def build_openapi_document() -> str:
         stock=stock.http,
         purchasing=purchasing.http,
         sales=sales.http,
+        receivables=receivables.http,
     )
     schema = app.openapi()
     if not schema.get("paths"):

@@ -8,6 +8,7 @@ recalculées avec les **mêmes coûts figés** (MOD-01 : 780 000 → 760 000, ma
 T17). Les règles de paiement restent celles de la création (comptant payé en entier, payé ≤
 total : baisser un prix sous le déjà-payé exige d'ajuster les paiements, MOD-03).
 Changer la date ne déplace pas les mouvements de stock (Q-06 ouverte) ; châssis resynchronisés.
+Une vente qui a un retour ne se modifie plus (`INVALID_STATE_TRANSITION`, T16b).
 """
 
 from collections.abc import Mapping
@@ -22,6 +23,7 @@ from app.application.sales.chassis_claims import sync_claims
 from app.application.sales.lines import check_details
 from app.application.sales.ports import SaleRepository
 from app.application.sales.retry import with_sale_retry
+from app.application.sales.returning import require_no_returns
 from app.application.sales.views import SaleView, view_of
 from app.application.security.actor import Actor
 from app.application.security.permissions import Permission
@@ -89,6 +91,7 @@ class ModifySale:
             sale = sales.get(command.sale_id)
             sale.require_valid()
             require_version(sale.version, command.version)
+            require_no_returns(uow, sale)
             content = self._content(uow, actor, sale, command.patch)
             if sale.modify(content, reason=command.reason, performer=performer_of(actor), now=now):
                 sales.update(sale)

@@ -10,6 +10,7 @@ from typing import Any
 
 from app.application.sales.use_cases.read_sales import SaleListing
 from app.application.sales.views import SaleView
+from app.domain.receivables.ids import receivable_id_for_sale
 from app.domain.sales.error_report import ErrorReport
 from app.domain.sales.lines import SaleLine, SoldDetail
 from app.domain.sales.payments import PaymentNature
@@ -91,7 +92,9 @@ def sale_response(view: SaleView) -> s.SaleResponse:
         total=sale.total.amount,
         paid=sale.paid.amount,
         remaining=sale.remaining.amount,
-        receivable=s.ReceivableRef(id=None, remaining=sale.remaining.amount)
+        receivable=s.ReceivableRef(
+            id=str(receivable_id_for_sale(sale.id)), remaining=sale.remaining.amount
+        )
         if open_credit
         else None,
         lines=[line_response(line, show_costs=view.show_costs) for line in content.lines],

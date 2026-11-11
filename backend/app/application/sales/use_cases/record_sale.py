@@ -2,7 +2,8 @@
 
 Dans **une** transaction : numéro `V-000001` (RG-T05), lieu et vendeur (`resolver.py`), client
 (création rapide comprise), lignes à instantanés et **coûts figés** (`lines.py`), paiements,
-contrôles (prix minimum, plafond de crédit : `checks.py`), règles de paiement (`rules.py`),
+contrôles (prix minimum avec accord du propriétaire : `price_approval.py` ; plafond de
+crédit : `checks.py`), règles de paiement (`rules.py`),
 châssis réservés (RG-M01), une « Sortie vente » par article (grand livre, RG-T17), journal.
 Une vente à crédit publie `CreditSaleRecorded` (créance de T17) ; `remaining` est dans la vue.
 
@@ -23,11 +24,13 @@ from app.application.ports.repository import not_found
 from app.application.ports.uow import UnitOfWork, UnitOfWorkFactory
 from app.application.sales import resolver as r
 from app.application.sales.chassis_claims import sync_claims
-from app.application.sales.checks import CustomerDebt, check_credit_limit, check_minimums
+from app.application.sales.checks import CustomerDebt, check_credit_limit
 from app.application.sales.inputs import SaleInput
 from app.application.sales.lines import resolve_line
 from app.application.sales.ports import SaleRepository
+from app.application.sales.price_approval import approve_minimums
 from app.application.sales.retry import with_sale_retry
+from app.application.sales.return_ports import PriceRequestRepository
 from app.application.sales.stock_exits import post_exits
 from app.application.sales.views import SaleView, view_of
 from app.application.security.actor import Actor
@@ -86,12 +89,19 @@ class RecordSale:
                     if actor.role is not Role.OWNER and existing.seller_id != actor.user_id:
                         raise not_found(command.sale_id)  # vente d'un autre vendeur
                     return view_of(self._policy, actor, existing), False
-            sale, view = self._build(uow, actor, command, now)
-            sales.add(sale)
-            sync_claims(uow, sale)
-            post_exits(uow, self._ledger, sale, deferred=command.deferred)
+            _, view = self.record_in(uow, actor, command, now)
             uow.commit()
         return view, True
+
+    def record_in(
+        self, uow: UnitOfWork, actor: Actor, command: RecordSaleCommand, now: datetime
+    ) -> tuple[Sale, SaleView]:
+        """Vente neuve dans la transaction de l'appelant, **sans commit** (échange, UC-VEN-09)."""
+        sale, view = self._build(uow, actor, command, now)
+        SaleRepository.within(uow).add(sale)
+        sync_claims(uow, sale)
+        post_exits(uow, self._ledger, sale, deferred=command.deferred)
+        return sale, view
 
     def _build(
         self, uow: UnitOfWork, actor: Actor, command: RecordSaleCommand, now: datetime
@@ -106,7 +116,14 @@ class RecordSale:
         settings = ShopSettingsRepository.within(uow).current().values
         profile = profile_for(ShopRepository.within(uow).current().profile_code.value)
         resolved = [resolve_line(uow, item, profile) for item in data.lines]
-        below = check_minimums(resolved, enabled=settings.min_price_enabled, actor=actor)
+        below, request = approve_minimums(
+            uow,
+            resolved,
+            enabled=settings.min_price_enabled,
+            actor=actor,
+            request_id=data.price_request_id,
+            now=now,
+        )
         customer = r.sale_customer(uow, actor, data.customer, now)
         content = SaleContent(
             sold_on=sold_on,
@@ -133,6 +150,9 @@ class RecordSale:
             provisional_number=command.provisional_number,
         )
         sale.record(performer=performer_of(actor), below_minimum=below)
+        if request is not None:
+            request.use(sale.id, now)
+            PriceRequestRepository.within(uow).update(request)
         warnings = (
             []
             if customer is None or sale.kind is SaleKind.CASH

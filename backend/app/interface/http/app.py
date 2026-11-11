@@ -14,6 +14,7 @@ from app.interface.http.routes.customers import build_customers_router
 from app.interface.http.routes.expense_components import ExpensesComponents
 from app.interface.http.routes.expense_settings import build_expense_settings_router
 from app.interface.http.routes.expenses import build_expenses_router
+from app.interface.http.routes.installments import build_installments_router
 from app.interface.http.routes.inventories import build_inventories_router
 from app.interface.http.routes.journal import JournalComponents, build_journal_router
 from app.interface.http.routes.members import build_members_router
@@ -21,8 +22,11 @@ from app.interface.http.routes.places import build_places_router
 from app.interface.http.routes.platform import build_platform_router
 from app.interface.http.routes.purchases import build_purchases_router
 from app.interface.http.routes.purchasing_components import PurchasingComponents
+from app.interface.http.routes.receivables import build_receivables_router
+from app.interface.http.routes.receivables_components import ReceivablesComponents
 from app.interface.http.routes.sales import build_sales_router
 from app.interface.http.routes.sales_components import SalesComponents
+from app.interface.http.routes.sales_returns import build_sales_returns_router
 from app.interface.http.routes.shop_components import ShopsComponents
 from app.interface.http.routes.shop_profile import build_shop_profile_router
 from app.interface.http.routes.stock import build_stock_router
@@ -40,6 +44,7 @@ def create_app(
     stock: StockComponents | None = None,
     purchasing: PurchasingComponents | None = None,
     sales: SalesComponents | None = None,
+    receivables: ReceivablesComponents | None = None,
 ) -> FastAPI:
     """`journal`/`shops` absents : leurs routes ne sont pas montées (outils, tests ciblés)."""
     prefix = config.api_prefix
@@ -78,4 +83,8 @@ def create_app(
     if sales is not None:
         app.include_router(build_sales_router(sales), prefix=prefix)
         app.include_router(build_customers_router(sales), prefix=prefix)
+        app.include_router(build_sales_returns_router(sales), prefix=prefix)
+    if receivables is not None:
+        app.include_router(build_receivables_router(receivables), prefix=prefix)
+        app.include_router(build_installments_router(receivables), prefix=prefix)
     return app

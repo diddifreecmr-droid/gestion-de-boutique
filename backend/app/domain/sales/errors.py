@@ -10,6 +10,8 @@
 | `LineChangeRefused` | `LINE_CHANGE_NOT_ALLOWED` | 422 | modifier article ou quantité (UC-VEN-07) |
 | `ChassisAlreadySold` | `DUPLICATE` | 409 | châssis d'une vente non annulée (RG-M01) |
 | `CustomerRequired` | `VALIDATION_ERROR` | 400 | crédit sans client (H20) |
+| `ReturnExceedsSold` | `RETURN_QUANTITY_EXCEEDED` | 422 | retour > reste non rendu (EXC-02, Q-31) |
+| `RefundOverpayment` | `OVERPAYMENT` | 422 | remboursement > payé ou > valeur rendue (T16b) |
 
 Aucun détail ne contient de coût ni de marge : ces erreurs sont montrées au vendeur (SEC-N01).
 """
@@ -20,19 +22,26 @@ from app.domain.shared.money import Money
 
 class PriceBelowMinimum(DomainError):
     """`details` : `article_id`, `line` (position, 1 = première), `min_price`,
-    `request_required` (toujours vrai : seul l'accord du propriétaire débloque, T16b)."""
+    `request_required` (toujours vrai : seul l'accord du propriétaire débloque, T16b) et, quand
+    un `price_request_id` a été fourni sans couvrir la ligne, `price_request` : la raison
+    (`not_found`, `other_seller`, `other_article`, `refused`, `expired`, `pending`, `used`,
+    `price_too_low`)."""
 
     code = "PRICE_BELOW_MINIMUM"
 
-    def __init__(self, *, article_id: str, line: int, min_price: Money) -> None:
+    def __init__(
+        self, *, article_id: str, line: int, min_price: Money, price_request: str | None = None
+    ) -> None:
+        details: dict[str, object] = {
+            "article_id": article_id,
+            "line": line,
+            "min_price": min_price.amount,
+            "request_required": True,
+        }
+        if price_request is not None:
+            details["price_request"] = price_request
         super().__init__(
-            "Prix inférieur au minimum : validation du propriétaire nécessaire",
-            details={
-                "article_id": article_id,
-                "line": line,
-                "min_price": min_price.amount,
-                "request_required": True,
-            },
+            "Prix inférieur au minimum : validation du propriétaire nécessaire", details=details
         )
 
 
@@ -117,4 +126,29 @@ class CustomerRequired(ValidationFailed):
         super().__init__(
             "Client obligatoire (nom et téléphone) pour une vente à crédit",
             details={"field": "customer"},
+        )
+
+
+class ReturnExceedsSold(DomainError):
+    """Quantité rendue supérieure au reste non rendu de la ligne (EXC-02 ; code Q-31 tranché)."""
+
+    code = "RETURN_QUANTITY_EXCEEDED"
+
+    def __init__(self, *, line: int, returnable: str) -> None:
+        super().__init__(
+            "Quantité rendue supérieure à la quantité vendue non encore rendue",
+            details={"line": line, "returnable": returnable},
+        )
+
+
+class RefundOverpayment(DomainError):
+    """Remboursement au-delà de ce qui a été payé (net des remboursements précédents) ou de la
+    valeur rendue non couverte par la baisse de la créance (UC-VEN-09, RG-T21)."""
+
+    code = "OVERPAYMENT"
+
+    def __init__(self, *, refund: Money, maximum: Money) -> None:
+        super().__init__(
+            "Le remboursement dépasse ce qui peut être rendu au client",
+            details={"field": "refund.amount", "refund": refund.amount, "max": maximum.amount},
         )

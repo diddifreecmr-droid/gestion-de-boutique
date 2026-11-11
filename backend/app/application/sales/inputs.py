@@ -59,4 +59,4 @@ class SaleInput:
     seller_id: UserId | None = None
     """Vendeur attribué : le propriétaire peut en choisir un (CDC § 20.4) ; sinon l'auteur."""
     price_request_id: PriceRequestId | None = None
-    """Accord du propriétaire pour un prix sous le minimum (UC-VEN-03) : exploité en T16b."""
+    """Accord du propriétaire pour un prix sous le minimum (UC-VEN-03, `price_approval.py`)."""

@@ -6,8 +6,9 @@ handlers de boutique (journal puis alertes) sont posés sur les unités de bouti
 les unités jointes ; le handler du journal de l'identité, sur l'unité plateforme.
 
 Les règles d'alerte des modules sont branchées **ici, une fois** par répartiteur (stock T14,
-ventes T16) :
-assembler un module plusieurs fois (outils, tests) ne double jamais une alerte.
+ventes T16, rappels de créance T17) : assembler un module plusieurs fois (outils, tests) ne
+double jamais une alerte. `ReceivableSync` (T17) tient la créance d'une vente à crédit dans
+la transaction de la vente (premier handler : ses écritures sont journalisées au tour suivant).
 """
 
 from dataclasses import dataclass
@@ -21,6 +22,8 @@ from app.application.identity.uow import IdentityUnitOfWorkFactory
 from app.application.plans.ports import EntitlementOverrides
 from app.application.ports.clock import Clock
 from app.application.ports.uow import UnitOfWorkFactory
+from app.application.receivables.reminders import register_receivable_alerts
+from app.application.receivables.sync import ReceivableSync
 from app.application.sales.alerts import register_sales_alerts
 from app.application.shops.ports import ShopCatalog
 from app.application.stock.alerts import register_stock_alerts
@@ -68,7 +71,8 @@ def build_core(settings: Settings, clock: Clock) -> Core:
     alerts = AlertDispatcher(clock)
     register_stock_alerts(alerts)
     register_sales_alerts(alerts)
-    handlers = (AuditRecorder(clock), alerts)
+    register_receivable_alerts(alerts)
+    handlers = (ReceivableSync(), AuditRecorder(clock), alerts)
     backend = settings.persistence_backend
     if backend is PersistenceBackend.MEMORY:
         database, store = MemoryDatabase(), MemoryPlatformStore()

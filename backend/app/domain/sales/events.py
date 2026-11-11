@@ -97,3 +97,33 @@ class ReceiptPrinted(SalesAuditedEvent):
     """Impression ou partage d'un reçu (RG-T01 « impression »), duplicata compris."""
 
     action = AuditAction.PRINT
+
+
+@dataclass(frozen=True, kw_only=True)
+class PriceRequested(SalesAuditedEvent):
+    """Demande d'un vendeur sous le minimum (UC-VEN-03) ; déclenche l'alerte « Demande de prix »."""
+
+    action = AuditAction.CREATE
+    request_key: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class PriceRequestAccepted(SalesAuditedEvent):
+    """Le propriétaire accepte un prix sous le minimum (UC-VEN-03) : sensible, comme ERR-PRM-03."""
+
+    action = AuditAction.VALIDATE
+    sensitive = True
+    request_key: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class PriceRequestRefused(SalesAuditedEvent):
+    action = AuditAction.REJECT
+    request_key: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class SaleReturnRecorded(SalesAuditedEvent):
+    """Retour ou échange sur une vente (UC-VEN-09), au journal de la vente d'origine."""
+
+    action = AuditAction.CREATE

@@ -7136,6 +7136,1652 @@
           }
         }
       }
+    },
+    "/api/v1/shops/{shop_id}/price-requests": {
+      "post": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Request Price",
+        "operationId": "request_price_api_v1_shops__shop_id__price_requests_post",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriceRequestCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "List Price Requests",
+        "operationId": "list_price_requests_api_v1_shops__shop_id__price_requests_get",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PriceRequestResponse"
+                  },
+                  "title": "Response List Price Requests Api V1 Shops  Shop Id  Price Requests Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/price-requests/{request_id}": {
+      "get": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Get Price Request",
+        "operationId": "get_price_request_api_v1_shops__shop_id__price_requests__request_id__get",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/price-requests/{request_id}/decision": {
+      "post": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Decide Price Request",
+        "operationId": "decide_price_request_api_v1_shops__shop_id__price_requests__request_id__decision_post",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriceDecisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/sales/{sale_id}/returns": {
+      "post": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "Record Return",
+        "operationId": "record_return_api_v1_shops__shop_id__sales__sale_id__returns_post",
+        "parameters": [
+          {
+            "name": "sale_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sale Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaleReturnCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleReturnResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "sales"
+        ],
+        "summary": "List Returns",
+        "operationId": "list_returns_api_v1_shops__shop_id__sales__sale_id__returns_get",
+        "parameters": [
+          {
+            "name": "sale_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sale Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleReturnsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/receivables": {
+      "get": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "List Receivables",
+        "operationId": "list_receivables_api_v1_shops__shop_id__receivables_get",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ReceivableStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "seller_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Seller Id"
+            }
+          },
+          {
+            "name": "band",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/SeniorityBand"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Band"
+            }
+          },
+          {
+            "name": "reminder_overdue",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Reminder Overdue"
+            }
+          },
+          {
+            "name": "quiet",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Quiet"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivableListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "Record Legacy",
+        "operationId": "record_legacy_api_v1_shops__shop_id__receivables_post",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyReceivableRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivableResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/receivables/{receivable_id}": {
+      "get": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "Get Receivable",
+        "operationId": "get_receivable_api_v1_shops__shop_id__receivables__receivable_id__get",
+        "parameters": [
+          {
+            "name": "receivable_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Receivable Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivableResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "Change Receivable",
+        "operationId": "change_receivable_api_v1_shops__shop_id__receivables__receivable_id__patch",
+        "parameters": [
+          {
+            "name": "receivable_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Receivable Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceivablePatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivableResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/receivables/{receivable_id}/write-off": {
+      "post": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "Write Off",
+        "operationId": "write_off_api_v1_shops__shop_id__receivables__receivable_id__write_off_post",
+        "parameters": [
+          {
+            "name": "receivable_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Receivable Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivableResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/receivables/{receivable_id}/reminders": {
+      "post": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "Schedule Reminder",
+        "operationId": "schedule_reminder_api_v1_shops__shop_id__receivables__receivable_id__reminders_post",
+        "parameters": [
+          {
+            "name": "receivable_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Receivable Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReminderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivableResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/reminders/{reminder_id}": {
+      "patch": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "Change Reminder",
+        "operationId": "change_reminder_api_v1_shops__shop_id__reminders__reminder_id__patch",
+        "parameters": [
+          {
+            "name": "reminder_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Reminder Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReminderPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivableResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/receivables/{receivable_id}/guarantors": {
+      "post": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "Add Guarantor",
+        "operationId": "add_guarantor_api_v1_shops__shop_id__receivables__receivable_id__guarantors_post",
+        "parameters": [
+          {
+            "name": "receivable_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Receivable Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuarantorRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivableResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/receivables/{receivable_id}/installments": {
+      "post": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "Record On Receivable",
+        "operationId": "record_on_receivable_api_v1_shops__shop_id__receivables__receivable_id__installments_post",
+        "parameters": [
+          {
+            "name": "receivable_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Receivable Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "x-captured-at",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Captured-At"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstallmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstallmentResultResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/customers/{customer_id}/installments": {
+      "post": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "Record On Customer",
+        "operationId": "record_on_customer_api_v1_shops__shop_id__customers__customer_id__installments_post",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Customer Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "x-captured-at",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Captured-At"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstallmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstallmentResultResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/installments/{installment_id}/cancel": {
+      "post": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "Cancel Installment",
+        "operationId": "cancel_installment_api_v1_shops__shop_id__installments__installment_id__cancel_post",
+        "parameters": [
+          {
+            "name": "installment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Installment Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstallmentResultResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/installments/{installment_id}/receipt": {
+      "get": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "Get Receipt",
+        "operationId": "get_receipt_api_v1_shops__shop_id__installments__installment_id__receipt_get",
+        "parameters": [
+          {
+            "name": "installment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Installment Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstallmentReceiptResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/customers/{customer_id}/statement": {
+      "get": {
+        "tags": [
+          "receivables"
+        ],
+        "summary": "Get Statement",
+        "operationId": "get_statement_api_v1_shops__shop_id__customers__customer_id__statement_get",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Customer Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatementResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8568,6 +10214,29 @@
         ],
         "title": "CustomerPatch"
       },
+      "CustomerRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "phone"
+        ],
+        "title": "CustomerRef"
+      },
       "CustomerResponse": {
         "properties": {
           "id": {
@@ -9097,6 +10766,25 @@
           "version"
         ],
         "title": "ErrorReportResponse"
+      },
+      "ExchangeRequest": {
+        "properties": {
+          "sale": {
+            "$ref": "#/components/schemas/SaleCreateRequest"
+          },
+          "mode_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Mode Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sale",
+          "mode_id"
+        ],
+        "title": "ExchangeRequest"
       },
       "ExpenseCategoryCreateRequest": {
         "properties": {
@@ -9887,6 +11575,154 @@
           }
         ]
       },
+      "GuarantorRequest": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 32,
+            "title": "Phone"
+          },
+          "relation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relation"
+          },
+          "id_doc_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdDocumentType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id_doc_number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Doc Number"
+          },
+          "id_doc_photo_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Doc Photo Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "phone"
+        ],
+        "title": "GuarantorRequest"
+      },
+      "GuarantorResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "relation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relation"
+          },
+          "id_doc_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Doc Type"
+          },
+          "id_doc_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Doc Number"
+          },
+          "id_doc_photo_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Doc Photo Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "phone",
+          "relation"
+        ],
+        "title": "GuarantorResponse",
+        "description": "`id_doc_*` absents (clés omises) hors propriétaire et vendeur responsable (SEC-N06)."
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -9924,6 +11760,304 @@
           "other"
         ],
         "title": "IdDocumentType"
+      },
+      "InstallmentReceiptResponse": {
+        "properties": {
+          "shop_name": {
+            "type": "string",
+            "title": "Shop Name"
+          },
+          "shop_city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shop City"
+          },
+          "shop_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shop Phone"
+          },
+          "number": {
+            "type": "string",
+            "title": "Number"
+          },
+          "paid_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Paid On"
+          },
+          "customer_name": {
+            "type": "string",
+            "title": "Customer Name"
+          },
+          "customer_phone": {
+            "type": "string",
+            "title": "Customer Phone"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "mode_name": {
+            "type": "string",
+            "title": "Mode Name"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "nature": {
+            "type": "string",
+            "title": "Nature"
+          },
+          "cancelled": {
+            "type": "boolean",
+            "title": "Cancelled"
+          },
+          "total_paid": {
+            "type": "integer",
+            "title": "Total Paid"
+          },
+          "remaining": {
+            "type": "integer",
+            "title": "Remaining"
+          },
+          "settled": {
+            "type": "boolean",
+            "title": "Settled"
+          },
+          "sale_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sale Number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shop_name",
+          "shop_city",
+          "shop_phone",
+          "number",
+          "paid_on",
+          "customer_name",
+          "customer_phone",
+          "amount",
+          "mode_name",
+          "reference",
+          "nature",
+          "cancelled",
+          "total_paid",
+          "remaining",
+          "settled",
+          "sale_number"
+        ],
+        "title": "InstallmentReceiptResponse"
+      },
+      "InstallmentRequest": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "mode_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Mode Id"
+          },
+          "paid_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid On"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "amount",
+          "mode_id"
+        ],
+        "title": "InstallmentRequest"
+      },
+      "InstallmentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "number": {
+            "type": "string",
+            "title": "Number"
+          },
+          "paid_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Paid On"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "mode_id": {
+            "type": "string",
+            "title": "Mode Id"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "nature": {
+            "type": "string",
+            "title": "Nature"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "to_refund": {
+            "type": "boolean",
+            "title": "To Refund"
+          },
+          "created_by": {
+            "type": "string",
+            "title": "Created By"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Received At"
+          },
+          "cancelled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled At"
+          },
+          "cancelled_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled By"
+          },
+          "cancel_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancel Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "paid_on",
+          "amount",
+          "mode_id",
+          "reference",
+          "nature",
+          "status",
+          "to_refund",
+          "created_by",
+          "received_at",
+          "cancelled_at",
+          "cancelled_by",
+          "cancel_reason"
+        ],
+        "title": "InstallmentResponse"
+      },
+      "InstallmentResultResponse": {
+        "properties": {
+          "installment": {
+            "$ref": "#/components/schemas/InstallmentResponse"
+          },
+          "receivable": {
+            "$ref": "#/components/schemas/ReceivableResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "installment",
+          "receivable"
+        ],
+        "title": "InstallmentResultResponse"
       },
       "InventoryLineResponse": {
         "properties": {
@@ -10153,6 +12287,106 @@
           "location_id"
         ],
         "title": "InventoryStartRequest"
+      },
+      "LegacyReceivableRequest": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/SaleCustomerRequest"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "opened_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Opened On"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Description"
+          },
+          "responsible_seller_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Responsible Seller Id"
+          },
+          "terms": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "customer",
+          "amount",
+          "opened_on",
+          "description"
+        ],
+        "title": "LegacyReceivableRequest",
+        "description": "UC-CRE-02 : client existant (`customer.id`) ou nom + téléphone."
+      },
+      "LineBalanceResponse": {
+        "properties": {
+          "line": {
+            "type": "integer",
+            "title": "Line"
+          },
+          "article_id": {
+            "type": "string",
+            "title": "Article Id"
+          },
+          "sold": {
+            "type": "string",
+            "title": "Sold"
+          },
+          "returned": {
+            "type": "string",
+            "title": "Returned"
+          },
+          "returnable": {
+            "type": "string",
+            "title": "Returnable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "line",
+          "article_id",
+          "sold",
+          "returned",
+          "returnable"
+        ],
+        "title": "LineBalanceResponse"
       },
       "LinePatchRequest": {
         "properties": {
@@ -11493,6 +13727,35 @@
         ],
         "title": "PerformerResponse"
       },
+      "PriceDecisionRequest": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "accept",
+              "refuse"
+            ],
+            "title": "Decision"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision"
+        ],
+        "title": "PriceDecisionRequest"
+      },
       "PriceHistoryResponse": {
         "properties": {
           "price_kind": {
@@ -11541,6 +13804,151 @@
           "author_id"
         ],
         "title": "PriceHistoryResponse"
+      },
+      "PriceRequestCreate": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "article_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Article Id"
+          },
+          "requested_price": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Requested Price"
+          },
+          "sale_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaleMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "article_id",
+          "requested_price"
+        ],
+        "title": "PriceRequestCreate"
+      },
+      "PriceRequestResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "seller_id": {
+            "type": "string",
+            "title": "Seller Id"
+          },
+          "article_id": {
+            "type": "string",
+            "title": "Article Id"
+          },
+          "article_name": {
+            "type": "string",
+            "title": "Article Name"
+          },
+          "location_id": {
+            "type": "string",
+            "title": "Location Id"
+          },
+          "requested_price": {
+            "type": "integer",
+            "title": "Requested Price"
+          },
+          "min_price": {
+            "type": "integer",
+            "title": "Min Price"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "requested_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Requested At"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "decided_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided By"
+          },
+          "decided_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided At"
+          },
+          "sale_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sale Id"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "seller_id",
+          "article_id",
+          "article_name",
+          "location_id",
+          "requested_price",
+          "min_price",
+          "status",
+          "requested_at",
+          "expires_at",
+          "decided_by",
+          "decided_at",
+          "sale_id",
+          "version"
+        ],
+        "title": "PriceRequestResponse"
       },
       "PricesRequest": {
         "properties": {
@@ -12267,6 +14675,25 @@
         ],
         "title": "ReasonEntry"
       },
+      "ReasonRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ReasonRequest"
+      },
       "ReceiptCustomer": {
         "properties": {
           "name": {
@@ -12486,17 +14913,84 @@
         ],
         "title": "ReceiptPrintSettings"
       },
-      "ReceivableRef": {
+      "ReceivableListResponse": {
         "properties": {
-          "id": {
+          "summary": {
+            "$ref": "#/components/schemas/ReceivableSummaryResponse"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReceivableResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary",
+          "items"
+        ],
+        "title": "ReceivableListResponse"
+      },
+      "ReceivablePatch": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "responsible_seller_id": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "maxLength": 64
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Responsible Seller Id"
+          },
+          "terms": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms"
+          },
+          "attachment_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attachment Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "title": "ReceivablePatch",
+        "description": "Champs présents seulement ; `responsible_seller_id` : propriétaire seul (Q-21)."
+      },
+      "ReceivableRef": {
+        "properties": {
+          "id": {
+            "type": "string",
             "title": "Id"
           },
           "remaining": {
@@ -12510,7 +15004,572 @@
           "remaining"
         ],
         "title": "ReceivableRef",
-        "description": "Créance liée (T17) : `id` posé quand le module Créances l'aura ouverte."
+        "description": "Créance liée (T17) : `id` = celle ouverte par la vente (`GET /receivables/{id}` : reste\nà jour des versements) ; `remaining` = reste à payer de la vente (total - acompte)."
+      },
+      "ReceivableResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerRef"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "sale_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sale Id"
+          },
+          "sale_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sale Number"
+          },
+          "sale_total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sale Total"
+          },
+          "paid_at_sale": {
+            "type": "integer",
+            "title": "Paid At Sale"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "initial_amount": {
+            "type": "integer",
+            "title": "Initial Amount"
+          },
+          "total_paid": {
+            "type": "integer",
+            "title": "Total Paid"
+          },
+          "remaining": {
+            "type": "integer",
+            "title": "Remaining"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "opened_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Opened On"
+          },
+          "seniority_days": {
+            "type": "integer",
+            "title": "Seniority Days"
+          },
+          "seniority_band": {
+            "type": "string",
+            "title": "Seniority Band"
+          },
+          "last_installment_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Installment On"
+          },
+          "responsible_seller_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Responsible Seller Id"
+          },
+          "terms": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms"
+          },
+          "attachment_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Attachment Ids"
+          },
+          "write_off": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WriteOffResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cancelled_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled On"
+          },
+          "manageable": {
+            "type": "boolean",
+            "title": "Manageable"
+          },
+          "installments": {
+            "items": {
+              "$ref": "#/components/schemas/InstallmentResponse"
+            },
+            "type": "array",
+            "title": "Installments"
+          },
+          "reminders": {
+            "items": {
+              "$ref": "#/components/schemas/ReminderResponse"
+            },
+            "type": "array",
+            "title": "Reminders"
+          },
+          "guarantors": {
+            "items": {
+              "$ref": "#/components/schemas/GuarantorResponse"
+            },
+            "type": "array",
+            "title": "Guarantors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "customer",
+          "origin",
+          "sale_id",
+          "sale_number",
+          "sale_total",
+          "paid_at_sale",
+          "description",
+          "initial_amount",
+          "total_paid",
+          "remaining",
+          "status",
+          "opened_on",
+          "seniority_days",
+          "seniority_band",
+          "last_installment_on",
+          "responsible_seller_id",
+          "terms",
+          "attachment_ids",
+          "write_off",
+          "cancelled_on",
+          "manageable",
+          "installments",
+          "reminders",
+          "guarantors"
+        ],
+        "title": "ReceivableResponse"
+      },
+      "ReceivableStatus": {
+        "type": "string",
+        "enum": [
+          "open",
+          "settled",
+          "cancelled",
+          "written_off"
+        ],
+        "title": "ReceivableStatus"
+      },
+      "ReceivableSummaryResponse": {
+        "properties": {
+          "total_due": {
+            "type": "integer",
+            "title": "Total Due"
+          },
+          "debtor_count": {
+            "type": "integer",
+            "title": "Debtor Count"
+          },
+          "received_today": {
+            "type": "integer",
+            "title": "Received Today"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_due",
+          "debtor_count",
+          "received_today"
+        ],
+        "title": "ReceivableSummaryResponse"
+      },
+      "RefundRequest": {
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Amount"
+          },
+          "mode_id": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Mode Id"
+          },
+          "refunded_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refunded On"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "amount",
+          "mode_id"
+        ],
+        "title": "RefundRequest"
+      },
+      "RefundResponse": {
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "mode_id": {
+            "type": "string",
+            "title": "Mode Id"
+          },
+          "refunded_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Refunded On"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount",
+          "mode_id",
+          "refunded_on"
+        ],
+        "title": "RefundResponse"
+      },
+      "ReminderPatch": {
+        "properties": {
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReminderStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "remind_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remind On"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ReminderPatch"
+      },
+      "ReminderRequest": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "remind_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Remind On"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "remind_on"
+        ],
+        "title": "ReminderRequest"
+      },
+      "ReminderResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "remind_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Remind On"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "alerted_for": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alerted For"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "remind_on",
+          "note",
+          "status",
+          "alerted_for"
+        ],
+        "title": "ReminderResponse"
+      },
+      "ReminderStatus": {
+        "type": "string",
+        "enum": [
+          "upcoming",
+          "done",
+          "postponed"
+        ],
+        "title": "ReminderStatus"
+      },
+      "ReturnLineRequest": {
+        "properties": {
+          "line": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Line"
+          },
+          "quantity": {
+            "type": "string",
+            "maxLength": 16,
+            "title": "Quantity"
+          },
+          "condition": {
+            "$ref": "#/components/schemas/StockCondition",
+            "default": "sellable"
+          },
+          "chassis": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Chassis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "line",
+          "quantity"
+        ],
+        "title": "ReturnLineRequest"
+      },
+      "ReturnedLineResponse": {
+        "properties": {
+          "line": {
+            "type": "integer",
+            "title": "Line"
+          },
+          "article_id": {
+            "type": "string",
+            "title": "Article Id"
+          },
+          "article_name": {
+            "type": "string",
+            "title": "Article Name"
+          },
+          "quantity": {
+            "type": "string",
+            "title": "Quantity"
+          },
+          "stock_quantity": {
+            "type": "string",
+            "title": "Stock Quantity"
+          },
+          "stock_unit": {
+            "type": "string",
+            "title": "Stock Unit"
+          },
+          "condition": {
+            "type": "string",
+            "title": "Condition"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "chassis": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Chassis"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin"
+          },
+          "margin_wac": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Wac"
+          }
+        },
+        "type": "object",
+        "required": [
+          "line",
+          "article_id",
+          "article_name",
+          "quantity",
+          "stock_quantity",
+          "stock_unit",
+          "condition",
+          "amount",
+          "chassis"
+        ],
+        "title": "ReturnedLineResponse"
       },
       "RevokedDevicesResponse": {
         "properties": {
@@ -13329,6 +16388,215 @@
         ],
         "title": "SaleResponse"
       },
+      "SaleReturnCreate": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/ReturnLineRequest"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Lines"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Reason"
+          },
+          "refund": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RefundRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "exchange": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExchangeRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lines",
+          "reason"
+        ],
+        "title": "SaleReturnCreate"
+      },
+      "SaleReturnResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "sale_id": {
+            "type": "string",
+            "title": "Sale Id"
+          },
+          "sale_number": {
+            "type": "string",
+            "title": "Sale Number"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/ReturnedLineResponse"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "refund": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RefundResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "credit_reduction": {
+            "type": "integer",
+            "title": "Credit Reduction"
+          },
+          "exchange_sale_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exchange Sale Id"
+          },
+          "returned_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Returned At"
+          },
+          "returned_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Returned On"
+          },
+          "created_by": {
+            "type": "string",
+            "title": "Created By"
+          },
+          "exchange_sale": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaleResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin"
+          },
+          "margin_wac": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Wac"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sale_id",
+          "sale_number",
+          "kind",
+          "lines",
+          "reason",
+          "amount",
+          "refund",
+          "credit_reduction",
+          "exchange_sale_id",
+          "returned_at",
+          "returned_on",
+          "created_by"
+        ],
+        "title": "SaleReturnResponse"
+      },
+      "SaleReturnsResponse": {
+        "properties": {
+          "sale_id": {
+            "type": "string",
+            "title": "Sale Id"
+          },
+          "returns": {
+            "items": {
+              "$ref": "#/components/schemas/SaleReturnResponse"
+            },
+            "type": "array",
+            "title": "Returns"
+          },
+          "balances": {
+            "items": {
+              "$ref": "#/components/schemas/LineBalanceResponse"
+            },
+            "type": "array",
+            "title": "Balances"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sale_id",
+          "returns",
+          "balances"
+        ],
+        "title": "SaleReturnsResponse"
+      },
       "SaleTotalsResponse": {
         "properties": {
           "count": {
@@ -13351,6 +16619,16 @@
           "paid"
         ],
         "title": "SaleTotalsResponse"
+      },
+      "SeniorityBand": {
+        "type": "string",
+        "enum": [
+          "under_30",
+          "31_60",
+          "61_90",
+          "over_90"
+        ],
+        "title": "SeniorityBand"
       },
       "SettingsPatch": {
         "properties": {
@@ -13868,6 +17146,82 @@
         ],
         "title": "ShopSummaryResponse"
       },
+      "StatementLineResponse": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "on": {
+            "type": "string",
+            "format": "date",
+            "title": "On"
+          },
+          "receivable_id": {
+            "type": "string",
+            "title": "Receivable Id"
+          },
+          "number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Number"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "cancelled": {
+            "type": "boolean",
+            "title": "Cancelled"
+          },
+          "balance_after": {
+            "type": "integer",
+            "title": "Balance After"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "on",
+          "receivable_id",
+          "number",
+          "amount",
+          "cancelled",
+          "balance_after"
+        ],
+        "title": "StatementLineResponse"
+      },
+      "StatementResponse": {
+        "properties": {
+          "customer": {
+            "$ref": "#/components/schemas/CustomerRef"
+          },
+          "total_due": {
+            "type": "integer",
+            "title": "Total Due"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/StatementLineResponse"
+            },
+            "type": "array",
+            "title": "Lines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer",
+          "total_due",
+          "lines"
+        ],
+        "title": "StatementResponse"
+      },
       "StockCell": {
         "properties": {
           "location_id": {
@@ -13920,6 +17274,14 @@
           "is_point_of_sale"
         ],
         "title": "StockColumn"
+      },
+      "StockCondition": {
+        "type": "string",
+        "enum": [
+          "sellable",
+          "damaged"
+        ],
+        "title": "StockCondition"
       },
       "StockMatrixResponse": {
         "properties": {
@@ -14663,6 +18025,30 @@
           "details"
         ],
         "title": "WarningResponse"
+      },
+      "WriteOffResponse": {
+        "properties": {
+          "on": {
+            "type": "string",
+            "format": "date",
+            "title": "On"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "by": {
+            "type": "string",
+            "title": "By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "on",
+          "reason",
+          "by"
+        ],
+        "title": "WriteOffResponse"
       },
       "app__interface__http__schemas__expenses__CancelRequest": {
         "properties": {

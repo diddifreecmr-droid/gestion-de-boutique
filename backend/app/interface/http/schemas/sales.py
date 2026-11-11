@@ -47,9 +47,10 @@ class WarningResponse(BaseModel):
 
 
 class ReceivableRef(BaseModel):
-    """Créance liée (T17) : `id` posé quand le module Créances l'aura ouverte."""
+    """Créance liée (T17) : `id` = celle ouverte par la vente (`GET /receivables/{id}` : reste
+    à jour des versements) ; `remaining` = reste à payer de la vente (total - acompte)."""
 
-    id: str | None
+    id: str
     remaining: int
 
 

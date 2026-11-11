@@ -186,16 +186,82 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
 - **Règles tranchées** : comptant payé en entier (`PAYMENT_INCOMPLETE`, Q-12) ; crédit : client
   obligatoire, acompte < total ; payé ≤ total (`OVERPAYMENT`) ; plafond strict (vendeur
   `CREDIT_LIMIT_EXCEEDED`, propriétaire avertissement `warnings`) ; vendeur sous le minimum
-  `PRICE_BELOW_MINIMUM` (`request_required`, `price_request_id` accepté mais exploité en T16b) ;
+  `PRICE_BELOW_MINIMUM` (`request_required` ; débloqué par une demande acceptée, T16b) ;
   vendeur limité à son lieu habituel (`LOCATION_NOT_ALLOWED`, Q-36) ; total de ligne et coût =
   arrondi au franc demi vers le haut (T04) ; châssis normalisé (lettres et chiffres en
   majuscules) unique parmi les ventes valides via `sold_chassis.active_key` ; duplicata dès la
   2ᵉ impression ; totaux de liste = ventes de la période − ventes annulées pendant (Q-09) ;
   « plus vendus » = quantités des 30 derniers jours hors annulées.
-- **Pour T17** : événements `CreditSaleRecorded`, `CreditSaleAmountsChanged`,
-  `CreditSaleCancelled` (`domain/sales/receivable_events.py`, non journalisés) ; port
-  `CustomerDebt` (dû actuel, aujourd'hui `SalesCustomerDebt`) ; `receivable.id` vaut `null`.
+- **Créances (T17)** : événements `CreditSaleRecorded`, `CreditSaleAmountsChanged`,
+  `CreditSaleCancelled` (`domain/sales/receivable_events.py`) consommés par `ReceivableSync` ;
+  port `CustomerDebt` servi par `ReceivableCustomerDebt` ; `receivable.id` = id de la vente.
 - **Migration** `0008_sales`.
+
+## Ventes — demandes de prix et retours (T16b)
+
+- **Routes** (`/shops/{id}/…`) : `POST/GET /price-requests` (vendeur : crée, lit les siennes ;
+  propriétaire : liste celles en attente), `GET /price-requests/{rid}`,
+  `POST /price-requests/{rid}/decision {decision: accept|refuse, version?}` (propriétaire),
+  `POST /sales/{sid}/returns` (propriétaire ; retour simple ou `exchange`), `GET
+  /sales/{sid}/returns` (retours + `balances` : vendu / rendu / rendable par ligne ; vendeur sur
+  ses ventes, sans coût ni marge). Créations idempotentes par `id` client. Comptable : 403.
+- **Demande de prix (Q-44 tranchée)** : expire 30 min après la demande (à 30:00 pile :
+  expirée) ; acceptée, elle vaut 30 min **dès l'accord** ; usage unique (liée à la vente) ;
+  couvre les lignes de **son article** dont le prix est **≥ prix accordé**, pour **son vendeur**.
+  Sinon `PRICE_BELOW_MINIMUM` + `details.price_request` (`not_found`, `other_seller`,
+  `other_article`, `pending`, `refused`, `expired`, `used`, `price_too_low`). Statut lu
+  **effectif** à l'horloge ; `SalesModule.expire_price_requests.execute(shop_id, now)` l'inscrit
+  (worker TR-19, idempotent). Alerte « Demande de prix » aux propriétaires
+  (`price_request:<id>`), résolue à la décision / expiration ; le nom du vendeur n'est pas dans
+  le message (l'alerte ouvre la demande, qui porte `seller_id`).
+- **Retour (Q-05 tranché)** : montant et marge aux **coûts figés** de la ligne, comptés **le
+  jour du retour** (`returned_on`) ; dernier retour d'une ligne = reste exact (pas d'écart
+  d'arrondi). Crédit : la valeur rendue baisse d'abord la créance (`credit_reduction` =
+  min(valeur, reste de la vente non encore baissé), événement `CreditSaleReturned(sale_id,
+  amount)`) ; remboursement ≤ valeur − baisse et ≤ payé − remboursements précédents
+  (`OVERPAYMENT`). Quantité > rendable : `RETURN_QUANTITY_EXCEEDED` (422, Q-31). Châssis
+  rendus à préciser sur une ligne partielle, puis libérés. Une vente avec retour ne se modifie
+  ni ne s'annule plus (`INVALID_STATE_TRANSITION`). Vente annulée : retour refusé (idem).
+- **Échange** : retour d'abord (stock, châssis), puis nouvelle vente par `RecordSale.record_in`
+  (mêmes règles, lieu d'origine par défaut). L'avoir (valeur − baisse de créance) est remboursé
+  dans `exchange.mode_id` **et** versé à la nouvelle vente dans ce mode (plafonné à son total) :
+  le client ne paie que la différence (`exchange.sale.payments`) ou la reçoit.
+- **Pour T19** : `SaleReturnRepository.between(jour, jour)` → `amount`, `margin`, `margin_wac`,
+  `refund` (montant, mode, `refunded_on`), `credit_reduction`, `returned_on`.
+- **Points ouverts** : la baisse de créance est calculée sur le reste **à la vente** (sans les
+  versements T17 : T17 la plafonne au dû réel) ; « payé » = payé à la vente.
+- **Migration** `0010_sales_returns` (sur `0008_sales`, parallèle à `0009_receivables`).
+
+## Créances et versements (T17)
+
+- **Routes** (`/shops/{id}/…`) : `GET /receivables?status=&seller_id=&band=under_30|31_60|61_90|over_90&reminder_overdue=&quiet=`
+  (en tête : total à recevoir, clients débiteurs, versements du jour ; tri par reste décroissant,
+  sans pagination), `POST /receivables` (créance ancienne, propriétaire), `GET/PATCH /receivables/{rid}`
+  (`version` ; `responsible_seller_id` : propriétaire seul), `POST /receivables/{rid}/installments`,
+  `POST /customers/{cid}/installments` (plus ancienne créance du client ayant un reste, REC-03),
+  `POST /installments/{iid}/cancel {reason}`, `GET /installments/{iid}/receipt`,
+  `POST /receivables/{rid}/write-off {reason}`, `POST /receivables/{rid}/reminders`,
+  `PATCH /reminders/{mid}`, `POST /receivables/{rid}/guarantors`, `GET /customers/{cid}/statement`.
+  Créations idempotentes par `id` client (201 puis 200). Comptable et chauffeur : 403.
+- **Vente liée** : handler `ReceivableSync` (premier handler de l'unité de boutique,
+  `bootstrap/core.py`) — `CreditSaleRecorded` ouvre la créance **dans la transaction de la vente**
+  (un échec annule la vente) ; elle porte l'**identifiant de la vente** (`receivable.id` de la
+  réponse de vente) ; `CreditSaleAmountsChanged` → nouveau montant initial (`AMOUNT_BELOW_PAID`
+  422 s'il passait sous le déjà versé : la modification est refusée) ; `CreditSaleCancelled` →
+  Annulée (depuis En cours, Soldée ou En perte), versements « à rembourser » si demandé ;
+  `CreditSaleReturned` → baisse **plafonnée au reste réel** (jamais négatif, l'excédent n'est pas
+  un crédit client au Lot 1).
+- **Règles tranchées** : statut calculé (Annulée > En perte > Soldée > En cours) ; reste =
+  initial - versements valides, aussi après la perte (Q-22 : plafond des récupérations, statut
+  reste En perte) ; Q-19 : 30 jours → « moins de 30 » ; « sans versement depuis 30 jours » =
+  dernier versement (ou ouverture) avant J-30 ; reçu : total déjà versé = acompte + versements
+  jusqu'à celui-ci (SCN-07 : 500 000) ; portée « Siennes » = vendeur responsable (Q-21) ; pièces
+  d'identité des garants : propriétaire et vendeur responsable.
+- **Dû client** : `ReceivableCustomerDebt` (restes des créances En cours) sert le plafond de crédit.
+- **Rappels** (TR-19) : `ReceivablesModule.dispatch_reminders.execute(shop_id, today)` — alerte
+  « Rappel créance » au vendeur responsable et aux propriétaires, une fois par date
+  (`alerted_for` + `dedup_key`) ; un report réarme l'alerte.
+- **Migration** `0009_receivables` (après `0008_sales`, tête parallèle à `0010_sales_returns`).
 
 ## Couches
 

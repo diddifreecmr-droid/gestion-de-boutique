@@ -53,7 +53,7 @@ def test_section_64_contract_and_no_cost_leak(api: Api) -> None:
     shop, _, sale, seller = sold(api)
     assert (sale["number"], sale["status"], sale["kind"]) == ("V-000001", "valid", "credit")
     assert (sale["total"], sale["paid"], sale["remaining"]) == (780_000, 300_000, 480_000)
-    assert sale["receivable"] == {"id": None, "remaining": 480_000}
+    assert sale["receivable"] == {"id": sale["id"], "remaining": 480_000}  # créance T17
     assert sale["warnings"] == []
     [line] = sale["lines"]
     assert (line["article_name"], line["quantity"], line["line_total"]) == (

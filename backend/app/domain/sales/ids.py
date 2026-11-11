@@ -40,6 +40,12 @@ class ReceiptPrintId(EntityId):
 
 
 class PriceRequestId(EntityId):
-    """Demande de prix sous le minimum (UC-VEN-03, T16b) : acceptée, pas encore exploitée."""
+    """Demande de prix sous le minimum (UC-VEN-03, T16b)."""
+
+    __slots__ = ()
+
+
+class SaleReturnId(EntityId):
+    """Retour ou échange sur une vente (UC-VEN-09, T16b) ; source des « Retour client »."""
 
     __slots__ = ()
