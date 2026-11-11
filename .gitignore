@@ -35,3 +35,6 @@ Thumbs.db
 # Outils
 .vercel/
 .solofounder/
+
+# Documents confidentiels (gardés en local uniquement)
+Cahier des charges*.md
