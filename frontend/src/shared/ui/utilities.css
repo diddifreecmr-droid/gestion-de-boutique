@@ -1,0 +1,14 @@
+/*
+ * Utilitaires du design system sans équivalent Tailwind (design-system.md § 6.1, § 6.6).
+ * Marge de sécurité basse de l'écran (encoche, barre de gestes ; `viewport-fit=cover`
+ * dans index.html) ajoutée au padding issu de la grille. Aucune nouvelle valeur :
+ * `--spacing` (4 px) × un pas de la grille, plus `env(safe-area-inset-bottom)` fourni
+ * par le navigateur (0 quand il n'y a pas d'encoche).
+ */
+@utility safe-bottom-0 {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility safe-bottom-4 {
+  padding-bottom: calc(var(--spacing) * 4 + env(safe-area-inset-bottom, 0px));
+}

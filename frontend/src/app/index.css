@@ -1,5 +1,6 @@
 /* Styles globaux : uniquement des tokens (design-system.md § 9). */
 @import "../shared/ui/tokens.css";
+@import "../shared/ui/utilities.css";
 
 @layer base {
   html {

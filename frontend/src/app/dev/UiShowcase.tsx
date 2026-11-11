@@ -1,4 +1,9 @@
+import { ToastProvider } from "../../shared/ui";
 import { ButtonGallery } from "./ButtonGallery";
+import { CardGallery } from "./CardGallery";
+import { FeedbackGallery } from "./FeedbackGallery";
+import { FieldGallery } from "./FieldGallery";
+import { NavigationGallery } from "./NavigationGallery";
 import { TokenPalette } from "./TokenPalette";
 
 /**
@@ -7,15 +12,21 @@ import { TokenPalette } from "./TokenPalette";
  */
 export default function UiShowcase() {
   return (
-    <main className="mx-auto flex max-w-240 flex-col gap-8 p-4">
-      <header className="flex flex-col gap-1">
-        <h1 className="m-0 text-title font-bold">Vitrine des composants</h1>
-        <p className="m-0 text-body text-text-muted">
-          Page de développement : absente de la version de production.
-        </p>
-      </header>
-      <ButtonGallery />
-      <TokenPalette />
-    </main>
+    <ToastProvider>
+      <main className="mx-auto flex max-w-240 flex-col gap-8 p-4">
+        <header className="flex flex-col gap-1">
+          <h1 className="m-0 text-title font-bold">Vitrine des composants</h1>
+          <p className="m-0 text-body text-text-muted">
+            Page de développement : absente de la version de production.
+          </p>
+        </header>
+        <ButtonGallery />
+        <FieldGallery />
+        <CardGallery />
+        <FeedbackGallery />
+        <NavigationGallery />
+        <TokenPalette />
+      </main>
+    </ToastProvider>
   );
 }
