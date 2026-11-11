@@ -1,0 +1,135 @@
+[project]
+name = "gestion-boutique-backend"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.162.4",
+    "pydantic>=2.14.3",
+    "pydantic-settings>=2.16.2",
+    "tzdata>=2026.6",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.16.0",
+    "hypothesis>=6.170.15",
+    "import-linter>=2.16",
+    "mypy>=2.4.1",
+    "pytest>=9.2.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.4",
+]
+
+# --------------------------------------------------------------------------- ruff
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = [".", "tools"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F",  # pycodestyle, pyflakes
+    "I",            # isort (imports)
+    "B",            # bugbear
+    "UP",           # pyupgrade
+    "BLE",          # blind except (except Exception sans re-raise)
+    "S110",         # try/except/pass
+    "S112",         # try/except/continue
+    "SIM",          # simplify (dont SIM105 : contextlib.suppress)
+    "TRY",          # tryceratops (raise sans from, except verbeux)
+    "RET", "C4", "PIE", "PT", "N", "RUF",
+]
+
+ignore = [
+    # Les erreurs portent le vocabulaire du domaine (NotFound, Forbidden… specs § 6.2),
+    # pas le suffixe technique « Error ».
+    "N818",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests : `assert` est l'outil de base de pytest.
+"tests/**" = ["S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+# --------------------------------------------------------------------------- mypy
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["app", "tests", "tools"]
+mypy_path = "."
+explicit_package_bases = true
+plugins = ["pydantic.mypy"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+# --------------------------------------------------------------------------- pytest
+[tool.pytest.ini_options]
+minversion = "9.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+source = ["app", "tools"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = false
+exclude_also = ['if __name__ == "__main__":']
+
+# --------------------------------------------------------------------------- import-linter
+# Règle de dépendance de specs.md § 4.1 (TR-01, D2).
+[tool.importlinter]
+root_packages = ["app"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "domain : Python pur (aucune autre couche, aucun framework)"
+type = "forbidden"
+source_modules = ["app.domain"]
+forbidden_modules = [
+    "app.application",
+    "app.infrastructure",
+    "app.interface",
+    "app.bootstrap",
+    "fastapi",
+    "starlette",
+    "pydantic",
+    "pydantic_settings",
+    "sqlalchemy",
+    "uvicorn",
+]
+
+[[tool.importlinter.contracts]]
+name = "application : n'importe ni infrastructure, ni interface, ni bootstrap"
+type = "forbidden"
+source_modules = ["app.application"]
+forbidden_modules = [
+    "app.infrastructure",
+    "app.interface",
+    "app.bootstrap",
+    "fastapi",
+    "starlette",
+    "sqlalchemy",
+]
+
+[[tool.importlinter.contracts]]
+name = "infrastructure : n'importe ni interface ni bootstrap"
+type = "forbidden"
+source_modules = ["app.infrastructure"]
+forbidden_modules = ["app.interface", "app.bootstrap"]
+
+[[tool.importlinter.contracts]]
+name = "interface : n'importe ni infrastructure ni bootstrap (seul bootstrap compose)"
+type = "forbidden"
+source_modules = ["app.interface"]
+forbidden_modules = ["app.infrastructure", "app.bootstrap", "sqlalchemy"]

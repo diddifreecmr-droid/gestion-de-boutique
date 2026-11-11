@@ -1,0 +1,3 @@
+# Caches locaux non couverts par le .gitignore racine
+.import_linter_cache/
+.hypothesis/
