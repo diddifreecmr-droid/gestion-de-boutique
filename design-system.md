@@ -219,6 +219,7 @@ Un élément annulé (RG-T03) garde sa ligne : le texte passe en `text-muted` et
 ### 6.6 Navigation
 
 - **Barre du haut** (56 px) : nom de la boutique, qui s'ouvre en liste quand il y en a plusieurs (UC-SOC-03) ; cloche avec compteur (pastille `danger`, `--radius-full`) ; flèche de retour sur les écrans de détail.
+- **Accès « Mon compte »** (décision du 11/11/2026) : bouton icône `CircleUser` + mot « Compte » dans la barre du haut, à droite de la cloche, **pour tous les rôles**. Il ouvre « Mon compte » : version de l'application, « Recharger la dernière version », changer mon code, se déconnecter. Un bouton équivalent reste sur la page d'accueil. Il ne compte pas dans les 5 entrées de la barre du bas.
 - **Barre du bas** (téléphone) : au plus 5 entrées (CDC § 17.4), icône + mot, 64 px de haut. Entrée active en `primary` avec un trait de 3 px au-dessus. Les droits manquants ne s'affichent pas du tout.
 - **Navigation latérale** (ordinateur ≥ 1024 px) : mêmes entrées, plus le contenu de « Plus » déplié.
 
