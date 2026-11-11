@@ -63,3 +63,16 @@ flowchart LR
 
 - `uv` 0.13.7 installé dans `%APPDATA%\Python\Python310\Scripts\uv.exe` (pas encore dans le `PATH`) ; Python 3.12 géré par uv.
 - Node 24, npm 11, Docker 29 + Compose v5, git, gh.
+
+## Suivi — reste à faire issu des tâches validées
+
+| Origine | Élément | Porté par |
+| --- | --- | --- |
+| T08 | Adaptateur SQL de l'identité (`user`, `device_session`) : en attendant, l'identité refuse de démarrer en prod avec PostgreSQL | T10 |
+| T08 | Agrégat `MEMBERSHIP` réel + adaptateur de `MembershipDirectory` ; routes `/shops/{id}/members/*` (révocation, déblocage, code provisoire, désactivation) | T10 |
+| T08 | Limitation de débit sur `/auth/*` par IP et par numéro (specs § 8.1) | T10 |
+| T08 | Route de création de la délégation admin (`ADMIN_ACCESS_GRANT`, 24 h) | T10 |
+| T06 | Vérifier la connexion à la base au démarrage de l'API (aujourd'hui : à la première requête) | T25 |
+| T11 | Liste déroulante des boutiques dans `TopBar` (UC-SOC-03), navigation latérale ordinateur, arrière-plan `inert` des confirmations | T12 / T22 |
+| T11 | Token de voile (`--color-scrim`) à ajouter au design system si besoin | T22 |
+| T04 | Règle d'arrondi `quantité × prix` pour une ligne au mètre | T16 |
