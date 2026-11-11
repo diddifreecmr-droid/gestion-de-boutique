@@ -21,7 +21,10 @@ export function LoginPage() {
     <AuthScreen title="Connexion" intro="Entrez votre numéro de téléphone et votre code secret.">
       <SessionNotice />
       <LoginForm kind="pin" />
-      <Link className="text-label font-semibold text-primary underline" to={ADMIN_LOGIN_PATH}>
+      <Link
+        className="inline-flex min-h-(--control-md) items-center text-label font-semibold text-primary underline"
+        to={ADMIN_LOGIN_PATH}
+      >
         Connexion administrateur plateforme
       </Link>
     </AuthScreen>
@@ -37,7 +40,10 @@ export function AdminLoginPage() {
     >
       <SessionNotice />
       <LoginForm kind="password" />
-      <Link className="text-label font-semibold text-primary underline" to={LOGIN_PATH}>
+      <Link
+        className="inline-flex min-h-(--control-md) items-center text-label font-semibold text-primary underline"
+        to={LOGIN_PATH}
+      >
         Retour à la connexion des boutiques
       </Link>
     </AuthScreen>

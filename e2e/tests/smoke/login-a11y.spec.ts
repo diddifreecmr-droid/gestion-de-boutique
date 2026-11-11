@@ -8,15 +8,6 @@ import { MOBILE_ONLY } from "../../support/env";
 import { tooClose, touchTargets, undersized } from "../../support/layout";
 import { loginForm, openLogin, UNKNOWN_PHONE } from "../../support/login";
 
-/**
- * DÉFAUT CONNU (signalé à @frontend, non corrigé ici) : le lien texte sous le formulaire
- * (`LoginPage.tsx`, classes `text-label … underline`, sans hauteur minimale) mesure
- * 328 × 24 px à 360 px de large ; attendu ≥ 48 px de haut (design-system.md § 8).
- * `test.fail` : le test échouera (« passé de façon inattendue ») dès la correction → retirer.
- */
-const SMALL_LINK_DEFECT =
-  "Défaut A11Y-02 : lien d'écran de connexion de 24 px de haut (attendu ≥ 48 px) — LoginPage.tsx";
-
 const SCREENS = [
   { path: "/connexion", heading: "Connexion", link: "Connexion administrateur plateforme" },
   {
@@ -47,7 +38,6 @@ test.describe("écran de connexion — accessibilité", () => {
 
   for (const screen of SCREENS) {
     test(`${screen.path} : zones de toucher ≥ 48 × 48 px ${MOBILE_ONLY}`, async ({ page }) => {
-      test.fail(true, SMALL_LINK_DEFECT);
       await page.goto(screen.path);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(screen.heading);
       await expect(page.getByRole("link", { name: screen.link })).toBeVisible();
@@ -57,7 +47,7 @@ test.describe("écran de connexion — accessibilité", () => {
     });
   }
 
-  test(`champs et bouton ≥ 48 px (hors lien connu) ${MOBILE_ONLY}`, async ({ page }) => {
+  test(`champs et bouton ≥ 48 px ${MOBILE_ONLY}`, async ({ page }) => {
     await openLogin(page);
     const targets = (await touchTargets(page)).filter((t) => !t.description.startsWith("<a>"));
     expect(targets.length).toBeGreaterThanOrEqual(3);
