@@ -17,12 +17,13 @@ describe("check-length", () => {
     expect(countLines("a\r\nb")).toBe(2);
   });
 
-  it(`signale seulement les fichiers .ts/.tsx de plus de ${String(MAX_LINES)} lignes`, () => {
+  it(`signale seulement les fichiers .ts/.tsx écrits à la main de plus de ${String(MAX_LINES)} lignes`, () => {
     dir = mkdtempSync(join(tmpdir(), "check-length-"));
     mkdirSync(join(dir, "sub"));
     writeFileSync(join(dir, "ok.ts"), "x\n".repeat(MAX_LINES));
     writeFileSync(join(dir, "sub", "long.tsx"), "x\n".repeat(MAX_LINES + 1));
     writeFileSync(join(dir, "long.css"), "x\n".repeat(MAX_LINES + 50));
+    writeFileSync(join(dir, "schema.gen.ts"), "x\n".repeat(MAX_LINES + 50));
     const offenders = findTooLong([dir]);
     expect(offenders).toEqual([{ file: join(dir, "sub", "long.tsx"), lines: MAX_LINES + 1 }]);
   });

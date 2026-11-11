@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./app/App";
+import { startUpdateWatcher } from "./core/pwa/appUpdate";
 import "./app/index.css";
 
 const container = document.getElementById("root");
@@ -13,3 +14,10 @@ createRoot(container).render(
     <App />
   </StrictMode>,
 );
+
+// Service worker et surveillance des nouvelles versions : production seulement (specs § 7.3).
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  startUpdateWatcher(navigator.serviceWorker).catch((error: unknown) => {
+    console.error("Inscription du service worker impossible", error);
+  });
+}

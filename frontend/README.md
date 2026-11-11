@@ -20,7 +20,18 @@ npm run dev                # http://localhost:5173 — vitrine des composants : 
 | `npm run check:length`              | échoue si un `.ts/.tsx` de `src/` dépasse 200 lignes                                                                                                                              |
 | `npm run check:no-showcase`         | après `build` : prouve que `/_ui` est absent de `dist/`                                                                                                                           |
 | `npm run icons`                     | régénère les icônes PWA **provisoires** depuis les tokens                                                                                                                         |
+| `npm run gen:api` / `check:api`     | génère `src/core/api/schema.gen.ts` depuis `../backend/openapi.json` (exporté par `python -m tools.export_openapi` dans `backend/`) ; `check:api` échoue si le fichier est périmé |
 
-Arborescence : `src/app/` (routeur, pages, vitrine `dev/`), `src/shared/ui/` (tokens, composants),
-`src/shared/format/` (montant, date, heure, quantité), `src/core/` et `src/features/` (à venir),
-`src/sw.ts` (service worker : précache, nouvelle version activée au prochain lancement).
+Arborescence :
+
+- `src/app/` : routeur, gardes (`guards.tsx`), coquille de boutique `/s/{shopId}/…`, pages provisoires, vitrine `dev/` ;
+- `src/core/api/` : client `fetch` typé par le contrat **généré** (`schema.gen.ts`, jamais édité), `X-Device-Id` (UUIDv7 dans `localStorage`), `ApiError` / `NetworkError` ;
+- `src/core/auth/` : session (jeton d'accès en mémoire, refresh **single-flight** puis rejeu, restauration silencieuse) ;
+- `src/core/profile/` : `ShopProfile` (menus par rôle) — implémentation **provisoire** « motos » en dur jusqu'à `GET /shops/{id}/profile` ;
+- `src/core/offline/` : connectivité (« Connexion nécessaire », aucune file d'envoi : `offline_capture` désactivé) ;
+- `src/core/pwa/` : politique de cache (specs § 7.3), nouvelle version, « Recharger la dernière version », numéro de version ;
+- `src/features/auth/` (connexion, connexion admin, changement de code), `src/features/settings/` (Mon compte / Réglages provisoires) ;
+- `src/shared/ui/`, `src/shared/format/` ; `src/sw.ts` (service worker) ; `src/testing/` (faux serveur, axe — tests seulement).
+
+Développement de bout en bout : backend sur `127.0.0.1:8000` (voir `../backend/README.md`), `npm run dev` relaie `/api`.
+Version affichée : `APP_VERSION` au build, sinon `<version>+<date UTC>`.

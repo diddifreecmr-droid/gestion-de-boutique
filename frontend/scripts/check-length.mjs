@@ -1,12 +1,16 @@
 /**
  * Échoue si un fichier .ts/.tsx dépasse MAX_LINES lignes (CLAUDE.md : modularité).
  * Usage : node scripts/check-length.mjs [dossier…]   (par défaut : src)
+ * Les fichiers générés (`*.gen.ts`, ex. le client OpenAPI) ne sont pas écrits à la main :
+ * ils sont exclus.
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const MAX_LINES = 200;
+/** Fichiers produits par un générateur (npm run gen:api). */
+const GENERATED = /\.gen\.ts$/;
 
 export function countLines(text) {
   if (text === "") return 0;
@@ -18,7 +22,7 @@ export function* sourceFiles(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) yield* sourceFiles(path);
-    else if (/\.tsx?$/.test(entry.name)) yield path;
+    else if (/\.tsx?$/.test(entry.name) && !GENERATED.test(entry.name)) yield path;
   }
 }
 

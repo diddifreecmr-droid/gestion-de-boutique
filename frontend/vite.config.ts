@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { readTokenFromFile } from "./config/tokens";
+import { appVersion } from "./config/version";
 
 /** Couleurs lues dans tokens.css : aucune couleur recopiée dans la configuration. */
 const PRIMARY = readTokenFromFile("--color-primary");
@@ -31,10 +32,12 @@ export default defineConfig({
       strategies: "injectManifest",
       srcDir: "src",
       filename: "sw.ts",
-      // « prompt » sans invite = la nouvelle version attend la fermeture des onglets,
-      // donc s'active au prochain lancement (specs.md § 7.2). Jamais de rechargement forcé.
+      // « prompt » : la nouvelle version attend la fermeture des onglets ou l'appui sur
+      // « Mettre à jour » (specs.md § 7.3). Jamais de rechargement forcé.
       registerType: "prompt",
-      injectRegister: "script-defer",
+      // Inscription faite par l'application (src/core/pwa/updates.ts) : elle surveille aussi
+      // les nouvelles versions (à l'ouverture puis toutes les 30 min).
+      injectRegister: false,
       includeAssets: ["icons/icon.svg"],
       manifest: {
         name: "Gestion de boutique",
@@ -61,9 +64,14 @@ export default defineConfig({
       devOptions: { enabled: false },
     }),
   ],
+  define: {
+    // Numéro de version affiché dans l'application (Réglages, Mon compte).
+    __APP_VERSION__: JSON.stringify(appVersion()),
+  },
   server: {
-    // En développement, /api est relayé vers le backend local (même origine, D11).
-    proxy: { "/api": "http://localhost:8000" },
+    // En développement, /api est relayé vers le backend local (même origine, D11) ; port de
+    // backend/README.md. 127.0.0.1 et non localhost : uvicorn n'écoute pas en IPv6 (::1).
+    proxy: { "/api": "http://127.0.0.1:8000" },
   },
   build: {
     sourcemap: false,

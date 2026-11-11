@@ -1,7 +1,22 @@
 import { lazy, Suspense } from "react";
 import type { RouteObject } from "react-router";
-import { HomePage } from "./HomePage";
+import { ChangePinPage, CHANGE_PIN_PATH } from "../features/auth/ChangePinPage";
+import {
+  ADMIN_LOGIN_PATH,
+  AdminLoginPage,
+  LOGIN_PATH,
+  LoginPage,
+} from "../features/auth/LoginPage";
+import { PublicOnly, RequireSession } from "./guards";
+import { HomeRedirect } from "./HomeRedirect";
+import { BareLayout } from "./layouts";
 import { NotFoundPage } from "./NotFoundPage";
+import { PLATFORM_PATH, SHOP_PICKER_PATH } from "./paths";
+import { PlatformHome } from "./PlatformHome";
+import { RoleHome } from "./RoleHome";
+import { SectionPage } from "./SectionPage";
+import { ShopPicker } from "./ShopPicker";
+import { ShopShell } from "./ShopShell";
 
 /** Chemin de la vitrine des composants (design-system.md § 9.2-5). */
 export const UI_SHOWCASE_PATH = "/_ui";
@@ -28,7 +43,40 @@ const devRoutes: RouteObject[] =
       ];
 
 export const appRoutes: RouteObject[] = [
-  { path: "/", element: <HomePage /> },
+  {
+    element: <PublicOnly />,
+    children: [
+      {
+        element: <BareLayout />,
+        children: [
+          { path: LOGIN_PATH, element: <LoginPage /> },
+          { path: ADMIN_LOGIN_PATH, element: <AdminLoginPage /> },
+        ],
+      },
+    ],
+  },
+  {
+    element: <RequireSession />,
+    children: [
+      {
+        element: <BareLayout />,
+        children: [
+          { path: "/", element: <HomeRedirect /> },
+          { path: CHANGE_PIN_PATH, element: <ChangePinPage /> },
+          { path: SHOP_PICKER_PATH, element: <ShopPicker /> },
+        ],
+      },
+      { path: PLATFORM_PATH, element: <PlatformHome /> },
+      {
+        path: "/s/:shopId",
+        element: <ShopShell />,
+        children: [
+          { index: true, element: <RoleHome /> },
+          { path: ":section", element: <SectionPage /> },
+        ],
+      },
+    ],
+  },
   ...devRoutes,
   { path: "*", element: <NotFoundPage /> },
 ];
