@@ -91,6 +91,40 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
   `uv run python -m tools.seed_dev` ouvre « Motos Garoua » (admin, propriétaire, vendeur,
   comptable, chauffeur ; codes affichés). Relancer ne recrée rien.
 
+## Catalogue (T13)
+
+- **Routes** (`/shops/{id}/…`) : `GET/POST /articles` (`?q=&status=active|archived|all&sort=&cursor=&limit=`),
+  `GET/PATCH /articles/{aid}`, `PUT /articles/{aid}/prices`, `POST /articles/{aid}/archive|reactivate`.
+  Création idempotente par `id` client (201 puis 200).
+- **Champs du profil** dans `fields` (codes de `GET /profile`), validés par le domaine
+  (`domain/catalog/schema.py`) ; non promus → colonne JSON `attributes`. Nom affiché « Marque
+  Modèle » (motos) ou saisi. Unicité par boutique sur clés **pliées** (casse, accents, espaces,
+  ponctuation ignorés) : marque + modèle, référence. Doublon → 409 `DUPLICATE` +
+  `details.existing_id`. Référence vide (prêt-à-porter, textile) → `REF-000001` (compteur par boutique).
+- **Recherche** portable : sous-chaîne dans `search_key` (pliée par le domaine), ordre et curseur
+  sur `(sort_key, id)`. Tri « plus vendus » : port `SalesRanking` (T16), sinon 400 `SORT_UNAVAILABLE`.
+- **Prix** (propriétaire, `PRICE_SET`) : historique `price_history` ; minimum ≤ base ; minimum
+  refusé si le réglage est inactif (`MIN_PRICE_DISABLED`). **Visibilité** :
+  `application/catalog/visibility.py` (seul endroit) — vendeur sans `last_cost`/`wac` (clés
+  absentes), comptable sans prix de vente, chauffeur 403.
+- **Provisoire** : `NoArticleStockRecorded` (archivage) jusqu'au module Stock (T14) ;
+  `last_cost`/`wac` écrits par `Article.record_costs`, réservé aux Achats (T15).
+
+## Dépenses (T18)
+
+- Routes sous `/shops/{id}` : `GET/POST /expenses` (filtres `from`, `to`, `category_id`,
+  `tag_id`, `location_id`, `user_id`, `payment_mode_id`, curseur ; totaux et répartition par
+  catégorie hors annulées), `GET/PATCH /expenses/{eid}`, `POST /expenses/{eid}/cancel
+  {reason}`, `GET /expenses/{eid}/repeat` (brouillon, rien n'est écrit),
+  `GET/POST/PATCH /expense-categories`, `GET /tags?search=`, `POST /tags/merge`.
+- Numéro `D-000001` attribué à la création ; `id` client idempotent ; `X-Captured-At` gardé.
+- Délai de l'auteur (comptable, ses dépenses) : jusqu'à minuit **Douala** le jour de
+  `received_at` (`CORRECTION_WINDOW_CLOSED`, 422) ; le propriétaire corrige toujours.
+- Tags : unicité sans casse par `name_key` calculée en Python (NFC + `casefold`) ; une fusion
+  **réécrit** les dépenses du tag source et aplatit les fusions antérieures.
+- « Autre » exige une description : `expense_category.requires_description` (migration
+  `0004_expenses`, qui le pose sur les « Autre » existants).
+
 ## Couches
 
 | Package | Peut importer |

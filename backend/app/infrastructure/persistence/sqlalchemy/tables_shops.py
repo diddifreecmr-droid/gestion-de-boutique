@@ -94,6 +94,8 @@ expense_category = _base(
     sa.Column("is_base", sa.Boolean, nullable=False),
     sa.Column("active", sa.Boolean, nullable=False),
     sa.Column("display_order", sa.Integer, nullable=False),
+    # T18 (migration 0004_expenses) : « Autre » exige une description (UC-DEP-01).
+    sa.Column("requires_description", sa.Boolean, nullable=False, server_default=sa.false()),
     sa.UniqueConstraint("shop_id", "name_key", name="expense_category_name"),
 )
 

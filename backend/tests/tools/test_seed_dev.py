@@ -17,6 +17,7 @@ def test_seed_opens_motos_garoua_with_four_roles() -> None:
     assert report.shop_id is not None
     roles = [role for role, _, _ in report.accounts]
     assert roles == ["platform_admin", "owner", "seller", "accountant", "driver"]
+    assert report.articles == 6
 
 
 def test_seed_is_idempotent_on_a_shared_store(monkeypatch: pytest.MonkeyPatch) -> None:

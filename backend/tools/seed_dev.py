@@ -2,8 +2,9 @@
 
 Ouvre la boutique (profil Motos) par le vrai cas d'utilisation `OpenShop`, comme
 l'administrateur, puis ajoute un vendeur (Garoua), un comptable et un chauffeur par
-`ManageMembers`. Les codes sont fixés (connus, non simples) pour les essais du frontend : ils
-ne servent **jamais** ailleurs qu'en démonstration. Relancer ne recrée rien (idempotent).
+`ManageMembers`, et six modèles de motos avec leur prix (`tools/seed_catalog.py`). Les codes
+sont fixés (connus, non simples) pour les essais du frontend : ils ne servent **jamais**
+ailleurs qu'en démonstration. Relancer ne recrée rien (idempotent).
 
 Refusé si `ENVIRONMENT=prod` (`SeedRefused`) ; `tools/` n'est pas copié dans l'image de
 production (T25). Usage (depuis `backend/`, base migrée) :
@@ -29,6 +30,7 @@ from app.domain.identity.user import User
 from app.domain.shared.ids import DeviceId, ShopId
 from app.domain.shared.roles import Role
 from app.infrastructure.system_clock import SystemClock
+from tools.seed_catalog import seed_motos
 
 SHOP_NAME = "Motos Garoua"
 ADMIN = ("699000000", "Admin démo", "Demo-Admin-2026!")
@@ -50,6 +52,7 @@ class SeedReport:
     created: bool = False
     accounts: list[tuple[str, str, str]] = field(default_factory=list)
     """(rôle, téléphone, code ou mot de passe)."""
+    articles: int = 0
 
 
 def _set_secret(identity: IdentityModule, phone: str, secret: str) -> None:
@@ -119,6 +122,7 @@ def seed(settings: Settings, hasher: PasswordHasher | None = None) -> SeedReport
     for phone, _, secret, *rest in (OWNER, *MEMBERS):
         _set_secret(identity, phone, secret)
         report.accounts.append((rest[0].value if rest else Role.OWNER.value, phone, secret))
+    report.articles = seed_motos(identity, owner)
     report.shop_id, report.created = opened.shop_id, True
     return report
 
@@ -132,6 +136,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"Boutique « {SHOP_NAME} » {state} : {report.shop_id}")
     for role, phone, secret in report.accounts:
         print(f"  {role:<15} {phone}  {secret}")
+    if report.articles:
+        print(f"  {report.articles} articles au catalogue")
     return 0
 
 

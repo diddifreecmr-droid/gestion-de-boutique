@@ -24,12 +24,14 @@ from app.application.shops.ports import ShopCatalog
 from app.domain.shared.ids import ShopId
 from app.infrastructure.persistence.sqlalchemy.alerts import SqlAlertRepository
 from app.infrastructure.persistence.sqlalchemy.audit_log import SqlAuditLog
+from app.infrastructure.persistence.sqlalchemy.catalog import SQL_CATALOG_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.directories import (
     SqlAdminDelegations,
     SqlMembershipDirectory,
     SqlShopCatalog,
 )
 from app.infrastructure.persistence.sqlalchemy.entitlements import SqlEntitlementOverrides
+from app.infrastructure.persistence.sqlalchemy.expense_query import SQL_EXPENSE_ADAPTERS
 from app.infrastructure.persistence.sqlalchemy.platform_uow import (
     SqlIdentityUnitOfWork,
     SqlShopJoin,
@@ -78,6 +80,8 @@ SQL_REGISTRY: SqlRepositoryRegistry = (
     SqlAuditLog,
     SqlAlertRepository,
     *SQL_SHOP_REPOSITORIES,
+    *SQL_CATALOG_REPOSITORIES,
+    *SQL_EXPENSE_ADAPTERS,
 )
 
 

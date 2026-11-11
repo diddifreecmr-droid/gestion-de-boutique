@@ -78,6 +78,7 @@ class SqlExpenseCategoryRepository(
             "is_base": aggregate.is_base,
             "active": aggregate.active,
             "display_order": aggregate.display_order,
+            "requires_description": aggregate.requires_description,
         }
 
     def _from_row(self, row: sa.RowMapping) -> ExpenseCategory:
@@ -88,6 +89,7 @@ class SqlExpenseCategoryRepository(
             is_base=bool(row["is_base"]),
             active=bool(row["active"]),
             display_order=int(row["display_order"]),
+            requires_description=bool(row["requires_description"]),
             version=int(row["version"]),
         )
 

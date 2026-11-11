@@ -31,6 +31,7 @@ class DocType(StrEnum):
     TRIP = "VY"  # voyage
     INVENTORY = "INV"
     IMPORT = "IMP"
+    ARTICLE = "REF"  # référence d'article générée (T13, CDC § 18.2 « générée si vide »)
 
 
 _TYPES = "|".join(sorted((t.value for t in DocType), key=len, reverse=True))

@@ -9,6 +9,10 @@ from app.interface.http.config import HttpConfig
 from app.interface.http.errors import register_error_handlers
 from app.interface.http.routes import health
 from app.interface.http.routes.auth import AuthComponents, build_auth_router
+from app.interface.http.routes.catalog import CatalogComponents, build_catalog_router
+from app.interface.http.routes.expense_components import ExpensesComponents
+from app.interface.http.routes.expense_settings import build_expense_settings_router
+from app.interface.http.routes.expenses import build_expenses_router
 from app.interface.http.routes.journal import JournalComponents, build_journal_router
 from app.interface.http.routes.members import build_members_router
 from app.interface.http.routes.places import build_places_router
@@ -22,6 +26,8 @@ def create_app(
     auth: AuthComponents,
     journal: JournalComponents | None = None,
     shops: ShopsComponents | None = None,
+    catalog: CatalogComponents | None = None,
+    expenses: ExpensesComponents | None = None,
 ) -> FastAPI:
     """`journal`/`shops` absents : leurs routes ne sont pas montées (outils, tests ciblés)."""
     prefix = config.api_prefix
@@ -46,4 +52,9 @@ def create_app(
             build_members_router,
         ):
             app.include_router(build(shops), prefix=prefix)
+    if catalog is not None:
+        app.include_router(build_catalog_router(catalog), prefix=prefix)
+    if expenses is not None:
+        app.include_router(build_expenses_router(expenses), prefix=prefix)
+        app.include_router(build_expense_settings_router(expenses), prefix=prefix)
     return app

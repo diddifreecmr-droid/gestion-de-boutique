@@ -10,6 +10,8 @@ pour le verrou optimiste, `BIGINT` pour les compteurs et montants. Aucun trigger
 
 import sqlalchemy as sa
 
+from app.infrastructure.persistence.sqlalchemy import tables_catalog as tables_catalog
+from app.infrastructure.persistence.sqlalchemy import tables_expenses as tables_expenses
 from app.infrastructure.persistence.sqlalchemy import tables_identity as tables_identity
 from app.infrastructure.persistence.sqlalchemy import tables_shops as tables_shops
 from app.infrastructure.persistence.sqlalchemy.schema import NAMING_CONVENTION, metadata

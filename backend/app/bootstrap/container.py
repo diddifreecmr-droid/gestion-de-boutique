@@ -8,8 +8,10 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
+from app.bootstrap.catalog import build_catalog
 from app.bootstrap.config import DEFAULT_ENV_FILE, Environment, Settings, load_settings
 from app.bootstrap.core import build_core
+from app.bootstrap.expenses import build_expenses
 from app.bootstrap.identity import build_identity
 from app.bootstrap.journal import build_journal
 from app.bootstrap.shops import build_shops
@@ -42,7 +44,16 @@ def build_app(env_file: Path | None = DEFAULT_ENV_FILE) -> FastAPI:
     identity = build_identity(settings, core=core)
     journal = build_journal(settings, clock=clock, guard=identity.auth.guard, core=core)
     shops = build_shops(identity)
-    app = create_app(http_config_from(settings), identity.auth, journal.http, shops.http)
+    catalog = build_catalog(identity)
+    expenses = build_expenses(identity)
+    app = create_app(
+        http_config_from(settings),
+        identity.auth,
+        journal.http,
+        shops.http,
+        catalog=catalog.http,
+        expenses=expenses.http,
+    )
     # Fabrique des unités de travail de boutique (handlers du journal et des alertes branchés).
     app.state.uow_factory = journal.uow_factory
     app.state.journal = journal

@@ -18,9 +18,11 @@ from pathlib import Path
 
 from pydantic import SecretStr
 
+from app.bootstrap.catalog import build_catalog
 from app.bootstrap.config import Environment, PersistenceBackend, Settings
 from app.bootstrap.container import http_config_from
 from app.bootstrap.core import build_core
+from app.bootstrap.expenses import build_expenses
 from app.bootstrap.identity import build_identity
 from app.bootstrap.journal import build_journal
 from app.bootstrap.shops import build_shops
@@ -45,7 +47,16 @@ def build_openapi_document() -> str:
     identity = build_identity(settings, core=core)
     journal = build_journal(settings, clock=clock, guard=identity.auth.guard, core=core)
     shops = build_shops(identity)
-    app = create_app(http_config_from(settings), identity.auth, journal.http, shops.http)
+    catalog = build_catalog(identity)
+    expenses = build_expenses(identity)
+    app = create_app(
+        http_config_from(settings),
+        identity.auth,
+        journal.http,
+        shops.http,
+        catalog=catalog.http,
+        expenses=expenses.http,
+    )
     schema = app.openapi()
     if not schema.get("paths"):
         msg = "Contrat OpenAPI vide : aucune route exportée"
