@@ -36,6 +36,7 @@ from app.infrastructure.persistence.sqlalchemy.platform_uow import (
     SqlIdentityUnitOfWork,
     SqlShopJoin,
 )
+from app.infrastructure.persistence.sqlalchemy.purchasing import SQL_PURCHASING_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.repository import SqlRepository
 from app.infrastructure.persistence.sqlalchemy.shops_members import SQL_SHOP_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.stock_documents import SQL_STOCK_REPOSITORIES
@@ -84,6 +85,7 @@ SQL_REGISTRY: SqlRepositoryRegistry = (
     *SQL_CATALOG_REPOSITORIES,
     *SQL_EXPENSE_ADAPTERS,
     *SQL_STOCK_REPOSITORIES,
+    *SQL_PURCHASING_REPOSITORIES,
 )
 
 

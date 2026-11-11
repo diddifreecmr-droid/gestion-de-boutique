@@ -79,6 +79,13 @@ class StockMovementLog(ShopBoundPort):
         """Mouvements d'un document (achat, vente, ajustement…), du plus ancien au plus récent."""
 
     @abstractmethod
+    def chronology(self, article_id: ArticleId) -> list[StockMovement]:
+        """**Tous** les mouvements de l'article (tous lieux), par ordre d'enregistrement (`id`).
+
+        Sert au Costing (T15) : rejeu du CMP (`replay_wac`) et contrôle « déjà sorti du lieu ».
+        """
+
+    @abstractmethod
     def for_article(self, article_id: ArticleId, page: PageRequest) -> Page[StockMovement]:
         """Historique de l'article, plus récent d'abord (`movement_position`)."""
 

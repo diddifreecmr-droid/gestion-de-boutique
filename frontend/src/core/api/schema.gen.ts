@@ -829,6 +829,112 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/shops/{shop_id}/suppliers": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Suppliers */
+    get: operations["list_suppliers_api_v1_shops__shop_id__suppliers_get"];
+    put?: never;
+    /** Create Supplier */
+    post: operations["create_supplier_api_v1_shops__shop_id__suppliers_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/suppliers/{supplier_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Supplier Sheet */
+    get: operations["supplier_sheet_api_v1_shops__shop_id__suppliers__supplier_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Update Supplier */
+    patch: operations["update_supplier_api_v1_shops__shop_id__suppliers__supplier_id__patch"];
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/purchases": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Purchases */
+    get: operations["list_purchases_api_v1_shops__shop_id__purchases_get"];
+    put?: never;
+    /** Record Purchase */
+    post: operations["record_purchase_api_v1_shops__shop_id__purchases_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/purchases/{purchase_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Purchase */
+    get: operations["get_purchase_api_v1_shops__shop_id__purchases__purchase_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Correct Purchase */
+    patch: operations["correct_purchase_api_v1_shops__shop_id__purchases__purchase_id__patch"];
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/purchases/{purchase_id}/cancel": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Cancel Purchase */
+    post: operations["cancel_purchase_api_v1_shops__shop_id__purchases__purchase_id__cancel_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/purchases/{purchase_id}/payments": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Record Payment */
+    post: operations["record_payment_api_v1_shops__shop_id__purchases__purchase_id__payments_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1120,11 +1226,6 @@ export interface components {
       /** Next Cursor */
       next_cursor: string | null;
     };
-    /** CancelRequest */
-    CancelRequest: {
-      /** Reason */
-      reason: string;
-    };
     /** CancellationResponse */
     CancellationResponse: {
       /**
@@ -1211,6 +1312,11 @@ export interface components {
       /** Number */
       number: string | null;
     };
+    /**
+     * EntryUnit
+     * @enum {string}
+     */
+    EntryUnit: "UNIT" | "PIECE" | "METER" | "YARD";
     /** ExpenseCategoryCreateRequest */
     ExpenseCategoryCreateRequest: {
       /** Id */
@@ -1385,6 +1491,28 @@ export interface components {
       /** Version */
       version: number;
     };
+    /**
+     * FeeKind
+     * @enum {string}
+     */
+    FeeKind: "transport" | "customs" | "handling" | "other";
+    /** FeeRequest */
+    FeeRequest: {
+      kind: components["schemas"]["FeeKind"];
+      /** Amount */
+      amount: number;
+      /** Label */
+      label?: string | null;
+    };
+    /** FeeResponse */
+    FeeResponse: {
+      /** Kind */
+      kind: string;
+      /** Label */
+      label: string | null;
+      /** Amount */
+      amount: number;
+    };
     /** FieldChangeResponse */
     FieldChangeResponse: {
       /** Field */
@@ -1484,6 +1612,37 @@ export interface components {
       id?: string | null;
       /** Location Id */
       location_id: string;
+    };
+    /** LineRequest */
+    LineRequest: {
+      /** Article Id */
+      article_id: string;
+      /** Quantity */
+      quantity: string;
+      unit?: components["schemas"]["EntryUnit"] | null;
+      /** Unit Price */
+      unit_price: number;
+    };
+    /** LineResponse */
+    LineResponse: {
+      /** Article Id */
+      article_id: string;
+      /** Quantity */
+      quantity: string;
+      /** Unit */
+      unit: string;
+      /** Stock Quantity */
+      stock_quantity: string;
+      /** Stock Unit */
+      stock_unit: string;
+      /** Unit Price */
+      unit_price: number;
+      /** Total */
+      total: number;
+      /** Fee Share */
+      fee_share: number;
+      /** Final Unit Cost */
+      final_unit_cost: number;
     };
     /** LocationCreateRequest */
     LocationCreateRequest: {
@@ -1817,6 +1976,42 @@ export interface components {
       /** Version */
       version: number;
     };
+    /** PaymentRequest */
+    PaymentRequest: {
+      /** Id */
+      id?: string | null;
+      /** Amount */
+      amount: number;
+      /** Mode Id */
+      mode_id: string;
+      /** Paid On */
+      paid_on?: string | null;
+      /** Reference */
+      reference?: string | null;
+    };
+    /** PaymentResponse */
+    PaymentResponse: {
+      /** Id */
+      id: string;
+      /**
+       * Paid On
+       * Format: date
+       */
+      paid_on: string;
+      /** Amount */
+      amount: number;
+      /** Mode Id */
+      mode_id: string;
+      /** Reference */
+      reference: string | null;
+      /**
+       * Recorded At
+       * Format: date-time
+       */
+      recorded_at: string;
+      /** Recorded By */
+      recorded_by: string;
+    };
     /** PerformerResponse */
     PerformerResponse: {
       /** User Id */
@@ -1889,6 +2084,159 @@ export interface components {
       min_price_enabled: boolean;
       /** Default Location Id */
       default_location_id: string | null;
+    };
+    /** PurchaseCreateRequest */
+    PurchaseCreateRequest: {
+      /** Id */
+      id?: string | null;
+      /** Lines */
+      lines: components["schemas"]["LineRequest"][];
+      /** Fees */
+      fees?: components["schemas"]["FeeRequest"][];
+      /** Purchase Date */
+      purchase_date?: string | null;
+      /** Location Id */
+      location_id?: string | null;
+      /** Supplier Id */
+      supplier_id?: string | null;
+      /** Invoice Ref */
+      invoice_ref?: string | null;
+      /** Invoice Photo Id */
+      invoice_photo_id?: string | null;
+      /** Note */
+      note?: string | null;
+      /**
+       * Confirm Price Gap
+       * @default false
+       */
+      confirm_price_gap: boolean;
+    };
+    /** PurchasePageResponse */
+    PurchasePageResponse: {
+      /** Items */
+      items: components["schemas"]["PurchaseResponse"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+      /**
+       * First Day
+       * Format: date
+       */
+      first_day: string;
+      /**
+       * Last Day
+       * Format: date
+       */
+      last_day: string;
+      totals: components["schemas"]["PurchaseTotalsResponse"];
+    };
+    /** PurchasePatch */
+    PurchasePatch: {
+      /** Version */
+      version: number;
+      /** Reason */
+      reason: string;
+      /** Lines */
+      lines?: components["schemas"]["LineRequest"][] | null;
+      /** Fees */
+      fees?: components["schemas"]["FeeRequest"][] | null;
+      /** Purchase Date */
+      purchase_date?: string | null;
+      /** Location Id */
+      location_id?: string | null;
+      /** Supplier Id */
+      supplier_id?: string | null;
+      /** Invoice Ref */
+      invoice_ref?: string | null;
+      /** Invoice Photo Id */
+      invoice_photo_id?: string | null;
+      /** Note */
+      note?: string | null;
+      /**
+       * Confirm Price Gap
+       * @default false
+       */
+      confirm_price_gap: boolean;
+    };
+    /** PurchaseResponse */
+    PurchaseResponse: {
+      /** Id */
+      id: string;
+      /** Number */
+      number: string;
+      /** Supplier Id */
+      supplier_id: string | null;
+      /**
+       * Purchase Date
+       * Format: date
+       */
+      purchase_date: string;
+      /** Location Id */
+      location_id: string;
+      /** Invoice Ref */
+      invoice_ref: string | null;
+      /** Invoice Photo Id */
+      invoice_photo_id: string | null;
+      /** Note */
+      note: string | null;
+      /** Lines */
+      lines: components["schemas"]["LineResponse"][];
+      /** Fees */
+      fees: components["schemas"]["FeeResponse"][];
+      /** Article Count */
+      article_count: number;
+      /** Merchandise Total */
+      merchandise_total: number;
+      /** Fees Total */
+      fees_total: number;
+      /** Total */
+      total: number;
+      /** Paid */
+      paid: number;
+      /** Payment Status */
+      payment_status: string;
+      /** Payments */
+      payments: components["schemas"]["PaymentResponse"][];
+      /** Status */
+      status: string;
+      cancellation: components["schemas"]["CancellationResponse"] | null;
+      /** Created By */
+      created_by: string;
+      /** Device Id */
+      device_id: string;
+      /**
+       * Captured At
+       * Format: date-time
+       */
+      captured_at: string;
+      /**
+       * Received At
+       * Format: date-time
+       */
+      received_at: string;
+      /** Editable */
+      editable: boolean;
+      /** Cancellable */
+      cancellable: boolean;
+      /**
+       * Last Correction Day
+       * Format: date
+       */
+      last_correction_day: string;
+      /** Version */
+      version: number;
+    };
+    /** PurchaseTotalsResponse */
+    PurchaseTotalsResponse: {
+      /** Count */
+      count: number;
+      /** Merchandise */
+      merchandise: number;
+      /** Fees */
+      fees: number;
+      /** Total */
+      total: number;
+      /** Paid */
+      paid: number;
     };
     /** ReasonEntry */
     ReasonEntry: {
@@ -2140,6 +2488,79 @@ export interface components {
       damaged: components["schemas"]["Valuation"];
       incoming: components["schemas"]["Valuation"];
     };
+    /** SupplierListResponse */
+    SupplierListResponse: {
+      /** Items */
+      items: components["schemas"]["SupplierResponse"][];
+    };
+    /** SupplierPatch */
+    SupplierPatch: {
+      /** Version */
+      version: number;
+      /** Name */
+      name?: string | null;
+      /** Phone */
+      phone?: string | null;
+      /** City */
+      city?: string | null;
+      /** Country */
+      country?: string | null;
+      /** Note */
+      note?: string | null;
+      /** Active */
+      active?: boolean | null;
+    };
+    /** SupplierRequest */
+    SupplierRequest: {
+      /** Id */
+      id?: string | null;
+      /** Name */
+      name: string;
+      /** Phone */
+      phone?: string | null;
+      /** City */
+      city?: string | null;
+      /** Country */
+      country?: string | null;
+      /** Note */
+      note?: string | null;
+    };
+    /** SupplierResponse */
+    SupplierResponse: {
+      /** Id */
+      id: string;
+      /** Name */
+      name: string;
+      /** Phone */
+      phone: string | null;
+      /** City */
+      city: string | null;
+      /** Country */
+      country: string | null;
+      /** Note */
+      note: string | null;
+      /** Active */
+      active: boolean;
+      /** Version */
+      version: number;
+    };
+    /** SupplierSheetResponse */
+    SupplierSheetResponse: {
+      supplier: components["schemas"]["SupplierResponse"];
+      /**
+       * First Day
+       * Format: date
+       */
+      first_day: string;
+      /**
+       * Last Day
+       * Format: date
+       */
+      last_day: string;
+      totals: components["schemas"]["PurchaseTotalsResponse"];
+      /** Purchases */
+      purchases: components["schemas"]["PurchaseResponse"][];
+    };
     /** TagMergeRequest */
     TagMergeRequest: {
       /** Source Id */
@@ -2236,6 +2657,16 @@ export interface components {
       at_last_cost_known: number;
       /** Without Last Cost */
       without_last_cost: number;
+    };
+    /** CancelRequest */
+    app__interface__http__schemas__expenses__CancelRequest: {
+      /** Reason */
+      reason: string;
+    };
+    /** CancelRequest */
+    app__interface__http__schemas__purchasing__CancelRequest: {
+      /** Reason */
+      reason: string;
     };
   };
   responses: never;
@@ -3838,7 +4269,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["CancelRequest"];
+        "application/json": components["schemas"]["app__interface__http__schemas__expenses__CancelRequest"];
       };
     };
     responses: {
@@ -4441,6 +4872,388 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["InventoryResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_suppliers_api_v1_shops__shop_id__suppliers_get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SupplierListResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_supplier_api_v1_shops__shop_id__suppliers_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SupplierRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SupplierResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  supplier_sheet_api_v1_shops__shop_id__suppliers__supplier_id__get: {
+    parameters: {
+      query?: {
+        from?: string | null;
+        to?: string | null;
+      };
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        supplier_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SupplierSheetResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_supplier_api_v1_shops__shop_id__suppliers__supplier_id__patch: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        supplier_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SupplierPatch"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SupplierResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_purchases_api_v1_shops__shop_id__purchases_get: {
+    parameters: {
+      query?: {
+        from?: string | null;
+        to?: string | null;
+        supplier_id?: string | null;
+        article_id?: string | null;
+        location_id?: string | null;
+        cursor?: string | null;
+        limit?: number | null;
+      };
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PurchasePageResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  record_purchase_api_v1_shops__shop_id__purchases_post: {
+    parameters: {
+      query?: never;
+      header: {
+        "x-captured-at"?: string | null;
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PurchaseCreateRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PurchaseResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_purchase_api_v1_shops__shop_id__purchases__purchase_id__get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        purchase_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PurchaseResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  correct_purchase_api_v1_shops__shop_id__purchases__purchase_id__patch: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        purchase_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PurchasePatch"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PurchaseResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  cancel_purchase_api_v1_shops__shop_id__purchases__purchase_id__cancel_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        purchase_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["app__interface__http__schemas__purchasing__CancelRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PurchaseResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  record_payment_api_v1_shops__shop_id__purchases__purchase_id__payments_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        purchase_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PaymentRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PurchaseResponse"];
         };
       };
       /** @description Validation Error */

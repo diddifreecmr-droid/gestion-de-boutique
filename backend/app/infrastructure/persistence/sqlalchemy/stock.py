@@ -131,6 +131,9 @@ class SqlStockMovementLog(SqlShopStore, StockMovementLog):
     def for_source(self, source_id: UUID) -> list[StockMovement]:
         return self._fetch(self._select(self.table.c.source_id == source_id))
 
+    def chronology(self, article_id: ArticleId) -> list[StockMovement]:
+        return self._fetch(self._select(self.table.c.article_id == article_id.value))
+
     def for_article(self, article_id: ArticleId, page: PageRequest) -> Page[StockMovement]:
         c = self.table.c
         conditions = [self._own_shop(), c.article_id == article_id.value]

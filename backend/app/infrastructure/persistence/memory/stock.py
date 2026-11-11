@@ -79,6 +79,9 @@ class MemoryStockMovementLog(MemoryShopStore, StockMovementLog):
     def for_source(self, source_id: UUID) -> list[StockMovement]:
         return [m for m in self._all() if m.source.id == source_id]
 
+    def chronology(self, article_id: ArticleId) -> list[StockMovement]:
+        return [m for m in self._all() if m.article_id == article_id]
+
     def for_article(self, article_id: ArticleId, page: PageRequest) -> Page[StockMovement]:
         mine = [m for m in self._all() if m.article_id == article_id]
         ordered = sorted(mine, key=movement_position, reverse=True)

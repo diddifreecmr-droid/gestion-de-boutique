@@ -25,6 +25,7 @@ from app.bootstrap.core import build_core
 from app.bootstrap.expenses import build_expenses
 from app.bootstrap.identity import build_identity
 from app.bootstrap.journal import build_journal
+from app.bootstrap.purchasing import build_purchasing
 from app.bootstrap.shops import build_shops
 from app.bootstrap.stock import build_stock
 from app.infrastructure.system_clock import SystemClock
@@ -51,6 +52,7 @@ def build_openapi_document() -> str:
     catalog = build_catalog(identity)
     expenses = build_expenses(identity)
     stock = build_stock(identity)
+    purchasing = build_purchasing(identity, stock.ledger)
     app = create_app(
         http_config_from(settings),
         identity.auth,
@@ -59,6 +61,7 @@ def build_openapi_document() -> str:
         catalog=catalog.http,
         expenses=expenses.http,
         stock=stock.http,
+        purchasing=purchasing.http,
     )
     schema = app.openapi()
     if not schema.get("paths"):

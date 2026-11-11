@@ -18,10 +18,13 @@ from app.interface.http.routes.journal import JournalComponents, build_journal_r
 from app.interface.http.routes.members import build_members_router
 from app.interface.http.routes.places import build_places_router
 from app.interface.http.routes.platform import build_platform_router
+from app.interface.http.routes.purchases import build_purchases_router
+from app.interface.http.routes.purchasing_components import PurchasingComponents
 from app.interface.http.routes.shop_components import ShopsComponents
 from app.interface.http.routes.shop_profile import build_shop_profile_router
 from app.interface.http.routes.stock import build_stock_router
 from app.interface.http.routes.stock_components import StockComponents
+from app.interface.http.routes.suppliers import build_suppliers_router
 
 
 def create_app(
@@ -32,6 +35,7 @@ def create_app(
     catalog: CatalogComponents | None = None,
     expenses: ExpensesComponents | None = None,
     stock: StockComponents | None = None,
+    purchasing: PurchasingComponents | None = None,
 ) -> FastAPI:
     """`journal`/`shops` absents : leurs routes ne sont pas montées (outils, tests ciblés)."""
     prefix = config.api_prefix
@@ -64,4 +68,7 @@ def create_app(
     if stock is not None:
         app.include_router(build_stock_router(stock), prefix=prefix)
         app.include_router(build_inventories_router(stock), prefix=prefix)
+    if purchasing is not None:
+        app.include_router(build_suppliers_router(purchasing), prefix=prefix)
+        app.include_router(build_purchases_router(purchasing), prefix=prefix)
     return app

@@ -144,6 +144,32 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
   `bootstrap/core.py`.
 - **Migration** `0006_stock` ; seed de dev : stock de départ des six motos (`tools/seed_stock.py`).
 
+## Achats et Costing (T15)
+
+- **Routes** (`/shops/{id}/…`) : `GET/POST /suppliers`, `GET /suppliers/{sid}?from=&to=`
+  (fiche, total acheté), `PATCH /suppliers/{sid}` (`active: false` pour désactiver ; aucun
+  `DELETE`), `GET/POST /purchases` (`?from=&to=&supplier_id=&article_id=&location_id=&cursor=&limit=`,
+  défaut : mois en cours, totaux hors annulés), `GET/PATCH /purchases/{pid}` (`version` +
+  `reason`), `POST /purchases/{pid}/cancel {reason}` (propriétaire), `POST /purchases/{pid}/payments`.
+  Créations idempotentes par `id` client (201 puis 200). Vendeur et chauffeur : 403.
+- **Costing** (`domain/purchasing/costing.py`, `replay.py`) : frais au prorata par
+  `Money.allocate` (somme exacte) ; coût unitaire final **par unité de stock** (yards et pièces
+  convertis en mètres, `units.py`). **Arrondi** : fractions exactes, puis franc le plus proche,
+  demi vers le haut (total de ligne, coût unitaire, CMP).
+- **Rejeu** (`application/purchasing/costs.py`) : après chaque achat, correction ou annulation,
+  tous les mouvements de l'article (`StockMovementLog.chronology`) sont rejoués par date
+  d'opération, paires « mouvement + Annulation » retirées, CMP pondéré par le **stock réel**
+  (Q-02 : 515 000 dans SCN-04 v3) ; dernier coût = entrée coûtée la plus récente (égalité :
+  ordre d'enregistrement). Écrit par `Article.record_costs` dans la même transaction.
+- **Entrées de stock** : « Entrée achat » datée du jour d'achat (`entry_instant`) ; correction =
+  nouvelles entrées puis annulation des anciennes ; refus `STOCK_ALREADY_LEFT` si la quantité
+  gardée est sous la part déjà sortie du lieu (plus bas solde depuis l'entrée).
+- **Erreurs** : `PRICE_GAP_CONFIRMATION_REQUIRED` (> 30 % du dernier coût, `confirm_price_gap`),
+  `CORRECTION_WINDOW_CLOSED` (comptable après J+7), `OVERPAYMENT`, `REASON_REQUIRED`.
+- **Pour T16** : figer `article.last_cost` / `article.wac` lus dans la transaction de la vente ;
+  une correction d'achat ne réécrit jamais une vente.
+- **Migration** `0007_purchasing`.
+
 ## Couches
 
 | Package | Peut importer |
