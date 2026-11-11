@@ -30,6 +30,8 @@ Arborescence :
 - `src/core/profile/` : `ShopProfile` (menus par rôle) — implémentation **provisoire** « motos » en dur jusqu'à `GET /shops/{id}/profile` ;
 - `src/core/offline/` : connectivité (« Connexion nécessaire », aucune file d'envoi : `offline_capture` désactivé) ;
 - `src/core/pwa/` : politique de cache (specs § 7.3), nouvelle version, « Recharger la dernière version », numéro de version ;
+- `src/core/gateways/` : passerelles des écrans (specs § 4.6) — contrats `CatalogGateway` / `SalesGateway` calqués sur specs § 6.4, et implémentation **simulée** en mémoire (`simulated/`) branchée tant que `POST /sales` n'existe pas (remplacée en T21 dans `appGateways`, sans toucher aux écrans) ;
+- `src/features/sales/` : « Nouvelle vente » comptant et crédit (`/s/{shopId}/nouvelle-vente`, chargé à la demande) ;
 - `src/features/auth/` (connexion, connexion admin, changement de code), `src/features/settings/` (Mon compte / Réglages provisoires) ;
 - `src/shared/ui/`, `src/shared/format/` ; `src/sw.ts` (service worker) ; `src/testing/` (faux serveur, axe — tests seulement).
 

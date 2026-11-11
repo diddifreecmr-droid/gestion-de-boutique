@@ -4,6 +4,7 @@ import { CardGallery } from "./CardGallery";
 import { FeedbackGallery } from "./FeedbackGallery";
 import { FieldGallery } from "./FieldGallery";
 import { NavigationGallery } from "./NavigationGallery";
+import { SaleGallery } from "./SaleGallery";
 import { TokenPalette } from "./TokenPalette";
 
 /**
@@ -26,6 +27,7 @@ export default function UiShowcase() {
         <FeedbackGallery />
         <NavigationGallery />
         <TokenPalette />
+        <SaleGallery />
       </main>
     </ToastProvider>
   );
