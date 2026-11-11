@@ -36,7 +36,7 @@ function input(label: string): HTMLInputElement {
 describe("« Nouvel article »", () => {
   it("depuis la liste : marque et modèle visibles, facultatifs sous « Plus de détails »", async () => {
     const { user, container } = renderApp(
-      `/s/${SHOP_A}/stock`,
+      `/s/${SHOP_A}/stock?vue=articles`,
       catalogRoutes("owner", { [listUrl()]: json(200, { items: [], next_cursor: null }) }),
     );
     await user.click(await screen.findByRole("button", { name: "Nouvel article" }));

@@ -165,7 +165,7 @@ describe("fiche article — comptable et refus", () => {
     );
     expect(await screen.findByText("Cet article est introuvable.")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Retour aux articles" }));
-    expect(router.state.location.search).toBe("");
+    expect(router.state.location.search).toBe("?vue=articles");
     expect(within(document.body).getByRole("heading", { name: "Articles" })).toBeVisible();
   });
 });

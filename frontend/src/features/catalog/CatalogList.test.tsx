@@ -13,7 +13,7 @@ import { json, SHOP_A } from "../../testing/fakeApi";
 import { renderApp } from "../../testing/renderApp";
 import { money } from "../../testing/renderSale";
 
-const STOCK = `/s/${SHOP_A}/stock`;
+const STOCK = `/s/${SHOP_A}/stock?vue=articles`;
 const yamaha = (status = "active") =>
   ownerArticle({ id: YAMAHA_ID, display_name: "Yamaha Crypton", status, base_price: null });
 
@@ -137,8 +137,13 @@ describe("liste des articles — autres rôles", () => {
   });
 
   it("vendeur : « Stock » n'ouvre pas la gestion du catalogue (aucun appel aux articles)", async () => {
-    const { fake } = renderApp(STOCK, catalogRoutes("seller"));
-    expect(await screen.findByText("Cet écran arrive bientôt.")).toBeVisible();
+    // Le vendeur arrive sur la matrice de stock (module Stock), jamais sur le catalogue.
+    const emptyStock = json(200, { locations: [], items: [] });
+    const { fake } = renderApp(
+      STOCK,
+      catalogRoutes("seller", { [`GET /api/v1/shops/${SHOP_A}/stock?sort=name`]: emptyStock }),
+    );
+    expect(await screen.findByText("Aucun article en stock pour l'instant.")).toBeVisible();
     expect(screen.queryByRole("button", { name: "Nouvel article" })).toBeNull();
     expect(fake.calls.some((call) => call.url.includes("/articles"))).toBe(false);
   });
