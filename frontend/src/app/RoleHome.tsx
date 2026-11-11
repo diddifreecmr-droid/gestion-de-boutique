@@ -1,9 +1,10 @@
-import { CirclePlus, UserRound } from "lucide-react";
+import { CirclePlus, UserRound, Wallet } from "lucide-react";
 import { useNavigate } from "react-router";
 import { shopPath } from "../core/profile/shopProfile";
 import { useSignedIn } from "../core/services/servicesContext";
 import { SALE_ROLES } from "../features/sales/saleRoles";
 import { NEW_SALE_KEY } from "../features/sales/salesNav";
+import { PAY_SEARCH, RECEIVABLES_KEY } from "../features/receivables/receivablesNav";
 import { Button, EmptyState } from "../shared/ui";
 import { useActiveShop } from "./shopContext";
 
@@ -29,6 +30,17 @@ export function RoleHome() {
           onClick={() => void navigate(shopPath(shopId, NEW_SALE_KEY))}
         >
           Nouvelle vente
+        </Button>
+      )}
+      {role === "seller" && (
+        <Button
+          variant="secondary"
+          size="lg"
+          fullWidth
+          icon={Wallet}
+          onClick={() => void navigate(`${shopPath(shopId, RECEIVABLES_KEY)}${PAY_SEARCH}`)}
+        >
+          Versement
         </Button>
       )}
       <EmptyState message="Votre accueil arrive bientôt." />

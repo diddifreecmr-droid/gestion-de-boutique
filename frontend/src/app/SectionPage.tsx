@@ -9,6 +9,7 @@ import { EXPENSES_KEY } from "../features/expenses/expenseNav";
 import { STOCK_KEY } from "../features/catalog/catalogRights";
 import { STOCK_ROLES } from "../features/stock/stockRoles";
 import { PURCHASE_ROLES, PURCHASES_KEY } from "../features/purchasing/purchasingNav";
+import { RECEIVABLE_ROLES, RECEIVABLES_KEY } from "../features/receivables/receivablesNav";
 import { ComingSoon } from "./ComingSoon";
 import { NotFoundPage } from "./NotFoundPage";
 import { MorePage } from "./MorePage";
@@ -22,6 +23,7 @@ const SalesRoute = lazy(() => import("../features/sales/SalesRoute"));
 const ExpensesRoute = lazy(() => import("../features/expenses/ExpensesRoute"));
 const StockRoute = lazy(() => import("../features/stock/StockRoute"));
 const PurchasingRoute = lazy(() => import("../features/purchasing/PurchasingRoute"));
+const ReceivablesRoute = lazy(() => import("../features/receivables/ReceivablesRoute"));
 
 /** Écrans communs à tous les rôles, hors barre du bas. */
 const SETTINGS_KEY = "reglages";
@@ -68,6 +70,14 @@ export function SectionPage() {
     return (
       <Suspense fallback={<Skeleton lines={4} label="Ouverture des achats…" />}>
         <PurchasingRoute shopId={shopId} role={role} />
+      </Suspense>
+    );
+  }
+  // « Créances » : entrée du vendeur, « Plus → Créances » du propriétaire (CDC § 17.4).
+  if (entry.key === RECEIVABLES_KEY && RECEIVABLE_ROLES.includes(role)) {
+    return (
+      <Suspense fallback={<Skeleton lines={4} label="Ouverture des créances…" />}>
+        <ReceivablesRoute shopId={shopId} role={role} />
       </Suspense>
     );
   }
