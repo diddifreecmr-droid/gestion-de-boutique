@@ -15,7 +15,7 @@ Trois versions de boutique reposent sur le même socle et ne diffèrent que par 
 
 | Document | Contenu |
 | --- | --- |
-| [`Cahier des charges — Application de gestion de boutiques.md`](Cahier%20des%20charges%20—%20Application%20de%20gestion%20de%20boutiques.md) | Besoin fonctionnel : rôles, cas d'utilisation, règles de gestion, entités |
+| `Cahier des charges — Application de gestion de boutiques.md` | Besoin fonctionnel : rôles, cas d'utilisation, règles de gestion, entités — **document confidentiel, gardé en local, hors du dépôt** |
 | [`specs.md`](specs.md) | Spécification technique : architecture, données, API, sécurité, tests, risques |
 | [`design-system.md`](design-system.md) | Identité visuelle : couleurs, typographie, espacements, composants |
 | [`CLAUDE.md`](CLAUDE.md) | Règles de travail du projet |
