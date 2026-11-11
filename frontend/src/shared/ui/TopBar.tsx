@@ -1,4 +1,4 @@
-import { ArrowLeft, Bell, ChevronDown } from "lucide-react";
+import { ArrowLeft, Bell, ChevronDown, CircleUser } from "lucide-react";
 import { FOCUS_OUTLINE, PRESS_TRANSITION, requireText } from "./controlClasses";
 import { alertBadgeText, alertsLabel } from "./navigation";
 
@@ -12,17 +12,33 @@ export interface TopBarProps {
   /** Nombre d'alertes non lues affiché sur la cloche. */
   alertCount: number;
   onAlertsClick: () => void;
+  /** Accès « Mon compte » (§ 6.6, tous les rôles) : icône + mot « Compte », à droite de la cloche. */
+  onAccountClick?: () => void;
 }
 
 const ICON_BUTTON =
   "inline-flex min-h-(--control-md) min-w-(--control-md) shrink-0 items-center " +
   `justify-center rounded-md text-primary hover:bg-primary-soft ${PRESS_TRANSITION} ${FOCUS_OUTLINE}`;
 
+/** Bouton « Compte » : icône + mot ; le libellé accessible « Mon compte » contient le mot visible. */
+const ACCOUNT_BUTTON =
+  "inline-flex min-h-(--control-md) min-w-(--control-md) shrink-0 items-center gap-1 " +
+  "rounded-md px-2 text-label font-semibold whitespace-nowrap text-primary hover:bg-primary-soft " +
+  `${PRESS_TRANSITION} ${FOCUS_OUTLINE}`;
+
 /**
  * Barre du haut (§ 6.6), 56 px. Retour et cloche sont les deux seules icônes sans mot
- * visible (exception de P5) : elles portent un libellé accessible.
+ * visible (exception de P5) : elles portent un libellé accessible. Le titre se tronque (« … »)
+ * pour laisser la place aux boutons, même à 360 px.
  */
-export function TopBar({ title, onTitleClick, onBack, alertCount, onAlertsClick }: TopBarProps) {
+export function TopBar({
+  title,
+  onTitleClick,
+  onBack,
+  alertCount,
+  onAlertsClick,
+  onAccountClick,
+}: TopBarProps) {
   requireText("TopBar", "title", title);
   if (!Number.isSafeInteger(alertCount) || alertCount < 0) {
     throw new Error(`TopBar : alertCount doit être un entier ≥ 0, reçu ${String(alertCount)}`);
@@ -67,6 +83,17 @@ export function TopBar({ title, onTitleClick, onBack, alertCount, onAlertsClick 
           </span>
         )}
       </button>
+      {onAccountClick !== undefined && (
+        <button
+          type="button"
+          aria-label="Mon compte"
+          onClick={onAccountClick}
+          className={ACCOUNT_BUTTON}
+        >
+          <CircleUser aria-hidden="true" className="size-6 shrink-0" />
+          <span>Compte</span>
+        </button>
+      )}
     </header>
   );
 }

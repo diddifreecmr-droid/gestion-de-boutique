@@ -47,6 +47,33 @@ describe("TopBar", () => {
     expect(screen.getByRole("button", { name: "Alertes, aucune nouvelle" })).toHaveTextContent("");
   });
 
+  it("« Compte » : icône + mot visible, libellé « Mon compte », 48 px, à droite de la cloche", async () => {
+    const onAccount = vi.fn();
+    render(
+      <TopBar
+        title="Motos Garoua"
+        alertCount={0}
+        onAlertsClick={vi.fn()}
+        onAccountClick={onAccount}
+      />,
+    );
+    const account = screen.getByRole("button", { name: "Mon compte" });
+    expect(account).toHaveTextContent("Compte");
+    expect(account.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    expect(account).toHaveClass("min-h-(--control-md)", "min-w-(--control-md)", "shrink-0");
+    expect(account.className).toContain("focus-visible:outline-primary");
+    const buttons = screen.getAllByRole("button");
+    expect(buttons.at(-1)).toBe(account);
+    expect(screen.getByText("Motos Garoua")).toHaveClass("min-w-0", "truncate");
+    await userEvent.click(account);
+    expect(onAccount).toHaveBeenCalledOnce();
+  });
+
+  it("sans onAccountClick : pas de bouton « Compte »", () => {
+    render(<TopBar title="X" alertCount={0} onAlertsClick={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: "Mon compte" })).toBeNull();
+  });
+
   it("textes du compteur et refus d'un compteur invalide", () => {
     expect(alertBadgeText(120)).toBe("99+");
     expect(alertsLabel(1)).toBe("Alertes, 1 nouvelle");

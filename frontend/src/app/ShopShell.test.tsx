@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { updateStoreForTests } from "../core/pwa/appUpdate";
 import { reloadLatestVersion } from "../core/pwa/reload";
 import { json, meBody, ROUTES, SHOP_A, tokenBody } from "../testing/fakeApi";
+import { axeViolations } from "../testing/axe";
 import { renderApp } from "../testing/renderApp";
 
 vi.mock("../core/pwa/reload", () => ({ reloadLatestVersion: vi.fn(() => Promise.resolve()) }));
@@ -19,6 +20,7 @@ function openAs(role: string, path = `/s/${SHOP_A}`) {
 }
 
 const nav = () => within(screen.getByRole("navigation", { name: "Navigation principale" }));
+const topBar = () => within(screen.getByRole("banner"));
 
 afterEach(() => {
   updateStoreForTests.set(null);
@@ -71,9 +73,29 @@ describe("coquille — menus par rôle (CDC § 17.4)", () => {
 });
 
 describe("coquille — compte et bannières", () => {
-  it("« Mon compte » : déconnexion après confirmation", async () => {
+  it.each(["owner", "seller", "accountant", "driver"])(
+    "%s : « Compte » dans la barre du haut, à droite de la cloche, ouvre « Mon compte »",
+    async (role) => {
+      const { user, router, container } = openAs(role);
+      await screen.findByText("Motos Garoua");
+      const buttons = topBar().getAllByRole("button");
+      expect(buttons.map((b) => b.getAttribute("aria-label"))).toEqual([
+        "Alertes, aucune nouvelle",
+        "Mon compte",
+      ]);
+      expect(await axeViolations(container)).toEqual([]);
+      await user.click(topBar().getByRole("button", { name: "Mon compte" }));
+      expect(router.state.location.pathname).toBe(`/s/${SHOP_A}/compte`);
+      expect(screen.getByRole("heading", { name: "Mon compte" })).toBeVisible();
+      expect(screen.getByRole("button", { name: "Recharger la dernière version" })).toBeVisible();
+      expect(await axeViolations(container)).toEqual([]);
+    },
+  );
+
+  it("« Mon compte » depuis l'accueil : déconnexion après confirmation", async () => {
     const { user, router } = openAs("seller");
-    await user.click(await screen.findByRole("button", { name: "Mon compte" }));
+    await screen.findByText(/Bonjour Awa Bello/);
+    await user.click(within(screen.getByRole("main")).getByRole("button", { name: "Mon compte" }));
     await user.click(screen.getByRole("button", { name: "Se déconnecter" }));
     const dialog = screen.getByRole("dialog", { name: "Se déconnecter ?" });
     await user.click(within(dialog).getByRole("button", { name: "Se déconnecter" }));

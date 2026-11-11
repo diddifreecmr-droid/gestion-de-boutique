@@ -5,11 +5,13 @@ import { BottomNav, TopBar } from "../shared/ui";
 import { AppBanners } from "./AppBanners";
 import { NotFoundPage } from "./NotFoundPage";
 import { SHOP_PICKER_PATH } from "./paths";
+import { ACCOUNT_KEY } from "./RoleHome";
 import type { ActiveShop } from "./shopContext";
 
 /**
  * Coquille d'une boutique (`/s/{shopId}/…`) : barre du haut (nom de la boutique, qui ouvre la
- * liste s'il y en a plusieurs — UC-SOC-03), bannières, page, barre du bas selon le rôle.
+ * liste s'il y en a plusieurs — UC-SOC-03 ; cloche ; « Compte » pour tous les rôles, § 6.6),
+ * bannières, page, barre du bas selon le rôle.
  */
 export function ShopShell() {
   const me = useSignedIn();
@@ -33,6 +35,7 @@ export function ShopShell() {
         {...(me.shops.length > 1 ? { onTitleClick: () => void navigate(SHOP_PICKER_PATH) } : {})}
         alertCount={0}
         onAlertsClick={() => void navigate(shopPath(shopId, "alertes"))}
+        onAccountClick={() => void navigate(shopPath(shopId, ACCOUNT_KEY))}
       />
       <AppBanners />
       <main className="mx-auto flex w-full max-w-150 flex-col gap-4 p-4">

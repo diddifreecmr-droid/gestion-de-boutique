@@ -23,11 +23,25 @@ export function NavigationGallery() {
   return (
     <>
       <GallerySection title="TopBar">
-        <TopBar title="Motos Garoua" onTitleClick={noop} alertCount={3} onAlertsClick={noop} />
+        <TopBar
+          title="Motos Garoua"
+          onTitleClick={noop}
+          alertCount={3}
+          onAlertsClick={noop}
+          onAccountClick={noop}
+        />
         <StateLabel>Écran de détail, aucune alerte</StateLabel>
         <TopBar title="Nouvelle vente" onBack={noop} alertCount={0} onAlertsClick={noop} />
         <StateLabel>Une seule boutique, plus de 99 alertes</StateLabel>
         <TopBar title="Tissus Maroua" alertCount={120} onAlertsClick={noop} />
+        <StateLabel>Écran de détail avec « Compte » (360 px : le nom se tronque)</StateLabel>
+        <TopBar
+          title="Établissements Motos et Pièces de Garoua Centre"
+          onBack={noop}
+          alertCount={7}
+          onAlertsClick={noop}
+          onAccountClick={noop}
+        />
       </GallerySection>
 
       <GallerySection title="BottomNav">
