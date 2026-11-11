@@ -1,14 +1,14 @@
 /**
  * Passerelle des ventes simulée (vitrine `/_ui`) : mêmes réponses et mêmes refus que
  * `POST /sales` (§ 6.4). La liste, la fiche et le reçu servent les ventes de la session ;
- * annuler et signaler une erreur n'existent pas dans la vitrine (erreur explicite).
+ * demandes de prix : `simulatedPriceRequests.ts`. Annuler, signaler une erreur et les retours
+ * n'existent pas dans la vitrine (erreur explicite).
  */
 import type { CustomerSummary, SaleResult, SalesGateway } from "../salesContract";
 import { normalize } from "./simulatedCatalog";
 import { receiptOf, saleOf } from "./saleRecord";
 import {
   checkChassis,
-  checkMinimum,
   checkPayments,
   checkShape,
   checkStock,
@@ -17,9 +17,12 @@ import {
   paymentsOf,
   saleTotal,
 } from "./saleRules";
+import {
+  checkApproval,
+  consumeApproval,
+  createSimulatedPriceRequests,
+} from "./simulatedPriceRequests";
 import { reach, requireArticle, saleNumber, type World } from "./world";
-
-const PRICE_REQUEST_TTL_MS = 30 * 60_000;
 
 function unavailable(what: string): never {
   throw new Error(`Simulation : « ${what} » n'existe pas dans la vitrine`);
@@ -39,7 +42,7 @@ export function createSimulatedSales(world: World): SalesGateway {
       if (replay !== undefined) return replay.result; // idempotent : même id, même vente
       checkShape(command);
       checkStock(world, command);
-      checkMinimum(world, shopId, command);
+      const approved = checkApproval(world, shopId, command);
       checkChassis(world, command);
       const total = saleTotal(command);
       checkPayments(command, total);
@@ -68,19 +71,11 @@ export function createSimulatedSales(world: World): SalesGateway {
         at: capturedAt.toISOString(),
       });
       world.sales.set(result.id, { command, result });
+      if (approved) consumeApproval(world, command, result.id);
       return result;
     },
 
-    async requestPriceApproval(_shopId, command) {
-      await reach(world);
-      requireArticle(world, command.article_id);
-      world.priceRequests.add(command.id);
-      return {
-        id: command.id,
-        status: "pending",
-        expires_at: new Date(Date.now() + PRICE_REQUEST_TTL_MS).toISOString(),
-      };
-    },
+    ...createSimulatedPriceRequests(world),
 
     async searchCustomers(_shopId, query) {
       await reach(world);
@@ -121,6 +116,8 @@ export function createSimulatedSales(world: World): SalesGateway {
     },
     cancelSale: () => unavailable("annuler une vente"),
     reportError: () => unavailable("signaler une erreur"),
+    recordReturn: () => unavailable("enregistrer un retour"),
+    listReturns: () => unavailable("lire les retours"),
     members: () => Promise.resolve([]),
   };
 }

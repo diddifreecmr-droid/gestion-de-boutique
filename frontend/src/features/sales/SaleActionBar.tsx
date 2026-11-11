@@ -1,31 +1,119 @@
-import { Check, Send } from "lucide-react";
+import type { ReactNode } from "react";
+import { Check, RefreshCw, Send } from "lucide-react";
 import { formatMoney } from "../../shared/format";
-import { ActionBar, Badge, Button } from "../../shared/ui";
-
-export type ApprovalState = "none" | "sending" | "pending";
+import { ActionBar, Badge, Button, type BadgeStatus } from "../../shared/ui";
+import type { ApprovalView } from "./priceRequests/approvalView";
+import {
+  EXPIRED_TEXT,
+  ONE_ARTICLE_TEXT,
+  PENDING_TEXT,
+  REFUSED_TEXT,
+} from "./priceRequests/priceRequestText";
 
 export interface SaleActionBarProps {
   total: number;
-  /** Le vendeur a un prix sous le minimum : il faut l'accord du propriétaire (UC-VEN-03). */
-  needsApproval: boolean;
-  approval: ApprovalState;
+  /** Accord du propriétaire pour un prix sous le minimum (UC-VEN-03). */
+  approval: ApprovalView;
   submitting: boolean;
   onSubmit: () => void;
   onRequestApproval: () => void;
+  onRefreshApproval: () => void;
+}
+
+const ASK_LABEL = "Demander l'accord du propriétaire";
+
+function Status({ badge, word, children }: { badge: BadgeStatus; word: string; children: string }) {
+  return (
+    <p className="m-0 flex flex-wrap items-center gap-2 text-body text-text" aria-live="polite">
+      <Badge status={badge}>{word}</Badge>
+      <span>{children}</span>
+    </p>
+  );
 }
 
 /**
  * Total et action principale, en bas de l'écran (§ 6.1, § 7.1). La barre reste au-dessus
- * de la barre de navigation (`sticky`), dans le flux de la page.
+ * de la barre de navigation (`sticky`), dans le flux de la page. Sous le minimum, « Valider »
+ * devient « Demander l'accord du propriétaire » (§ 6.1, variante métier), puis l'état suit.
  */
-export function SaleActionBar({
-  total,
-  needsApproval,
-  approval,
-  submitting,
-  onSubmit,
-  onRequestApproval,
-}: SaleActionBarProps) {
+export function SaleActionBar(props: SaleActionBarProps) {
+  const { total, approval, submitting, onSubmit, onRequestApproval, onRefreshApproval } = props;
+  const validate = (reason?: string) => (
+    <Button
+      size="lg"
+      fullWidth
+      icon={Check}
+      loading={submitting}
+      onClick={onSubmit}
+      {...(reason === undefined ? {} : { disabledReason: reason })}
+    >
+      Valider la vente
+    </Button>
+  );
+  let content: ReactNode;
+  switch (approval.kind) {
+    case "none":
+      content = validate();
+      break;
+    case "several":
+      content = validate(ONE_ARTICLE_TEXT);
+      break;
+    case "ask":
+    case "sending":
+      content = (
+        <>
+          {approval.kind === "ask" && approval.again && (
+            <Status badge="danger" word="Expirée">
+              {EXPIRED_TEXT}
+            </Status>
+          )}
+          <Button
+            variant="secondary"
+            size="lg"
+            fullWidth
+            icon={Send}
+            loading={approval.kind === "sending"}
+            onClick={onRequestApproval}
+          >
+            {ASK_LABEL}
+          </Button>
+        </>
+      );
+      break;
+    case "pending":
+      content = (
+        <>
+          <Status badge="warning" word="En attente">
+            {`${PENDING_TEXT} — expire dans ${approval.remaining}.`}
+          </Status>
+          <Button variant="ghost" icon={RefreshCw} onClick={onRefreshApproval}>
+            Actualiser l'état de la demande
+          </Button>
+          {validate("En attente de l'accord du propriétaire, ou changez le prix")}
+        </>
+      );
+      break;
+    case "accepted":
+      content = (
+        <>
+          <Status badge="success" word="Accordé">
+            {`Le propriétaire a accepté ce prix — accord valable encore ${approval.remaining}.`}
+          </Status>
+          {validate()}
+        </>
+      );
+      break;
+    case "refused":
+      content = (
+        <>
+          <Status badge="danger" word="Refusée">
+            {REFUSED_TEXT}
+          </Status>
+          {validate("Changez le prix : le propriétaire a refusé celui-ci")}
+        </>
+      );
+      break;
+  }
   const summary = (
     <p className="m-0 flex items-baseline justify-between gap-4">
       <span>Total</span>
@@ -35,39 +123,7 @@ export function SaleActionBar({
   return (
     <div className="sticky bottom-16 z-20 -mx-4">
       <ActionBar fixed={false} summary={summary}>
-        {!needsApproval && (
-          <Button size="lg" fullWidth icon={Check} loading={submitting} onClick={onSubmit}>
-            Valider la vente
-          </Button>
-        )}
-        {needsApproval && approval !== "pending" && (
-          <Button
-            variant="secondary"
-            size="lg"
-            fullWidth
-            icon={Send}
-            loading={approval === "sending"}
-            onClick={onRequestApproval}
-          >
-            Demander l'accord du propriétaire
-          </Button>
-        )}
-        {needsApproval && approval === "pending" && (
-          <>
-            <p className="m-0 flex flex-wrap items-center gap-2 text-body text-text">
-              <Badge status="warning">En attente</Badge>
-              <span>Demande envoyée au propriétaire. Elle expire au bout de 30 minutes.</span>
-            </p>
-            <Button
-              size="lg"
-              fullWidth
-              icon={Check}
-              disabledReason="En attente de l'accord du propriétaire, ou changez le prix"
-            >
-              Valider la vente
-            </Button>
-          </>
-        )}
+        {content}
       </ActionBar>
     </div>
   );

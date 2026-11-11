@@ -18,12 +18,38 @@ export interface StockInsufficientDetails {
   other_locations: OtherLocationStock[];
 }
 
+/** Pourquoi la demande jointe à la vente ne couvre pas la ligne (T16b). */
+export const PRICE_REQUEST_PROBLEMS = [
+  "not_found",
+  "other_seller",
+  "other_article",
+  "pending",
+  "refused",
+  "expired",
+  "used",
+  "price_too_low",
+] as const;
+export type PriceRequestProblem = (typeof PRICE_REQUEST_PROBLEMS)[number];
+
 export interface PriceBelowMinimumDetails {
   article_id: string;
   /** Rang de la ligne, à partir de 1. */
   line: number;
   min_price: number;
   request_required: boolean;
+  /** Présent quand un `price_request_id` a été joint sans couvrir la ligne. */
+  price_request: PriceRequestProblem | null;
+}
+
+export interface ReturnQuantityExceededDetails {
+  line: number;
+  /** Chaîne décimale. */
+  returnable: string;
+}
+
+export interface RefundOverpaymentDetails {
+  refund: number;
+  max: number;
 }
 
 export interface DuplicateDetails {
@@ -76,15 +102,39 @@ export function stockInsufficient(error: ApiError): StockInsufficientDetails {
   };
 }
 
+function isProblem(value: unknown): value is PriceRequestProblem {
+  return PRICE_REQUEST_PROBLEMS.some((known) => known === value);
+}
+
 export function priceBelowMinimum(error: ApiError): PriceBelowMinimumDetails {
   const code = "PRICE_BELOW_MINIMUM";
   const required = error.details["request_required"];
   if (typeof required !== "boolean") fail(code, "request_required");
+  const problem = error.details["price_request"];
+  if (problem !== undefined && !isProblem(problem)) fail(code, "price_request");
   return {
     article_id: text(error.details, code, "article_id"),
     line: integer(error.details, code, "line"),
     min_price: integer(error.details, code, "min_price"),
     request_required: required,
+    price_request: problem ?? null,
+  };
+}
+
+export function returnQuantityExceeded(error: ApiError): ReturnQuantityExceededDetails {
+  const code = "RETURN_QUANTITY_EXCEEDED";
+  return {
+    line: integer(error.details, code, "line"),
+    returnable: text(error.details, code, "returnable"),
+  };
+}
+
+/** `OVERPAYMENT` d'un retour : remboursement demandé et maximum rendable. */
+export function refundOverpayment(error: ApiError): RefundOverpaymentDetails {
+  const code = "OVERPAYMENT";
+  return {
+    refund: integer(error.details, code, "refund"),
+    max: integer(error.details, code, "max"),
   };
 }
 

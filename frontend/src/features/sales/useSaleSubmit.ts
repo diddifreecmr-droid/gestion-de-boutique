@@ -1,23 +1,26 @@
 import { useState } from "react";
-import { ApiError, NetworkError } from "../../core/api/errors";
-import { uuidV7 } from "../../core/api/uuidv7";
+import { ApiError } from "../../core/api/errors";
 import type { SaleLocation } from "../../core/gateways/catalogContract";
 import { useGateways } from "../../core/gateways/gateways";
-import { priceBelowMinimum } from "../../core/gateways/saleErrors";
-import type { SaleResult } from "../../core/gateways/salesContract";
+import { priceBelowMinimum, type PriceRequestProblem } from "../../core/gateways/saleErrors";
+import type { PriceRequest, SaleResult } from "../../core/gateways/salesContract";
 import { asError } from "./asError";
 import { buildCommand } from "./buildCommand";
-import { CREDIT_CHOICE, type LineDraft, type SaleDraft } from "./draft";
+import { CREDIT_CHOICE, type SaleDraft } from "./draft";
 import { writeLastPaymentMode } from "./lastPaymentMode";
+import type { ApprovalView } from "./priceRequests/approvalView";
+import { problemMessage } from "./priceRequests/priceRequestText";
 import type { SaleChecks } from "./saleChecks";
-import { OFFLINE_MESSAGE, saleErrorMessage } from "./saleErrorMessage";
+import { saleErrorMessage } from "./saleErrorMessage";
 
 export const FIX_FIELDS = "La vente n'est pas enregistrée : corrigez les champs signalés.";
 export const BELOW_MINIMUM = "Prix inférieur au minimum : validation du propriétaire nécessaire.";
 
-/** Clé d'une demande d'accord : un article à un prix donné (changer le prix l'invalide). */
-export function approvalKey(line: LineDraft): string {
-  return `${line.article.id}:${String(line.unitPrice)}`;
+/** Ce que l'envoi lit de la demande d'accord (`usePriceApproval`). */
+export interface ApprovalLink {
+  view: ApprovalView;
+  request: PriceRequest | null;
+  settle: (problem: PriceRequestProblem) => void;
 }
 
 interface Options {
@@ -25,20 +28,21 @@ interface Options {
   location: SaleLocation;
   draft: SaleDraft;
   checks: SaleChecks;
+  approval: ApprovalLink;
   update: (patch: Partial<SaleDraft>) => void;
   onRecorded: (sale: SaleResult) => void;
 }
 
 /**
- * Envoi de la vente et des demandes d'accord. Le brouillon n'est jamais effacé par un échec ;
- * une erreur qui n'est pas prévue par le contrat est relancée au rendu (fail-fast).
+ * Envoi de la vente, avec le `price_request_id` d'un accord reçu. Le brouillon n'est jamais
+ * effacé par un échec ; une erreur hors contrat est relancée au rendu (fail-fast).
  */
-export function useSaleSubmit({ shopId, location, draft, checks, update, onRecorded }: Options) {
+export function useSaleSubmit(options: Options) {
+  const { shopId, location, draft, checks, approval, update, onRecorded } = options;
   const { sales } = useGateways();
   const [submitting, setSubmitting] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [approvals, setApprovals] = useState<Record<string, "sending" | "pending">>({});
   const [fatal, setFatal] = useState<unknown>(null);
   if (fatal !== null) throw asError(fatal);
 
@@ -48,7 +52,11 @@ export function useSaleSubmit({ shopId, location, draft, checks, update, onRecor
       update({
         serverMinimums: { ...draft.serverMinimums, [details.article_id]: details.min_price },
       });
-      setMessage(BELOW_MINIMUM);
+      if (details.price_request === null) setMessage(BELOW_MINIMUM);
+      else {
+        setMessage(problemMessage(details.price_request, approval.request));
+        approval.settle(details.price_request);
+      }
       return;
     }
     try {
@@ -68,7 +76,8 @@ export function useSaleSubmit({ shopId, location, draft, checks, update, onRecor
     setMessage(null);
     setSubmitting(true);
     try {
-      const command = buildCommand(draft, location.id, checks.total);
+      const accepted = approval.view.kind === "accepted" ? approval.view.requestId : null;
+      const command = buildCommand(draft, location.id, checks.total, new Date(), accepted);
       const sale = await sales.recordSale(shopId, command, new Date());
       const remembered = draft.payment === CREDIT_CHOICE ? draft.depositMode : draft.payment;
       if (
@@ -85,39 +94,5 @@ export function useSaleSubmit({ shopId, location, draft, checks, update, onRecor
     }
   };
 
-  const requestApproval = async () => {
-    const lines = checks.needsApproval.filter((line) => approvals[approvalKey(line)] === undefined);
-    setMessage(null);
-    for (const line of lines) {
-      const key = approvalKey(line);
-      if (line.unitPrice === null) throw new Error("Demande d'accord sans prix");
-      setApprovals((current) => ({ ...current, [key]: "sending" }));
-      try {
-        await sales.requestPriceApproval(shopId, {
-          id: uuidV7(),
-          location_id: location.id,
-          article_id: line.article.id,
-          requested_price: line.unitPrice,
-        });
-        setApprovals((current) => ({ ...current, [key]: "pending" }));
-      } catch (error) {
-        setApprovals((current) =>
-          Object.fromEntries(Object.entries(current).filter(([known]) => known !== key)),
-        );
-        if (error instanceof NetworkError) setMessage(OFFLINE_MESSAGE);
-        else setFatal(error);
-        return;
-      }
-    }
-  };
-
-  const keys = checks.needsApproval.map(approvalKey);
-  const approval =
-    keys.length > 0 && keys.every((key) => approvals[key] === "pending")
-      ? ("pending" as const)
-      : keys.some((key) => approvals[key] === "sending")
-        ? ("sending" as const)
-        : ("none" as const);
-
-  return { submit, requestApproval, submitting, showErrors, message, approval };
+  return { submit, submitting, showErrors, message };
 }

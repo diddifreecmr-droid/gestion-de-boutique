@@ -3,6 +3,7 @@
  * `frozen_last_cost`, `frozen_wac`, `margin`, `margin_wac` qu'au propriétaire ; l'écran ne
  * les lit **que** par `ownerCosts`, qui refuse tout autre rôle. `null` = non calculable.
  */
+import type { SaleReturn } from "../../core/gateways/returnsContract";
 import type { SaleLineResult } from "../../core/gateways/salesContract";
 import { formatMoney } from "../../shared/format";
 import type { SaleRole } from "./salesNav";
@@ -28,6 +29,16 @@ export function ownerCosts(role: SaleRole, line: SaleLineResult): LineCosts | nu
     margin: line.margin ?? null,
     marginWac: line.margin_wac ?? null,
   };
+}
+
+/**
+ * Marge retirée par un retour, pour le propriétaire seulement ; `undefined` pour tout autre
+ * rôle (le serveur ne l'envoie pas au vendeur). `null` = non calculable.
+ */
+export function ownerReturnMargin(role: SaleRole, made: SaleReturn): number | null | undefined {
+  if (role !== "owner") return undefined;
+  if (!("margin" in made)) throw new Error(`Retour vu par le propriétaire sans marge (${made.id})`);
+  return made.margin ?? null;
 }
 
 export function moneyOrNot(amount: number | null): string {

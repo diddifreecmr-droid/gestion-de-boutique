@@ -81,21 +81,6 @@ export function checkStock(world: World, command: RecordSaleCommand): void {
   });
 }
 
-/** UC-VEN-03 : le vendeur ne vend pas sous le minimum sans accord ; le propriétaire, si. */
-export function checkMinimum(world: World, shopId: string, command: RecordSaleCommand): void {
-  if (world.options.roleIn(shopId) === "owner") return;
-  command.lines.forEach((line) => {
-    const article = requireArticle(world, line.article_id);
-    if (line.unit_price >= article.min_price) return;
-    throw new ApiError(422, "PRICE_BELOW_MINIMUM", "Prix inférieur au minimum", {
-      article_id: article.id,
-      line: command.lines.indexOf(line) + 1,
-      min_price: article.min_price,
-      request_required: true,
-    });
-  });
-}
-
 export function checkPayments(command: RecordSaleCommand, total: number): void {
   const paid = paymentsOf(command).reduce((sum, payment) => sum + payment.amount, 0);
   if (paid > total) {

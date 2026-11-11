@@ -4,11 +4,15 @@ import { useSearchParams } from "react-router";
 import { useGateways } from "../../core/gateways/gateways";
 import { useSignedIn } from "../../core/services/servicesContext";
 import { Button, EmptyState, Skeleton } from "../../shared/ui";
+import { ReturnPage } from "./returns/ReturnPage";
 import { SaleDetail } from "./SaleDetail";
 import { SaleList } from "./SaleList";
 import { loadSaleRefs } from "./saleRefs";
 import type { SaleRole } from "./salesNav";
 import { useLookup } from "./useLookup";
+
+/** Vue « Retour ou échange » d'une vente (`?id=…&vue=retour`, propriétaire). */
+export const RETURN_VIEW = "retour";
 
 /** Section des ventes (UC-VEN-05 à 08) : liste du jour, fiche `?id=`, reçu, annulation. */
 export function SalesPage({
@@ -53,6 +57,19 @@ export function SalesPage({
     );
   }
   const id = params.get("id");
+  if (id !== null && role === "owner" && params.get("vue") === RETURN_VIEW) {
+    return (
+      <ReturnPage
+        key={id}
+        shopId={shopId}
+        refs={refs.value}
+        id={id}
+        onBack={() => {
+          setParams({ id });
+        }}
+      />
+    );
+  }
   if (id !== null) {
     return (
       <SaleDetail
@@ -62,6 +79,12 @@ export function SalesPage({
         id={id}
         onBack={() => {
           setParams({});
+        }}
+        onReturn={() => {
+          setParams({ id, vue: RETURN_VIEW });
+        }}
+        onOpenSale={(other) => {
+          setParams({ id: other });
         }}
       />
     );

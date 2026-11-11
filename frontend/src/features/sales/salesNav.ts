@@ -10,6 +10,8 @@ export const NEW_SALE_KEY = "nouvelle-vente";
 export const SALES_KEY = "ventes";
 /** Entrée « Mes ventes » du vendeur. */
 export const MY_SALES_KEY = "mes-ventes";
+/** Demandes de prix sous le minimum (propriétaire), ouvertes depuis l'accueil (UC-TDB-01). */
+export const PRICE_REQUESTS_KEY = "demandes-de-prix";
 
 export type SaleRole = "owner" | "seller";
 

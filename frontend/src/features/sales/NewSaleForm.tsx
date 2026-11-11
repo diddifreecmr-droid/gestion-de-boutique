@@ -14,6 +14,7 @@ import { SaleActionBar } from "./SaleActionBar";
 import { checkSale } from "./saleChecks";
 import { SaleExtras } from "./SaleExtras";
 import { SaleLineCard } from "./SaleLineCard";
+import { usePriceApproval } from "./priceRequests/usePriceApproval";
 import { useSaleSubmit } from "./useSaleSubmit";
 
 export interface NewSaleFormProps {
@@ -43,7 +44,8 @@ export function NewSaleForm(props: NewSaleFormProps) {
     setDraft((current) => ({ ...current, ...patch }));
   };
   const checks = checkSale(draft, role);
-  const submit = useSaleSubmit({ shopId, location, draft, checks, update, onRecorded });
+  const approval = usePriceApproval(shopId, checks.needsApproval);
+  const submit = useSaleSubmit({ shopId, location, draft, checks, approval, update, onRecorded });
   const showPicker = picking || draft.lines.length === 0;
 
   return (
@@ -123,14 +125,14 @@ export function NewSaleForm(props: NewSaleFormProps) {
         showErrors={submit.showErrors}
         update={update}
       />
-      <FormAlert message={submit.message} />
+      <FormAlert message={submit.message ?? approval.message} />
       <SaleActionBar
         total={checks.total}
-        needsApproval={checks.needsApproval.length > 0}
-        approval={submit.approval}
+        approval={approval.view}
         submitting={submit.submitting}
         onSubmit={() => void submit.submit()}
-        onRequestApproval={() => void submit.requestApproval()}
+        onRequestApproval={() => void approval.ask()}
+        onRefreshApproval={() => void approval.refresh()}
       />
     </>
   );

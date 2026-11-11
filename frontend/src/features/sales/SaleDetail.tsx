@@ -1,18 +1,17 @@
 import { useState } from "react";
-import { ArrowLeft, Printer, XCircle } from "lucide-react";
+import { ArrowLeft, Printer, WifiOff } from "lucide-react";
 import { useGateways } from "../../core/gateways/gateways";
 import type { SaleResult } from "../../core/gateways/salesContract";
 import { formatDate, formatTime } from "../../shared/format";
-import { Badge, Button, ConfirmDialog } from "../../shared/ui";
-import { FormMessage } from "../expenses/FormMessage";
+import { Badge, Button } from "../../shared/ui";
 import { LoadingOrOffline } from "../expenses/LoadingOrOffline";
-import { asError } from "./asError";
 import { ErrorReports } from "./ErrorReports";
 import { ReceiptPrint } from "./ReceiptPrint";
+import { SaleReturnsCard } from "./returns/SaleReturnsCard";
 import { ShareButton } from "./ShareButton";
-import { actionErrorMessage } from "./saleErrorMessage";
 import { SaleFacts } from "./SaleFacts";
 import { SaleLinesCard } from "./SaleLinesCard";
+import { SaleOwnerActions } from "./SaleOwnerActions";
 import { sellerName, type SaleRefs } from "./saleRefs";
 import { useLookup } from "./useLookup";
 
@@ -29,24 +28,27 @@ export interface SaleDetailProps {
   refs: SaleRefs;
   id: string;
   onBack: () => void;
+  /** Ouvre « Retour ou échange » (propriétaire). */
+  onReturn: () => void;
+  /** Ouvre la fiche d'une autre vente (nouvelle vente d'un échange). */
+  onOpenSale: (id: string) => void;
 }
 
 /**
- * Fiche d'une vente (UC-VEN-05 à 08) : lignes et détails, paiements ; propriétaire : coûts
- * figés et marges, « Annuler la vente » (motif obligatoire) ; vendeur : « Signaler une erreur »
- * et la suite donnée. « Imprimer » ouvre la vue d'impression (le serveur compte l'impression).
+ * Fiche d'une vente (UC-VEN-05 à 09) : lignes et détails, paiements, retours ; propriétaire :
+ * coûts figés et marges, « Retour ou échange », « Annuler la vente » (sans retour) ; vendeur :
+ * « Signaler une erreur » et la suite donnée. « Imprimer » ouvre la vue d'impression (le
+ * serveur compte l'impression).
  */
-export function SaleDetail({ shopId, refs, id, onBack }: SaleDetailProps) {
+export function SaleDetail({ shopId, refs, id, onBack, onReturn, onOpenSale }: SaleDetailProps) {
   const { sales } = useGateways();
   const [attempt, setAttempt] = useState(0);
   const loaded = useLookup(`${id}:${String(attempt)}`, () => sales.getSale(shopId, id));
+  const returns = useLookup(`${id}:${String(attempt)}:retours`, () =>
+    sales.listReturns(shopId, id),
+  );
   const [updated, setUpdated] = useState<SaleResult | null>(null);
   const [printing, setPrinting] = useState(false);
-  const [confirming, setConfirming] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [fatal, setFatal] = useState<unknown>(null);
-  if (fatal !== null) throw asError(fatal);
   if (loaded.status !== "ready") {
     return <LoadingOrOffline title="Vente" status={loaded.status} />;
   }
@@ -64,23 +66,7 @@ export function SaleDetail({ shopId, refs, id, onBack }: SaleDetailProps) {
     );
   }
   const mention = cancellationText(sale, refs);
-
-  const cancel = async (reason: string) => {
-    setConfirming(false);
-    setBusy(true);
-    setMessage(null);
-    try {
-      setUpdated(await sales.cancelSale(shopId, sale.id, reason));
-    } catch (error) {
-      try {
-        setMessage(actionErrorMessage(error, "Annulation"));
-      } catch (unexpected) {
-        setFatal(unexpected);
-      }
-    } finally {
-      setBusy(false);
-    }
-  };
+  const listing = returns.status === "ready" ? returns.value : null;
 
   return (
     <>
@@ -110,6 +96,15 @@ export function SaleDetail({ shopId, refs, id, onBack }: SaleDetailProps) {
         </Button>
         <ShareButton />
       </div>
+      {listing !== null && listing.returns.length > 0 && (
+        <SaleReturnsCard returns={listing.returns} refs={refs} onOpenSale={onOpenSale} />
+      )}
+      {returns.status === "offline" && (
+        <p className="m-0 flex items-start gap-2 text-body text-text-muted">
+          <WifiOff aria-hidden="true" className="size-6 shrink-0" />
+          <span>Retours de la vente : connexion nécessaire.</span>
+        </p>
+      )}
       <ErrorReports
         shopId={shopId}
         saleId={sale.id}
@@ -119,37 +114,15 @@ export function SaleDetail({ shopId, refs, id, onBack }: SaleDetailProps) {
           setUpdated({ ...sale, error_reports: [...sale.error_reports, report] });
         }}
       />
-      {message !== null && <FormMessage text={message} />}
-      {refs.role === "owner" && sale.editable && (
-        <Button
-          variant="danger"
-          icon={XCircle}
-          fullWidth
-          loading={busy}
-          onClick={() => {
-            setConfirming(true);
-          }}
-        >
-          Annuler la vente
-        </Button>
+      {refs.role === "owner" && (
+        <SaleOwnerActions
+          shopId={shopId}
+          sale={sale}
+          listing={listing}
+          onCancelled={setUpdated}
+          onReturn={onReturn}
+        />
       )}
-      <ConfirmDialog
-        open={confirming}
-        title={`Annuler la vente ${sale.number} ?`}
-        confirmLabel="Annuler la vente"
-        confirmIcon={XCircle}
-        requireReason
-        onConfirm={(reason) => {
-          if (reason === null) throw new Error("Annulation sans motif : le dialogue l'exige");
-          void cancel(reason);
-        }}
-        onCancel={() => {
-          setConfirming(false);
-        }}
-      >
-        La marchandise revient dans le stock du lieu de vente et la créance liée est annulée. La
-        vente restera visible, barrée, avec la mention « Annulée ».
-      </ConfirmDialog>
     </>
   );
 }

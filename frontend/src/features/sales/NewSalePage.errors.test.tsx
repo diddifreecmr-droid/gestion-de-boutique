@@ -34,12 +34,14 @@ describe("prix sous le minimum (UC-VEN-03)", () => {
     await user.click(screen.getByRole("button", { name: ASK }));
     expect(await screen.findByText("En attente")).toBeVisible();
     expect(validateButton()).toHaveAttribute("aria-disabled", "true");
-    expect(screen.getByText(/En attente de l'accord du propriétaire/)).toBeVisible();
+    expect(
+      screen.getByText(/En attente de l'accord du propriétaire — expire dans \d+ min/),
+    ).toBeVisible();
     expect(requestPriceApproval).toHaveBeenCalledWith(SALE_SHOP, {
       id: expect.any(String) as string,
-      location_id: "loc-garoua",
       article_id: "art-hj125-8",
       requested_price: 700_000,
+      sale_mode: "unit",
     });
     await user.click(validateButton());
     expect(recordSale).not.toHaveBeenCalled();

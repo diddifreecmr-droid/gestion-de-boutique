@@ -7,6 +7,7 @@
  * que voit chaque rôle passe par `features/sales/saleView.ts`.
  */
 import type { components } from "../api/schema.gen";
+import type { SaleReturn, SaleReturnCommand, SaleReturns } from "./returnsContract";
 
 type Schemas = components["schemas"];
 
@@ -51,22 +52,22 @@ export interface SaleFilters {
 }
 
 /**
- * PROVISOIRE (T16b) : demande d'accord de prix (UC-VEN-03). La route n'existe pas encore ;
- * ces deux types restent écrits à la main et la passerelle réelle la **simule** (voir
- * `httpSales.ts`). À remplacer par les alias générés quand `POST /price-requests` existera.
+ * Demande d'accord pour un prix sous le minimum (UC-VEN-03, T16b). `status` est le statut
+ * **effectif** à l'horloge du serveur : `pending`, `accepted`, `refused` ou `expired`. Le lieu
+ * est celui du vendeur (le serveur le pose) ; `expires_at` : 30 min après la demande, puis
+ * 30 min après l'accord.
  */
-export interface PriceRequestCommand {
-  id: string;
-  location_id: string;
-  article_id: string;
-  requested_price: number;
-}
+export type PriceRequest = Schemas["PriceRequestResponse"];
+export type PriceRequestCommand = Schemas["PriceRequestCreate"];
+export type PriceDecision = Schemas["PriceDecisionRequest"]["decision"];
+export type PriceRequestStatus = "pending" | "accepted" | "refused" | "expired";
 
-export interface PriceRequestResult {
-  id: string;
-  status: "pending";
-  /** La demande expire au bout de 30 minutes (UC-VEN-03). */
-  expires_at: string;
+/** Statut lu de l'API (`string`) : une valeur inconnue est une rupture de contrat. */
+export function priceRequestStatus(request: PriceRequest): PriceRequestStatus {
+  const { status } = request;
+  if (status === "pending" || status === "accepted" || status === "refused") return status;
+  if (status === "expired") return status;
+  throw new Error(`Statut de demande de prix inconnu : « ${status} »`);
 }
 
 /**
@@ -76,7 +77,22 @@ export interface PriceRequestResult {
 export interface SalesGateway {
   /** `capturedAt` : heure de l'appareil, envoyée en `X-Captured-At` (ISO avec fuseau). */
   recordSale(shopId: string, command: RecordSaleCommand, capturedAt: Date): Promise<SaleResult>;
-  requestPriceApproval(shopId: string, command: PriceRequestCommand): Promise<PriceRequestResult>;
+  /** Vendeur : `POST /price-requests` (`id` client idempotent). */
+  requestPriceApproval(shopId: string, command: PriceRequestCommand): Promise<PriceRequest>;
+  /** Vendeur : ses demandes ; propriétaire : celles en attente. */
+  listPriceRequests(shopId: string): Promise<PriceRequest[]>;
+  getPriceRequest(shopId: string, requestId: string): Promise<PriceRequest>;
+  /** Propriétaire seulement ; `version` lue avec la demande. */
+  decidePriceRequest(
+    shopId: string,
+    requestId: string,
+    decision: PriceDecision,
+    version: number,
+  ): Promise<PriceRequest>;
+  /** Propriétaire seulement (UC-VEN-09) : retour simple ou échange. */
+  recordReturn(shopId: string, saleId: string, command: SaleReturnCommand): Promise<SaleReturn>;
+  /** Retours de la vente et quantités encore rendables par ligne. */
+  listReturns(shopId: string, saleId: string): Promise<SaleReturns>;
   /** `GET /customers?q=` : clients de la boutique (ceux du vendeur pour un vendeur). */
   searchCustomers(shopId: string, query: string): Promise<{ items: CustomerSummary[] }>;
   listSales(shopId: string, filters: SaleFilters, cursor: string | null): Promise<SalePage>;

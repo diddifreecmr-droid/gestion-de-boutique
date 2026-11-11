@@ -1,7 +1,7 @@
 /** État en mémoire partagé par les passerelles simulées (catalogue et ventes). */
 import type { Role } from "../../auth/me";
 import { NetworkError } from "../../api/errors";
-import type { RecordSaleCommand, SaleResult } from "../salesContract";
+import type { PriceRequest, RecordSaleCommand, SaleResult } from "../salesContract";
 import {
   ARTICLES,
   CUSTOMERS,
@@ -16,6 +16,8 @@ export interface SimulationOptions {
   isOnline: () => boolean;
   /** Rôle de l'utilisateur dans la boutique (le vrai serveur le lit dans le jeton). */
   roleIn: (shopId: string) => Role;
+  /** Identifiant de l'utilisateur dans la boutique (vendeur des demandes de prix). */
+  userIn?: (shopId: string) => string;
   /** Appelé quand un envoi échoue faute de réseau (le bandeau « Connexion nécessaire »). */
   onNetworkFailure?: () => void;
   /** Délai simulé de chaque appel, en ms (0 par défaut : tests déterministes). */
@@ -30,8 +32,8 @@ export interface World {
   /** Ventes déjà enregistrées, par `id` (idempotence : rejouer renvoie la même vente). */
   sales: Map<string, { command: RecordSaleCommand; result: SaleResult }>;
   nextNumber: number;
-  /** Demandes d'accord en attente (le propriétaire ne répond jamais dans la simulation). */
-  priceRequests: Set<string>;
+  /** Demandes d'accord de prix, par `id` (statut tenu ; le statut effectif se lit à l'heure). */
+  priceRequests: Map<string, PriceRequest>;
 }
 
 export function createWorld(options: SimulationOptions): World {
@@ -44,7 +46,7 @@ export function createWorld(options: SimulationOptions): World {
     soldChassis: new Map(Object.entries(SOLD_CHASSIS)),
     sales: new Map(),
     nextNumber: FIRST_SALE_NUMBER,
-    priceRequests: new Set(),
+    priceRequests: new Map(),
   };
 }
 

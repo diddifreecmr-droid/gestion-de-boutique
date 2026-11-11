@@ -127,7 +127,6 @@ describe("passerelle de vente simulée", () => {
     await expect(
       sales.requestPriceApproval(SHOP, {
         id: "p1",
-        location_id: "loc-garoua",
         article_id: "inconnu",
         requested_price: 1,
       }),

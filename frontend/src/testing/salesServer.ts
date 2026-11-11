@@ -9,6 +9,7 @@ import { ApiError } from "../core/api/errors";
 import type { Gateways } from "../core/gateways/gateways";
 import { createSimulation } from "../core/gateways/simulated";
 import type { World } from "../core/gateways/simulated/world";
+import type { SaleReturn, SaleReturnCommand } from "../core/gateways/returnsContract";
 import type { RecordSaleCommand, SaleMember, SaleResult } from "../core/gateways/salesContract";
 import { apiError, json, meBody, ROUTES, SHOP_A, tokenBody, type Reply } from "./fakeApi";
 import { NOW, withCosts } from "./salesFixtures";
@@ -36,6 +37,10 @@ export interface SaleServer {
   sales: Map<string, SaleResult>;
   printed: Map<string, number>;
   members: SaleMember[];
+  /** Retours enregistrés, par vente. */
+  returns: Map<string, SaleReturn[]>;
+  /** Appelé à chaque `POST /sales/{id}/returns` reçu : `(saleId, corps)`. */
+  recordReturn: ReturnType<typeof vi.fn<(saleId: string, body: SaleReturnCommand) => void>>;
 }
 
 export function member(id: string, name: string, role: string): SaleMember {
@@ -65,10 +70,15 @@ export function saleServer(role: SaleRole, extra: Routes = {}): SaleServer {
     [ROUTES.me]: json(200, me),
     ...extra,
   };
-  const { world, gateways } = createSimulation({ isOnline: () => true, roleIn: () => role });
+  const userId = role === "owner" ? OWNER_ID : SELLER_ID;
+  const { world, gateways } = createSimulation({
+    isOnline: () => true,
+    roleIn: () => role,
+    userIn: () => userId,
+  });
   const server: SaleServer = {
     role,
-    userId: role === "owner" ? OWNER_ID : SELLER_ID,
+    userId,
     routes: base,
     network,
     recordSale: vi.fn(),
@@ -76,6 +86,8 @@ export function saleServer(role: SaleRole, extra: Routes = {}): SaleServer {
     simulation: gateways,
     sales: new Map(),
     printed: new Map(),
+    returns: new Map(),
+    recordReturn: vi.fn(),
     members: [member(OWNER_ID, "Awa Bello", "owner"), member(SELLER_ID, "Issa Vendeur", "seller")],
   };
   server.routes = new Proxy(base, {

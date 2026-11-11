@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { CirclePlus, UserRound, Wallet } from "lucide-react";
 import { useNavigate } from "react-router";
 import { shopPath } from "../core/profile/shopProfile";
@@ -9,6 +10,11 @@ import { Button, EmptyState } from "../shared/ui";
 import { useActiveShop } from "./shopContext";
 
 export const ACCOUNT_KEY = "compte";
+
+/** Alertes en attente du propriétaire (UC-TDB-01 point 6), chargées à la demande. */
+const PriceRequestsHomeCard = lazy(
+  () => import("../features/sales/priceRequests/PriceRequestsHomeCard"),
+);
 
 /** PROVISOIRE (T12) — accueil du rôle ; le contenu réel (module 14) arrive avec T19 / T22. */
 export function RoleHome() {
@@ -42,6 +48,11 @@ export function RoleHome() {
         >
           Versement
         </Button>
+      )}
+      {role === "owner" && (
+        <Suspense fallback={null}>
+          <PriceRequestsHomeCard shopId={shopId} />
+        </Suspense>
       )}
       <EmptyState message="Votre accueil arrive bientôt." />
       <Button

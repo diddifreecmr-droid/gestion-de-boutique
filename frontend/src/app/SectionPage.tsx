@@ -2,7 +2,12 @@ import { lazy, Suspense } from "react";
 import { useParams } from "react-router";
 import { findSection } from "../core/profile/shopProfile";
 import { MORE_KEY } from "../core/profile/types";
-import { MY_SALES_KEY, NEW_SALE_KEY, SALES_KEY } from "../features/sales/salesNav";
+import {
+  MY_SALES_KEY,
+  NEW_SALE_KEY,
+  PRICE_REQUESTS_KEY,
+  SALES_KEY,
+} from "../features/sales/salesNav";
 import { SALE_ROLES } from "../features/sales/saleRoles";
 import { AccountPage } from "../features/settings/AccountPage";
 import { EXPENSES_KEY } from "../features/expenses/expenseNav";
@@ -24,6 +29,7 @@ const ExpensesRoute = lazy(() => import("../features/expenses/ExpensesRoute"));
 const StockRoute = lazy(() => import("../features/stock/StockRoute"));
 const PurchasingRoute = lazy(() => import("../features/purchasing/PurchasingRoute"));
 const ReceivablesRoute = lazy(() => import("../features/receivables/ReceivablesRoute"));
+const PriceRequestsRoute = lazy(() => import("../features/sales/priceRequests/PriceRequestsRoute"));
 
 /** Écrans communs à tous les rôles, hors barre du bas. */
 const SETTINGS_KEY = "reglages";
@@ -43,6 +49,14 @@ export function SectionPage() {
     return (
       <Suspense fallback={<Skeleton lines={4} label="Ouverture de la vente…" />}>
         <NewSaleRoute shopId={shopId} role={role} />
+      </Suspense>
+    );
+  }
+  // « Demandes de prix » : ouvertes depuis l'accueil du propriétaire (UC-TDB-01 point 6).
+  if (section === PRICE_REQUESTS_KEY && role === "owner") {
+    return (
+      <Suspense fallback={<Skeleton lines={4} label="Ouverture des demandes de prix…" />}>
+        <PriceRequestsRoute shopId={shopId} />
       </Suspense>
     );
   }

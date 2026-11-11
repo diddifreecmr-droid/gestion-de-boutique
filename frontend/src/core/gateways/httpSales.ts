@@ -1,11 +1,8 @@
 /**
- * Passerelle **réelle** des ventes : routes `/api/v1/shops/{shop_id}/…` (T16a), appels
+ * Passerelle **réelle** des ventes : routes `/api/v1/shops/{shop_id}/…` (T16a, T16b), appels
  * authentifiés par `session.authorized` (refresh unique puis rejeu). Rien n'est avalé :
- * `ApiError` et `NetworkError` remontent à l'écran.
- *
- * SIMULÉ (T16b en cours côté serveur) : `requestPriceApproval`. La route des demandes de prix
- * n'existe pas encore ; la demande est gardée **en mémoire** et reste « en attente » (le
- * propriétaire ne peut pas encore y répondre). À brancher sur `POST /price-requests` en T16b.
+ * `ApiError` et `NetworkError` remontent à l'écran. Demandes de prix : `/price-requests`
+ * (création, liste, lecture, décision) ; retours : `/sales/{id}/returns`.
  */
 import { capturedAtHeader } from "../api/capturedAt";
 import type { AppServices } from "../services/createServices";
@@ -13,11 +10,12 @@ import type { SalesGateway } from "./salesContract";
 
 const SHOP = "/api/v1/shops/{shop_id}";
 const SALE = "/api/v1/shops/{shop_id}/sales/{sale_id}";
-const PRICE_REQUEST_TTL_MS = 30 * 60_000;
+const PRICE = "/api/v1/shops/{shop_id}/price-requests/{request_id}";
 
 export function createHttpSales({ api, session }: AppServices): SalesGateway {
   const shop = (shopId: string) => ({ shop_id: shopId });
   const one = (shopId: string, id: string) => ({ shop_id: shopId, sale_id: id });
+  const request = (shopId: string, id: string) => ({ shop_id: shopId, request_id: id });
   return {
     recordSale: (shopId, command, capturedAt) => {
       const headers = { "X-Captured-At": capturedAtHeader(capturedAt) };
@@ -25,10 +23,30 @@ export function createHttpSales({ api, session }: AppServices): SalesGateway {
         api.post(`${SHOP}/sales`, { token, params: shop(shopId), body: command, headers }),
       );
     },
-    requestPriceApproval: (_shopId, command) => {
-      const expires = new Date(Date.now() + PRICE_REQUEST_TTL_MS).toISOString();
-      return Promise.resolve({ id: command.id, status: "pending", expires_at: expires });
-    },
+    requestPriceApproval: (shopId, command) =>
+      session.authorized((token) =>
+        api.post(`${SHOP}/price-requests`, { token, params: shop(shopId), body: command }),
+      ),
+    listPriceRequests: (shopId) =>
+      session.authorized((token) =>
+        api.get(`${SHOP}/price-requests`, { token, params: shop(shopId) }),
+      ),
+    getPriceRequest: (shopId, id) =>
+      session.authorized((token) => api.get(PRICE, { token, params: request(shopId, id) })),
+    decidePriceRequest: (shopId, id, decision, version) =>
+      session.authorized((token) =>
+        api.post(`${PRICE}/decision`, {
+          token,
+          params: request(shopId, id),
+          body: { decision, version },
+        }),
+      ),
+    recordReturn: (shopId, id, command) =>
+      session.authorized((token) =>
+        api.post(`${SALE}/returns`, { token, params: one(shopId, id), body: command }),
+      ),
+    listReturns: (shopId, id) =>
+      session.authorized((token) => api.get(`${SALE}/returns`, { token, params: one(shopId, id) })),
     searchCustomers: (shopId, query) => {
       const q = query.trim();
       if (q === "") return Promise.resolve({ items: [] });

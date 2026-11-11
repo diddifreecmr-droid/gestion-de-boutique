@@ -73,6 +73,8 @@ export function buildCommand(
   locationId: string,
   total: number,
   now: Date = new Date(),
+  /** Accord du propriétaire pour un prix sous le minimum (UC-VEN-03), s'il y en a un. */
+  priceRequestId: string | null = null,
 ): RecordSaleCommand {
   const credit = draft.payment === CREDIT_CHOICE;
   return {
@@ -95,7 +97,7 @@ export function buildCommand(
     credit: credit
       ? { reminder_on: orNull(draft.reminderOn), terms: orNull(draft.terms), guarantor: null }
       : null,
-    price_request_id: null,
+    price_request_id: priceRequestId,
     note: orNull(draft.note),
   };
 }
