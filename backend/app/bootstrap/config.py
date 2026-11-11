@@ -5,12 +5,13 @@ explicite des variables fautives ; l'application ne démarre pas.
 """
 
 from enum import StrEnum
+from ipaddress import IPv4Network, IPv6Network
 from pathlib import Path
-from typing import Literal, Self
+from typing import Annotated, Literal, Self
 
 from pydantic import Field, SecretStr, ValidationError, field_validator, model_validator
 from pydantic_core import ErrorDetails
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import ArgumentError
 
@@ -80,12 +81,23 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_TTL_DAYS: int = Field(default=30, ge=1, le=365)
     ADMIN_SESSION_TTL_HOURS: int = Field(default=8, ge=1, le=24)
 
-    # Limitation de débit de /auth/* (T10, specs § 8.1). Absent : active sauf ENVIRONMENT=test.
+    # Limitation de débit de /auth/* (T10, T10b, specs § 8.1). Absent : active sauf
+    # ENVIRONMENT=test. Seuils par minute et par IP, sauf le numéro (par fenêtre ci-dessous).
     AUTH_RATE_LIMIT_ENABLED: bool | None = None
-    AUTH_RATE_LIMIT_PER_IP: int = Field(default=30, ge=1, le=10_000)
-    """Demandes par minute et par adresse IP, toutes routes /auth/* confondues."""
-    AUTH_RATE_LIMIT_PER_PHONE: int = Field(default=10, ge=1, le=1_000)
-    """Tentatives de connexion par 15 minutes et par numéro."""
+    AUTH_RATE_LIMIT_LOGIN_PER_IP: int = Field(default=10, ge=1, le=10_000)
+    AUTH_RATE_LIMIT_LOGIN_PER_PHONE: int = Field(default=5, ge=1, le=1_000)
+    AUTH_RATE_LIMIT_PHONE_WINDOW_MINUTES: int = Field(default=15, ge=1, le=1_440)
+    AUTH_RATE_LIMIT_REFRESH_PER_IP: int = Field(default=30, ge=1, le=10_000)
+    AUTH_RATE_LIMIT_CHANGE_PIN_PER_IP: int = Field(default=10, ge=1, le=10_000)
+    # IP/CIDR séparés par des virgules ; seuls eux peuvent fournir X-Forwarded-For (Caddy, T25).
+    AUTH_TRUSTED_PROXIES: Annotated[tuple[IPv4Network | IPv6Network, ...], NoDecode] = ()
+
+    @field_validator("AUTH_TRUSTED_PROXIES", mode="before")
+    @classmethod
+    def _split_proxies(cls, value: object) -> object:
+        if isinstance(value, str):
+            return tuple(part.strip() for part in value.split(",") if part.strip())
+        return value
 
     @field_validator("JWT_SECRET")
     @classmethod

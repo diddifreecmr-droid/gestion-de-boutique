@@ -82,7 +82,9 @@ def test_rate_limit_is_off_in_test_unless_enabled() -> None:
     enabled = Settings(ENVIRONMENT=Environment.TEST, AUTH_RATE_LIMIT_ENABLED=True, _env_file=None)
     throttle = build_identity(enabled).auth.throttle
     assert throttle is not None
-    assert (throttle.per_ip.limit, throttle.per_phone.limit) == (30, 10)
+    rules = throttle.rules
+    assert (rules.login_ip.limit, rules.login_phone.limit, rules.refresh_ip.limit) == (10, 5, 30)
+    assert (rules.change_pin_ip.limit, rules.login_phone.window) == (10, timedelta(minutes=15))
     module = build_identity(enabled)
     with pytest.raises(ValueError, match="horloge"):
         build_identity(enabled, core=module.core, clock=FixedClock(T0))

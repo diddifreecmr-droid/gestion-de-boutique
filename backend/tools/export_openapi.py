@@ -2,8 +2,9 @@
 
 Le frontend génère ses types TypeScript à partir de ce fichier (`npm run gen:api`) ; il n'est
 jamais écrit à la main. L'application est assemblée comme dans `bootstrap.container.build_app`
-(identité + journal et alertes : **toutes** les routes), avec une configuration de test fixe et
-la persistance mémoire : le contrat ne dépend ni de `.env`, ni du secret réel, ni de la base.
+(noyau partagé, identité, journal et alertes, socle des boutiques : **toutes** les routes),
+avec une configuration de test fixe et la persistance mémoire : le contrat ne dépend ni de
+`.env`, ni du secret réel, ni de la base.
 
 Usage (depuis `backend/`) : `uv run python -m tools.export_openapi [--check] [--output CHEMIN]`
 Code de sortie : 0 si le fichier est écrit (ou à jour avec `--check`), 1 s'il est périmé.
@@ -19,8 +20,10 @@ from pydantic import SecretStr
 
 from app.bootstrap.config import Environment, PersistenceBackend, Settings
 from app.bootstrap.container import http_config_from
+from app.bootstrap.core import build_core
 from app.bootstrap.identity import build_identity
 from app.bootstrap.journal import build_journal
+from app.bootstrap.shops import build_shops
 from app.infrastructure.system_clock import SystemClock
 from app.interface.http.app import create_app
 
@@ -38,9 +41,11 @@ def build_openapi_document() -> str:
         _env_file=None,
     )
     clock = SystemClock()
-    identity = build_identity(settings, clock=clock)
-    journal = build_journal(settings, clock=clock, guard=identity.auth.guard)
-    app = create_app(http_config_from(settings), identity.auth, journal.http)
+    core = build_core(settings, clock)
+    identity = build_identity(settings, core=core)
+    journal = build_journal(settings, clock=clock, guard=identity.auth.guard, core=core)
+    shops = build_shops(identity)
+    app = create_app(http_config_from(settings), identity.auth, journal.http, shops.http)
     schema = app.openapi()
     if not schema.get("paths"):
         msg = "Contrat OpenAPI vide : aucune route exportée"

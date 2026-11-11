@@ -20,7 +20,7 @@ from app.application.identity.use_cases.login import Login
 from app.application.identity.use_cases.logout import Logout
 from app.application.identity.use_cases.refresh_session import RefreshSession
 from app.application.ports.clock import Clock
-from app.application.security.rate_limit import AuthThrottle, RateLimitRule
+from app.application.security.rate_limit import AuthRateRules, AuthThrottle, RateLimitRule
 from app.application.shops.delegated_access import AuditDelegatedAccess
 from app.bootstrap.config import Environment, Settings
 from app.bootstrap.core import Core, build_core
@@ -60,14 +60,20 @@ def throttle_from(settings: Settings, clock: Clock) -> AuthThrottle | None:
         enabled = settings.ENVIRONMENT is not Environment.TEST
     if not enabled:
         return None
-    return AuthThrottle(
-        InMemoryRateLimiter(),
-        clock,
-        per_ip=RateLimitRule("auth_ip", settings.AUTH_RATE_LIMIT_PER_IP, timedelta(minutes=1)),
-        per_phone=RateLimitRule(
-            "auth_phone", settings.AUTH_RATE_LIMIT_PER_PHONE, timedelta(minutes=15)
+    minute = timedelta(minutes=1)
+    rules = AuthRateRules(
+        login_ip=RateLimitRule("login_ip", settings.AUTH_RATE_LIMIT_LOGIN_PER_IP, minute),
+        login_phone=RateLimitRule(
+            "login_phone",
+            settings.AUTH_RATE_LIMIT_LOGIN_PER_PHONE,
+            timedelta(minutes=settings.AUTH_RATE_LIMIT_PHONE_WINDOW_MINUTES),
+        ),
+        refresh_ip=RateLimitRule("refresh_ip", settings.AUTH_RATE_LIMIT_REFRESH_PER_IP, minute),
+        change_pin_ip=RateLimitRule(
+            "change_pin_ip", settings.AUTH_RATE_LIMIT_CHANGE_PIN_PER_IP, minute
         ),
     )
+    return AuthThrottle(InMemoryRateLimiter(), clock, rules)
 
 
 def build_identity(
@@ -101,6 +107,7 @@ def build_identity(
         guard=AuthGuard(authenticate),
         clock=clock,
         throttle=throttle_from(settings, clock),
+        trusted_proxies=settings.AUTH_TRUSTED_PROXIES,
     )
     return IdentityModule(
         uow_factory=uow_factory,

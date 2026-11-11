@@ -57,7 +57,10 @@ class PlatformAdminRequired(Forbidden):
 class RateLimited(DomainError):
     """Trop de demandes sur `/auth/*` (specs § 8.1) → 429 avec `Retry-After` (code ajouté T10).
 
-    `details.retry_after` : secondes à attendre (entier ≥ 1), repris dans l'en-tête HTTP.
+    Contrat (T10b) : corps `{"error": {"code": "RATE_LIMITED", "message", "details":
+    {"retry_after": <secondes>}}}` — `retry_after` est un **entier de secondes ≥ 1** (arrondi
+    au supérieur), et la même valeur part dans l'en-tête `Retry-After` (RFC 9110 § 10.2.3,
+    forme « delay-seconds »). Le client attend ce délai avant de réessayer.
     """
 
     code = "RATE_LIMITED"

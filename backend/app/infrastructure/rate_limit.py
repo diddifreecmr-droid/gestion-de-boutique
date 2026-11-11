@@ -3,8 +3,10 @@
 Chaque `(règle, clé)` garde les instants de ses demandes encore dans la fenêtre ; au-delà de la
 limite, la demande est refusée (et **non** comptée : attendre suffit à repasser) avec le délai
 jusqu'à la sortie de la plus ancienne. Mémoire bornée : les clés sans demande récente sont
-purgées toutes les `SWEEP_EVERY` demandes. Plusieurs instances de l'API ont chacune leur
-compteur : un adaptateur partagé (Redis…) remplacera celui-ci derrière le même port.
+purgées toutes les `sweep_every` demandes (défaut `SWEEP_EVERY`). Thread-safe : un verrou
+unique protège les compteurs (FastAPI exécute les routes synchrones dans un pool de threads).
+Plusieurs instances de l'API ont chacune leur compteur : un adaptateur partagé (Redis…)
+remplacera celui-ci derrière le même port.
 """
 
 import threading
@@ -18,7 +20,11 @@ SWEEP_EVERY = 1_000
 
 
 class InMemoryRateLimiter(RateLimiter):
-    def __init__(self) -> None:
+    def __init__(self, *, sweep_every: int = SWEEP_EVERY) -> None:
+        if sweep_every < 1:
+            msg = "sweep_every doit valoir au moins 1"
+            raise ValueError(msg)
+        self._sweep_every = sweep_every
         self._lock = threading.Lock()
         self._hits: dict[tuple[str, str], deque[datetime]] = {}
         self._windows: dict[str, timedelta] = {}
@@ -37,9 +43,15 @@ class InMemoryRateLimiter(RateLimiter):
             hits.append(instant)
             return None
 
+    @property
+    def tracked_keys(self) -> int:
+        """Nombre de couples `(règle, clé)` en mémoire (surveillance, tests de purge)."""
+        with self._lock:
+            return len(self._hits)
+
     def _sweep(self, now: datetime) -> None:
         self._since_sweep += 1
-        if self._since_sweep < SWEEP_EVERY:
+        if self._since_sweep < self._sweep_every:
             return
         self._since_sweep = 0
         stale = [

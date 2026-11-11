@@ -1,9 +1,9 @@
 """Routes `/auth/*` et `/me` (specs § 6.3, § 7.2, § 8.1 ; recette AUTH-01, AUTH-02).
 
-Limitation de débit (T10, specs § 8.1) : chaque route `/auth/*` compte l'adresse IP, la
-connexion compte aussi le numéro ; au-delà, 429 `RATE_LIMITED` + `Retry-After`. Sans
-`throttle` (tests), rien n'est compté. Derrière Caddy, l'IP vient de `X-Forwarded-For`
-(uvicorn `--proxy-headers`, T25).
+Limitation de débit (T10, T10b, specs § 8.1) : seuil par route, par IP ; la connexion compte
+aussi le numéro ; `/auth/logout` n'est pas limité. Au-delà, 429 `RATE_LIMITED` + `Retry-After`
+(détail : `interface/http/rate_limit.py`). Sans `throttle` (tests), rien n'est compté. IP :
+`X-Forwarded-For` lu seulement derrière un proxy de confiance (`interface/http/client_ip.py`).
 
 Cookie de rafraîchissement : `HttpOnly; Secure; SameSite=Lax; Path=<préfixe>/auth`, durée de
 vie = celle de la session (glissante, ou 8 h pour l'admin). Le jeton d'accès est renvoyé dans
@@ -26,6 +26,8 @@ from app.application.ports.clock import Clock
 from app.application.security.rate_limit import AuthThrottle
 from app.domain.identity.errors import Unauthenticated
 from app.domain.shared.ids import DeviceId
+from app.interface.http.client_ip import ClientIpResolver, IpNetwork
+from app.interface.http.rate_limit import AuthLimits
 from app.interface.http.schemas.auth import (
     ChangePinRequest,
     LoginRequest,
@@ -53,17 +55,12 @@ class AuthComponents:
     guard: AuthGuard
     clock: Clock
     throttle: AuthThrottle | None = None
+    trusted_proxies: tuple[IpNetwork, ...] = ()
 
 
 def build_auth_router(auth: AuthComponents, api_prefix: str) -> APIRouter:
-    throttle = auth.throttle
-
-    def per_ip(request: Request) -> None:
-        if throttle is not None:
-            throttle.check_ip(request.client.host if request.client else "")
-
+    limits = AuthLimits(auth.throttle, ClientIpResolver(auth.trusted_proxies))
     router = APIRouter(tags=["auth"])
-    limited = [Depends(per_ip)]
     cookie_path = f"{api_prefix}/auth"
 
     def no_store(response: Response) -> None:
@@ -101,10 +98,11 @@ def build_auth_router(auth: AuthComponents, api_prefix: str) -> APIRouter:
             raise Unauthenticated(msg)
         return value
 
-    @router.post("/auth/login", dependencies=limited)
-    def login(body: LoginRequest, device: Device, response: Response) -> TokenResponse:
-        if throttle is not None:
-            throttle.check_phone(body.phone)
+    @router.post("/auth/login", dependencies=[Depends(limits.login_ip)])
+    def login(
+        body: LoginRequest, device: Device, request: Request, response: Response
+    ) -> TokenResponse:
+        limits.login_phone(request, body.phone)
         kind = CredentialKind.PIN if body.pin is not None else CredentialKind.PASSWORD
         secret = body.pin if body.pin is not None else body.password
         if secret is None:  # exclu par LoginRequest : défense en profondeur
@@ -119,17 +117,21 @@ def build_auth_router(auth: AuthComponents, api_prefix: str) -> APIRouter:
         )
         return token_response(response, auth.login.execute(command))
 
-    @router.post("/auth/refresh", dependencies=limited)
+    @router.post("/auth/refresh", dependencies=[Depends(limits.refresh)])
     def refresh(device: Device, response: Response, cookie: RefreshCookie = None) -> TokenResponse:
         return token_response(response, auth.refresh.execute(require_cookie(cookie), device))
 
-    @router.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT, dependencies=limited)
+    @router.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
     def logout(device: Device, response: Response, cookie: RefreshCookie = None) -> None:
         auth.logout.execute(require_cookie(cookie), device)
         no_store(response)
         clear_refresh_cookie(response)
 
-    @router.post("/auth/change-pin", status_code=status.HTTP_204_NO_CONTENT, dependencies=limited)
+    @router.post(
+        "/auth/change-pin",
+        status_code=status.HTTP_204_NO_CONTENT,
+        dependencies=[Depends(limits.change_pin)],
+    )
     def change_pin(
         identity: Annotated[AuthenticatedUser, Depends(auth.guard.current_user)],
         body: Annotated[ChangePinRequest, Body()],

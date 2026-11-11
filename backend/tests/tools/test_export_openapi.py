@@ -8,12 +8,14 @@ import pytest
 from tools.export_openapi import DEFAULT_OUTPUT, build_openapi_document, main
 
 
-def test_document_lists_auth_journal_and_alert_routes() -> None:
+def test_document_lists_auth_journal_alert_and_shop_routes() -> None:
     schema = json.loads(build_openapi_document())
     paths = set(schema["paths"])
     assert {"/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/me"} <= paths
     assert any(path.startswith("/api/v1/shops/{shop_id}/audit") for path in paths), paths
     assert any(path.startswith("/api/v1/shops/{shop_id}/alerts") for path in paths), paths
+    assert any(path.startswith("/api/v1/platform/") for path in paths), paths
+    assert any(path.startswith("/api/v1/shops/{shop_id}/members") for path in paths), paths
     assert {"LoginRequest", "TokenResponse", "MeResponse"} <= set(schema["components"]["schemas"])
 
 
