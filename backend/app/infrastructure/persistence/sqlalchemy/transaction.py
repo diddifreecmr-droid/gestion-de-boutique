@@ -27,7 +27,7 @@ class SqlTransaction:
             self._connection.close()
             raise
         self._closed = False
-        self._changed = False
+        self._writes = 0
 
     # ------------------------------------------------------------------ lecture
     def fetch_one(self, statement: sa.Select[Any]) -> sa.RowMapping | None:
@@ -54,14 +54,23 @@ class SqlTransaction:
         with self._connection.begin_nested():
             count = self._connection.execute(statement).rowcount
         if count:
-            self._changed = True
+            self._writes += 1
         return count
 
     # ------------------------------------------------------------------ fin
     @property
     def has_changes(self) -> bool:
         """Vrai si une écriture a touché au moins une ligne (rien n'est encore validé)."""
-        return self._changed
+        return self._writes > 0
+
+    @property
+    def write_count(self) -> int:
+        """Écritures ayant touché au moins une ligne (unités jointes : « ai-je écrit ? »)."""
+        return self._writes
+
+    @property
+    def is_open(self) -> bool:
+        return not self._closed
 
     def commit(self) -> None:
         self._require_open()

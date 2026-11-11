@@ -8,7 +8,8 @@ Ordre des contrôles, choisi pour ne rien révéler qui ne soit exigé :
    code juste ne doit pas pouvoir être distingué d'un faux pendant le blocage ;
 3. secret faux (ou d'un mauvais type : code pour l'admin, mot de passe pour un membre) →
    essai compté et **validé en base**, puis `InvalidCredentials` ; au 5ᵉ, blocage 15 min ;
-4. compte désactivé (RG-D06) → `AccountDisabled`, seulement après un secret juste ;
+4. compte désactivé (RG-D06) → `AccountDisabled`, seulement après un secret juste : statut
+   du compte **ou** aucun rattachement utilisable (désactivation par boutique, T10) ;
 5. succès → compteur à 0, session de l'appareil créée ou réutilisée, jetons émis.
 """
 
@@ -16,7 +17,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from functools import cached_property
 
-from app.application.identity.ports import PasswordHasher
+from app.application.identity.ports import MembershipDirectory, PasswordHasher
+from app.application.identity.reachability import require_reachable
 from app.application.identity.sessions import IssuedSession, SessionIssuer
 from app.application.identity.uow import IdentityUnitOfWorkFactory
 from app.application.ports.clock import Clock
@@ -56,11 +58,13 @@ class Login:
         hasher: PasswordHasher,
         issuer: SessionIssuer,
         clock: Clock,
+        memberships: MembershipDirectory,
     ) -> None:
         self._uow_factory = uow_factory
         self._hasher = hasher
         self._issuer = issuer
         self._clock = clock
+        self._memberships = memberships
 
     @cached_property
     def _dummy_hash(self) -> str:
@@ -87,6 +91,7 @@ class Login:
                 uow.commit()
                 raise InvalidCredentials
             user.ensure_active()
+            require_reachable(self._memberships, user)
             if self._hasher.needs_rehash(user.secret_hash):
                 user.rehash(self._hasher.hash(command.secret))
             issued = self._issuer.open(uow, user, command.device_id, command.device_label, now)

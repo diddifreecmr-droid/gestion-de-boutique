@@ -7,7 +7,8 @@ Les tables de boutique (`MemoryDatabase`) ne sont jamais touchées.
 """
 
 import threading
-from collections.abc import Hashable, Mapping
+from collections.abc import Hashable, Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass
 
 from app.application.ports.errors import UnitOfWorkStateError
@@ -54,24 +55,38 @@ class MemoryPlatformStore:
 
     def apply(self, writes: list[PlatformWrite]) -> None:
         with self._lock:
-            staged = {name: dict(rows) for name, rows in self._tables.items()}
-            for write in writes:
-                table = staged.setdefault(write.table, {})
-                current = table.get(write.row.entity_id)
-                if write.expected_version is None and current is not None:
-                    raise duplicate(write.table, PRIMARY_KEY)
-                if write.expected_version is not None and (
-                    current is None or current.version != write.expected_version
-                ):
-                    raise version_conflict(
-                        write.expected_version, None if current is None else current.version
-                    )
-                table[write.row.entity_id] = write.row
-            for write in writes:
-                clash = unique_clash(staged[write.table], write.row)
-                if clash is not None:
-                    raise duplicate(write.table, clash)
-            self._tables = staged
+            self.install(self.stage(writes))
+
+    @contextmanager
+    def locked(self) -> Iterator[None]:
+        """Verrou de l'état validé, pour `stage`/`install` (validation commune, `joint.py`)."""
+        with self._lock:
+            yield
+
+    def stage(self, writes: list[PlatformWrite]) -> dict[str, dict[EntityId, PlatformRow]]:
+        """Copie vérifiée de l'état avec `writes` appliqués ; sous `locked()`."""
+        staged = {name: dict(rows) for name, rows in self._tables.items()}
+        for write in writes:
+            table = staged.setdefault(write.table, {})
+            current = table.get(write.row.entity_id)
+            if write.expected_version is None and current is not None:
+                raise duplicate(write.table, PRIMARY_KEY)
+            if write.expected_version is not None and (
+                current is None or current.version != write.expected_version
+            ):
+                raise version_conflict(
+                    write.expected_version, None if current is None else current.version
+                )
+            table[write.row.entity_id] = write.row
+        for write in writes:
+            clash = unique_clash(staged[write.table], write.row)
+            if clash is not None:
+                raise duplicate(write.table, clash)
+        return staged
+
+    def install(self, staged: dict[str, dict[EntityId, PlatformRow]]) -> None:
+        """Remplace l'état validé ; sous `locked()`."""
+        self._tables = staged
 
 
 class MemoryPlatformTransaction:
@@ -115,9 +130,13 @@ class MemoryPlatformTransaction:
         return bool(self._writes)
 
     def commit(self) -> None:
+        self._store.apply(self.detach())
+
+    def detach(self) -> list[PlatformWrite]:
+        """Ferme la transaction et rend ses écritures, pour une validation commune (T10)."""
         self._require_open()
         self._closed = True
-        self._store.apply(list(self._writes.values()))
+        return list(self._writes.values())
 
     def discard(self) -> None:
         self._closed = True

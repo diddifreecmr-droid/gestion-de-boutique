@@ -12,6 +12,7 @@ from app.domain.identity.user import User
 from app.domain.shared.ids import DeviceId, ShopId
 from app.infrastructure.persistence.memory.clock import FixedClock
 from tests.application.identity.support import PIN
+from tests.support.shops import grant
 
 SHOP = ShopId.new()
 PREFIX = "/api/v1"
@@ -35,7 +36,7 @@ class Api:
         with self.module.uow_factory() as uow:
             uow.users.add(user)
             uow.commit()
-        self.module.memberships.grant(user.id, SHOP, "Motos Garoua", Role.SELLER)
+        grant(self.module.core.shop_uow_factory, user.id, SHOP, Role.SELLER)
         return user
 
     def login(self, device: DeviceId, phone: str = "677001122", pin: str = PIN) -> httpx.Response:

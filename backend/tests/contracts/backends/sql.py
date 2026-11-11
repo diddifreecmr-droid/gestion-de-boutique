@@ -13,13 +13,29 @@ import sqlalchemy as sa
 from alembic.config import Config
 
 from alembic import command
+from app.application.identity.ports import (
+    AdminDelegationDirectory,
+    IdentityEventHandler,
+    MembershipDirectory,
+)
 from app.application.plans.ports import EntitlementOverrides
 from app.application.ports.event_handler import EventHandler
+from app.application.shops.ports import ShopCatalog
 from app.domain.shared.ids import ShopId
 from app.infrastructure.persistence.sqlalchemy.alerts import SqlAlertRepository
 from app.infrastructure.persistence.sqlalchemy.audit_log import SqlAuditLog
+from app.infrastructure.persistence.sqlalchemy.directories import (
+    SqlAdminDelegations,
+    SqlMembershipDirectory,
+    SqlShopCatalog,
+)
 from app.infrastructure.persistence.sqlalchemy.entitlements import SqlEntitlementOverrides
+from app.infrastructure.persistence.sqlalchemy.platform_uow import (
+    SqlIdentityUnitOfWork,
+    SqlShopJoin,
+)
 from app.infrastructure.persistence.sqlalchemy.repository import SqlRepository
+from app.infrastructure.persistence.sqlalchemy.shops_members import SQL_SHOP_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.tables import NAMING_CONVENTION, metadata
 from app.infrastructure.persistence.sqlalchemy.uow import SqlRepositoryRegistry, SqlUnitOfWork
 from tests.contracts.widget import Widget, WidgetId, WidgetRepository
@@ -57,7 +73,12 @@ class SqlWidgetRepository(SqlRepository[WidgetId, Widget], WidgetRepository):
         )
 
 
-SQL_REGISTRY: SqlRepositoryRegistry = (SqlWidgetRepository, SqlAuditLog, SqlAlertRepository)
+SQL_REGISTRY: SqlRepositoryRegistry = (
+    SqlWidgetRepository,
+    SqlAuditLog,
+    SqlAlertRepository,
+    *SQL_SHOP_REPOSITORIES,
+)
 
 
 def migrate(engine: sa.Engine) -> None:
@@ -89,3 +110,21 @@ class SqlContractBackend:
 
     def entitlement_overrides(self) -> EntitlementOverrides:
         return SqlEntitlementOverrides(self.engine)
+
+    def platform_uow(
+        self,
+        handlers: Sequence[IdentityEventHandler] = (),
+        shop_handlers: Sequence[EventHandler] = (),
+    ) -> SqlIdentityUnitOfWork:
+        return SqlIdentityUnitOfWork(
+            self.engine, handlers, SqlShopJoin(SQL_REGISTRY, shop_handlers)
+        )
+
+    def memberships(self) -> MembershipDirectory:
+        return SqlMembershipDirectory(self.engine)
+
+    def catalog(self) -> ShopCatalog:
+        return SqlShopCatalog(self.engine)
+
+    def delegations(self) -> AdminDelegationDirectory:
+        return SqlAdminDelegations(self.engine)

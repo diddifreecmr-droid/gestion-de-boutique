@@ -89,15 +89,21 @@ class MemoryTransaction:
 
     # ------------------------------------------------------------------ fin
     @property
+    def is_open(self) -> bool:
+        return not self._closed
+
+    @property
     def has_changes(self) -> bool:
         return bool(self._writes or self._sequences)
 
     def commit(self) -> None:
+        self._database.apply(self.detach())
+
+    def detach(self) -> ChangeSet:
+        """Ferme la transaction et rend ses écritures, pour une validation commune (T10)."""
         self._require_open()
         self._closed = True
-        self._database.apply(
-            ChangeSet(writes=list(self._writes.values()), sequences=dict(self._sequences))
-        )
+        return ChangeSet(writes=list(self._writes.values()), sequences=dict(self._sequences))
 
     def discard(self) -> None:
         """Rollback : le jeu d'écritures est jeté (la base n'a jamais été modifiée)."""

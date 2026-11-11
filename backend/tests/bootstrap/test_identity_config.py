@@ -1,6 +1,5 @@
 """Configuration de l'identité (T08) : secret JWT fail-fast, durées, choix de persistance."""
 
-import logging
 from datetime import timedelta
 
 import pytest
@@ -10,12 +9,14 @@ from pydantic import SecretStr
 from app.bootstrap.config import (
     ConfigurationError,
     Environment,
-    PersistenceBackend,
     Settings,
     load_settings,
 )
 from app.bootstrap.container import build_app
 from app.bootstrap.identity import build_identity, session_policy_from
+from app.infrastructure.persistence.memory.clock import FixedClock
+from app.infrastructure.persistence.sqlalchemy.platform_uow import SqlIdentityUnitOfWorkFactory
+from tests.application.identity.support import T0
 
 URL = SecretStr("postgresql+psycopg://u:p@127.0.0.1:5432/boutique")
 
@@ -66,22 +67,25 @@ def test_durations_become_the_session_policy(monkeypatch: pytest.MonkeyPatch) ->
         type(policy)(access_ttl=timedelta(0))
 
 
-def test_identity_refuses_prod_until_the_sql_adapter_exists() -> None:
+def test_identity_runs_on_postgres_in_prod_without_connecting() -> None:
+    """T10 : l'adaptateur SQL existe, le garde-fou « refus en prod » a disparu."""
     settings = Settings(ENVIRONMENT=Environment.PROD, DATABASE_URL=URL, _env_file=None)
-    with pytest.raises(RuntimeError, match="adaptateur SQL"):
-        build_identity(settings)
+    module = build_identity(settings)
+    assert isinstance(module.uow_factory, SqlIdentityUnitOfWorkFactory)
+    assert module.auth.throttle is not None  # limitation de débit active hors tests
 
 
-def test_identity_stays_in_memory_in_dev_with_a_warning(caplog: pytest.LogCaptureFixture) -> None:
-    settings = Settings(
-        ENVIRONMENT=Environment.DEV,
-        PERSISTENCE_BACKEND=PersistenceBackend.POSTGRES,
-        DATABASE_URL=URL,
-        _env_file=None,
+def test_rate_limit_is_off_in_test_unless_enabled() -> None:
+    assert (
+        build_identity(Settings(ENVIRONMENT=Environment.TEST, _env_file=None)).auth.throttle is None
     )
-    with caplog.at_level(logging.WARNING, logger="app.bootstrap.identity"):
-        build_identity(settings)
-    assert "comptes perdus" in caplog.text
+    enabled = Settings(ENVIRONMENT=Environment.TEST, AUTH_RATE_LIMIT_ENABLED=True, _env_file=None)
+    throttle = build_identity(enabled).auth.throttle
+    assert throttle is not None
+    assert (throttle.per_ip.limit, throttle.per_phone.limit) == (30, 10)
+    module = build_identity(enabled)
+    with pytest.raises(ValueError, match="horloge"):
+        build_identity(enabled, core=module.core, clock=FixedClock(T0))
 
 
 def test_assembled_app_exposes_the_auth_routes(monkeypatch: pytest.MonkeyPatch) -> None:

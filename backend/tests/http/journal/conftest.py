@@ -20,6 +20,7 @@ from app.infrastructure.auth.argon2_hasher import Argon2PasswordHasher
 from app.infrastructure.persistence.memory.clock import FixedClock
 from app.interface.http.app import create_app
 from tests.application.identity.support import PIN, T0
+from tests.support.shops import grant
 
 PREFIX = "/api/v1"
 
@@ -48,7 +49,7 @@ class Shop:
         with self.identity.uow_factory() as uow:
             uow.users.add(user)
             uow.commit()
-        self.identity.memberships.grant(user.id, self.shop_id, "Motos Garoua", role)
+        grant(self.identity.core.shop_uow_factory, user.id, self.shop_id, role)
         device = DeviceId.new()
         response = self.client.post(
             f"{PREFIX}/auth/login",
@@ -72,7 +73,7 @@ def shop(settings: Settings) -> Iterator[Shop]:
     clock = FixedClock(T0)
     hasher = Argon2PasswordHasher(time_cost=1, memory_cost_kib=8, parallelism=1)
     identity = build_identity(settings, clock=clock, hasher=hasher)
-    journal = build_journal(settings, clock=clock, guard=identity.auth.guard)
+    journal = build_journal(settings, clock=clock, guard=identity.auth.guard, core=identity.core)
     app = create_app(http_config_from(settings), identity.auth, journal.http)
     with TestClient(app, base_url="https://testserver", raise_server_exceptions=False) as client:
         yield Shop(client, identity, journal, ShopId.new())

@@ -17,6 +17,7 @@ from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.application.audit.access_denied import ACCESS_DENIALS, AccessDenial
+from app.application.security.errors import RateLimited
 from app.domain.identity.errors import AccountLocked, PinChangeLocked, Unauthenticated
 from app.domain.shared.errors import Conflict, DomainError, Forbidden, NotFound, ValidationFailed
 
@@ -31,6 +32,7 @@ _STATUS_BY_TYPE: Mapping[type[object], int] = {
     Conflict: HTTPStatus.CONFLICT,
     AccountLocked: HTTPStatus.LOCKED,
     PinChangeLocked: HTTPStatus.LOCKED,
+    RateLimited: HTTPStatus.TOO_MANY_REQUESTS,
 }
 # Règle métier violée (STOCK_INSUFFICIENT, PRICE_BELOW_MINIMUM…) : 422.
 _DEFAULT_DOMAIN_STATUS = HTTPStatus.UNPROCESSABLE_ENTITY
@@ -76,6 +78,8 @@ def register_error_handlers(
         status = status_for(exc)
         # RFC 9110 § 15.5.2 : un 401 annonce le schéma d'authentification attendu.
         headers = {"WWW-Authenticate": "Bearer"} if status == HTTPStatus.UNAUTHORIZED else None
+        if isinstance(exc, RateLimited):
+            headers = {"Retry-After": str(exc.retry_after)}
         return JSONResponse(
             error_body(exc.code, exc.message, exc.details), status_code=status, headers=headers
         )

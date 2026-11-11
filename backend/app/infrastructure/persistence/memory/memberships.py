@@ -1,7 +1,7 @@
-"""`MembershipDirectory` mémoire : rattachements saisis par les tests et la démo.
+"""`MembershipDirectory` mémoire **saisi à la main** : tests unitaires de l'identité seulement.
 
-Provisoire : T10 créera l'agrégat `MEMBERSHIP` (rôle, lieu habituel, activation) et un
-adaptateur qui lira ses dépôts ; ce répertoire ne sert alors plus qu'aux tests.
+Depuis T10, l'application lit l'agrégat `Membership` (`memory/directories.py`,
+`sqlalchemy/directories.py`) ; ce répertoire n'est plus branché par la composition root.
 """
 
 import threading

@@ -1,128 +1,129 @@
-"""Adaptateurs mémoire de l'identité : dépôts `User` / `DeviceSession` et unité de travail.
+"""Unité de travail mémoire **plateforme** (identité, comptes commerçants) et sa fabrique.
 
-Comme les dépôts de boutique, les agrégats sont **copiés** à l'écriture et à la lecture
-(`copy.deepcopy`) ; la copie stockée est purgée de ses événements en attente.
+Dépôts : `platform_repositories.py`. Avec un `ShopJoin`, l'unité peut joindre des unités de
+boutique (`join_shop`) : leurs écritures sont validées **avec** les siennes, d'un bloc
+(`joined.py`). Sans `ShopJoin`, `join_shop` lève `LookupError` (configuration incomplète).
 """
 
-import copy
-from collections.abc import Hashable, Sequence
-from typing import ClassVar, cast
+from collections.abc import Sequence
 
 from app.application.identity.ports import IdentityEventHandler
 from app.application.identity.repositories import (
     DeviceSessionRepository,
-    PlatformAggregate,
-    PlatformRepository,
-    PlatformTracker,
+    MerchantAccountRepository,
     UserRepository,
 )
 from app.application.identity.uow import IdentityUnitOfWork
 from app.application.ports.errors import UnitOfWorkStateError
-from app.domain.identity.events import SessionId
-from app.domain.identity.phone import PhoneNumber
-from app.domain.identity.session import DeviceSession
-from app.domain.identity.user import User
-from app.domain.shared.ids import DeviceId, EntityId, UserId
+from app.application.ports.uow import UnitOfWork
+from app.domain.shared.ids import ShopId
+from app.infrastructure.persistence.memory.joined import (
+    JoinedMemoryUnitOfWork,
+    ShopJoin,
+    apply_jointly,
+    require_alive,
+)
+from app.infrastructure.persistence.memory.platform_repositories import (
+    MemoryDeviceSessionRepository,
+    MemoryMerchantAccountRepository,
+    MemoryUserRepository,
+)
 from app.infrastructure.persistence.memory.platform_store import (
     MemoryPlatformStore,
     MemoryPlatformTransaction,
-    PlatformRow,
 )
+from app.infrastructure.persistence.memory.transaction import MemoryTransaction
 
-
-class _MemoryPlatformRepository[IdT: EntityId, AggT: PlatformAggregate](
-    PlatformRepository[IdT, AggT]
-):
-    table: ClassVar[str]
-
-    def __init__(self, tracker: PlatformTracker, transaction: MemoryPlatformTransaction) -> None:
-        super().__init__(tracker)
-        self._transaction = transaction
-
-    def _unique(self, aggregate: AggT) -> dict[str, Hashable]:
-        return {}
-
-    def _all(self) -> list[AggT]:
-        # Les lignes de cette table ne sont construites que par `_row` à partir d'un AggT.
-        rows = self._transaction.visible(self.table).values()
-        return [cast(AggT, copy.deepcopy(row.payload)) for row in rows]
-
-    def _load(self, entity_id: IdT) -> AggT | None:
-        row = self._transaction.visible(self.table).get(entity_id)
-        return None if row is None else cast(AggT, copy.deepcopy(row.payload))
-
-    def _insert(self, aggregate: AggT) -> None:
-        self._transaction.insert(self.table, self._row(aggregate))
-
-    def _save(self, aggregate: AggT, *, expected_version: int) -> None:
-        self._transaction.update(self.table, self._row(aggregate), expected_version)
-
-    def _row(self, aggregate: AggT) -> PlatformRow:
-        snapshot = copy.deepcopy(aggregate)
-        snapshot.events.pull()
-        return PlatformRow(aggregate.id, aggregate.version, self._unique(aggregate), snapshot)
-
-
-class MemoryUserRepository(_MemoryPlatformRepository[UserId, User], UserRepository):
-    table = "users"
-
-    def _unique(self, aggregate: User) -> dict[str, Hashable]:
-        return {"user_phone": aggregate.phone.e164}
-
-    def find_by_phone(self, phone: PhoneNumber) -> User | None:
-        matches = [user for user in self._all() if user.phone == phone]
-        return self._tracked(matches)[0] if matches else None
-
-
-class MemoryDeviceSessionRepository(
-    _MemoryPlatformRepository[SessionId, DeviceSession], DeviceSessionRepository
-):
-    table = "device_sessions"
-
-    def for_user(self, user_id: UserId) -> list[DeviceSession]:
-        sessions = [s for s in self._all() if s.user_id == user_id]
-        return self._tracked(sorted(sessions, key=lambda s: (s.created_at, s.id)))
-
-    def active_for_device(self, user_id: UserId, device_id: DeviceId) -> DeviceSession | None:
-        candidates = [
-            s for s in self.for_user(user_id) if s.device_id == device_id and not s.revoked
-        ]
-        return candidates[-1] if candidates else None
+__all__ = [
+    "MemoryDeviceSessionRepository",
+    "MemoryIdentityUnitOfWork",
+    "MemoryIdentityUnitOfWorkFactory",
+    "MemoryUserRepository",
+]
 
 
 class MemoryIdentityUnitOfWork(IdentityUnitOfWork):
     def __init__(
-        self, store: MemoryPlatformStore, handlers: Sequence[IdentityEventHandler] = ()
+        self,
+        store: MemoryPlatformStore,
+        handlers: Sequence[IdentityEventHandler] = (),
+        join: ShopJoin | None = None,
     ) -> None:
         super().__init__(handlers)
         self._store = store
+        self._join = join
         self._transaction: MemoryPlatformTransaction | None = None
-        self._user_repository: MemoryUserRepository | None = None
-        self._session_repository: MemoryDeviceSessionRepository | None = None
+        self._joined: list[MemoryTransaction] = []
+        self._doomed = False
+        self._repositories: (
+            tuple[
+                MemoryUserRepository, MemoryDeviceSessionRepository, MemoryMerchantAccountRepository
+            ]
+            | None
+        ) = None
 
     def _begin(self) -> None:
         self._transaction = MemoryPlatformTransaction(self._store)
-        self._user_repository = MemoryUserRepository(self, self._transaction)
-        self._session_repository = MemoryDeviceSessionRepository(self, self._transaction)
+        self._repositories = (
+            MemoryUserRepository(self, self._transaction),
+            MemoryDeviceSessionRepository(self, self._transaction),
+            MemoryMerchantAccountRepository(self, self._transaction),
+        )
 
     def _commit(self) -> None:
-        self._require_transaction().commit()
+        require_alive(self._doomed)
+        writes = self._require_transaction().detach()
+        if not any(transaction.is_open for transaction in self._joined):
+            self._store.apply(writes)
+            return
+        if self._join is None:  # impossible : join_shop l'exige
+            msg = "Unités jointes sans ShopJoin"
+            raise RuntimeError(msg)
+        # Une unité jointe en lecture seule a déjà fermé (jeté) sa transaction vide.
+        changes = [transaction.detach() for transaction in self._joined if transaction.is_open]
+        apply_jointly(self._join.database, self._store, changes, writes)
 
     def _rollback(self) -> None:
         self._require_transaction().discard()
+        for transaction in self._joined:
+            transaction.discard()
 
     def _has_pending_changes(self) -> bool:
-        return self._require_transaction().has_changes
+        return self._require_transaction().has_changes or any(
+            transaction.has_changes for transaction in self._joined
+        )
 
     def _users(self) -> UserRepository:
-        if self._user_repository is None:
-            raise self._not_started()
-        return self._user_repository
+        return self._require_repositories()[0]
 
     def _sessions(self) -> DeviceSessionRepository:
-        if self._session_repository is None:
+        return self._require_repositories()[1]
+
+    def _merchants(self) -> MerchantAccountRepository:
+        return self._require_repositories()[2]
+
+    def _join_shop(self, shop_id: ShopId) -> UnitOfWork:
+        if self._join is None:
+            msg = "Unité plateforme sans ShopJoin : impossible de joindre une boutique"
+            raise LookupError(msg)
+        require_alive(self._doomed)
+        return JoinedMemoryUnitOfWork(self._join, shop_id, self)
+
+    # ------------------------------------------------------------------ hôte des unités jointes
+    def enlist(self, transaction: MemoryTransaction) -> None:
+        self._joined.append(transaction)
+
+    def doom(self) -> None:
+        self._doomed = True
+
+    def _require_repositories(
+        self,
+    ) -> tuple[
+        MemoryUserRepository, MemoryDeviceSessionRepository, MemoryMerchantAccountRepository
+    ]:
+        if self._repositories is None:
             raise self._not_started()
-        return self._session_repository
+        return self._repositories
 
     def _require_transaction(self) -> MemoryPlatformTransaction:
         if self._transaction is None:
@@ -135,13 +136,17 @@ class MemoryIdentityUnitOfWork(IdentityUnitOfWork):
 
 
 class MemoryIdentityUnitOfWorkFactory:
-    """`IdentityUnitOfWorkFactory` mémoire : un stockage partagé, des handlers."""
+    """`IdentityUnitOfWorkFactory` mémoire : un stockage partagé, des handlers, une jointure."""
 
     def __init__(
-        self, store: MemoryPlatformStore, handlers: Sequence[IdentityEventHandler] = ()
+        self,
+        store: MemoryPlatformStore,
+        handlers: Sequence[IdentityEventHandler] = (),
+        join: ShopJoin | None = None,
     ) -> None:
         self._store = store
         self._handlers = tuple(handlers)
+        self._join = join
 
     def __call__(self) -> MemoryIdentityUnitOfWork:
-        return MemoryIdentityUnitOfWork(self._store, self._handlers)
+        return MemoryIdentityUnitOfWork(self._store, self._handlers, self._join)

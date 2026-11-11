@@ -7,15 +7,14 @@ pour les sessions déjà ouvertes) et son blocage éventuel est levé.
 """
 
 from app.application.identity.ports import PasswordHasher, TemporaryPinGenerator
+from app.application.identity.temporary_pins import MAX_DRAWS, draw_temporary_pin
 from app.application.identity.uow import IdentityUnitOfWorkFactory
 from app.application.identity.use_cases.member_access import MemberAccess
 from app.application.ports.clock import Clock
 from app.application.security.actor import Actor
-from app.domain.identity.credentials import pin_weakness
 from app.domain.shared.ids import UserId
 
-MAX_DRAWS = 32
-"""Tirages au plus avant d'abandonner (un code simple sort environ 1 fois sur 3 000)."""
+__all__ = ["MAX_DRAWS", "ResetPin"]
 
 
 class ResetPin:
@@ -38,16 +37,8 @@ class ResetPin:
         self._access.require(actor, target)
         with self._uow_factory() as uow:
             user = uow.users.get(target)
-            temporary = self._draw(user.phone.digits)
+            temporary = draw_temporary_pin(self._pins, user.phone)
             user.reset_secret(self._hasher.hash(temporary), self._clock.now(), by=actor.user_id)
             uow.users.update(user)
             uow.commit()
         return temporary
-
-    def _draw(self, phone_digits: str) -> str:
-        for _ in range(MAX_DRAWS):
-            candidate = self._pins.generate()
-            if pin_weakness(candidate) is None and not phone_digits.endswith(candidate):
-                return candidate
-        msg = f"Aucun code provisoire acceptable en {MAX_DRAWS} tirages : générateur défaillant"
-        raise RuntimeError(msg)

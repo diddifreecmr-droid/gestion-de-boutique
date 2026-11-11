@@ -68,6 +68,29 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
 - Nouveau port lié à la boutique sans agrégat : hériter de `ShopBoundPort`, adaptateurs
   `MemoryShopStore` / `SqlShopStore`, inscrits dans `MEMORY_REPOSITORIES` / `SQL_REPOSITORIES`.
 
+## Boutiques, membres, console plateforme (T10)
+
+- **Profils** (`app/domain/profiles`) : Motos et camions (complet), Prêt-à-porter et Textile
+  (minimaux, Lot 3) ; `profile_for(code)` (inconnu → 400 `UNKNOWN_PROFILE`). Menus ≤ 5 entrées
+  vérifiés à l'import. Exposés par `GET /shops/{id}/profile`.
+- **Ouvrir une boutique** (admin plateforme) : `POST /api/v1/platform/shops`
+  `{profile_code, name, city, phone, owner: {name, phone}}` → 201, code provisoire du
+  propriétaire renvoyé **une fois** (`null` si le téléphone existait : compte rattaché). Lieux,
+  réglages, modes de paiement, catégories et rattachement « Propriétaire » viennent du profil.
+  `PATCH /platform/shops/{id}` : `modules`, `status`, `entitlements` (`offline_capture`).
+- **Transaction commune** : l'unité plateforme (`IdentityUnitOfWork`) joint des unités de
+  boutique (`join_shop`) sur **la même transaction** (SQL : une connexion ; mémoire : validation
+  commune sous verrou). Les événements de l'identité sont journalisés ainsi dans chaque boutique.
+- **Désactivation** (RG-D06) : par rattachement (`PATCH /members/{uid}` `active`) ; sans aucun
+  rattachement utilisable, connexion et rafraîchissement → 403 `ACCOUNT_DISABLED`. Débloquer,
+  redonner un code, déconnecter les appareils agissent sur le compte entier.
+- **Délégation** : `POST/GET/DELETE /shops/{id}/admin-access` (24 h, lecture seule, chaque accès
+  de l'admin journalisé).
+- **Identité sur PostgreSQL** : `app_user`, `device_session`, `merchant_account` (migration 0003).
+- **Démonstration** (dev seulement, refusée en prod) : après `alembic upgrade head`,
+  `uv run python -m tools.seed_dev` ouvre « Motos Garoua » (admin, propriétaire, vendeur,
+  comptable, chauffeur ; codes affichés). Relancer ne recrée rien.
+
 ## Couches
 
 | Package | Peut importer |

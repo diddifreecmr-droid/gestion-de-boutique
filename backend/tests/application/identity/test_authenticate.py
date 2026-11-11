@@ -25,7 +25,7 @@ def test_actor_role_comes_from_the_membership_at_each_request() -> None:
     identity = world.identity(world.login(device=device), device)
     assert world.authenticate.actor_for(identity, SHOP).role is Role.SELLER
     world.memberships.set_active(user.id, SHOP, active=False)
-    with pytest.raises(NotFound):
+    with pytest.raises(AccountDisabled):  # RG-D06 par boutique (T10) : 403, plus 404
         world.authenticate.actor_for(identity, SHOP)
     with pytest.raises(NotFound):
         world.authenticate.actor_for(identity, OTHER_SHOP)

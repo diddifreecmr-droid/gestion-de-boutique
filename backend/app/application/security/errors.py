@@ -7,7 +7,7 @@ exceptions portent en plus l'acteur et la permission pour que le journal (T09) i
 
 from app.application.security.actor import Actor
 from app.application.security.permissions import Permission
-from app.domain.shared.errors import Forbidden, NotFound
+from app.domain.shared.errors import DomainError, Forbidden, NotFound
 
 PLATFORM_ADMIN_LABEL = "platform_admin"
 """Valeur de `details.role` quand l'acteur est l'administrateur plateforme."""
@@ -52,3 +52,22 @@ class PlatformAdminRequired(Forbidden):
             details={"permission": "PLATFORM_ADMIN", "role": role_label(actor)},
         )
         self.actor = actor
+
+
+class RateLimited(DomainError):
+    """Trop de demandes sur `/auth/*` (specs § 8.1) → 429 avec `Retry-After` (code ajouté T10).
+
+    `details.retry_after` : secondes à attendre (entier ≥ 1), repris dans l'en-tête HTTP.
+    """
+
+    code = "RATE_LIMITED"
+
+    def __init__(self, retry_after_seconds: int) -> None:
+        if retry_after_seconds < 1:
+            msg = "Un délai d'attente est d'au moins une seconde"
+            raise ValueError(msg)
+        super().__init__(
+            "Trop de tentatives : réessayez plus tard",
+            details={"retry_after": retry_after_seconds},
+        )
+        self.retry_after = retry_after_seconds

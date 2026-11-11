@@ -63,3 +63,12 @@ class AuthGuard:
         """Acteur d'une route `/shops/{shop_id}/…` : rattachement actif obligatoire."""
         identity = self._authenticate.identify(token, device)
         return self._authenticate.actor_for(identity, ShopId.parse(shop_id))
+
+    def current_platform_actor(
+        self,
+        token: Annotated[str, Depends(bearer_token)],
+        device: Annotated[DeviceId, Depends(device_id)],
+    ) -> Actor:
+        """Acteur de la console `/platform/*` : administrateur plateforme seulement (403 sinon)."""
+        identity = self._authenticate.identify(token, device)
+        return self._authenticate.platform_actor(identity)

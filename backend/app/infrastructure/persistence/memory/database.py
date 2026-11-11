@@ -4,10 +4,15 @@ Comme une vraie base, elle survit aux transactions et n'expose que ce qui a ét�
 écritures d'une transaction arrivent ici en bloc par `apply`, qui revalide sous verrou tout ce
 qu'une transaction concurrente aurait pu invalider (version, identifiant, unicité, séquence) :
 tout est appliqué, ou rien.
+
+`apply` = `stage` (tout vérifier sur une copie) puis `install` (remplacer l'état). Les deux
+étapes sont publiques pour la validation **commune** avec le stockage plateforme
+(`joint.py`, T10) : sous `locked()`, plusieurs jeux sont préparés puis installés ensemble.
 """
 
 import threading
-from collections.abc import Hashable, Mapping
+from collections.abc import Hashable, Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 
 from app.domain.shared.doc_number import DocType
@@ -58,6 +63,14 @@ def find_unique_clash(rows: Mapping[EntityId, Row], row: Row) -> str | None:
     return None
 
 
+@dataclass(frozen=True, slots=True)
+class Staged:
+    """État préparé (copie vérifiée), prêt à remplacer l'état validé."""
+
+    tables: dict[str, dict[EntityId, Row]]
+    sequences: dict[SequenceKey, int]
+
+
 class MemoryDatabase:
     """Tables `nom → {id → Row}` et compteurs de numérotation `(boutique, type) → dernier`."""
 
@@ -75,6 +88,11 @@ class MemoryDatabase:
             rows = self._tables.get(table, {})
             return {key: row for key, row in rows.items() if row.shop_id == shop_id}
 
+    def all_rows(self, table: str) -> list[Row]:
+        """Lignes validées de **toutes** les boutiques (lectures plateforme seulement)."""
+        with self._lock:
+            return list(self._tables.get(table, {}).values())
+
     def sequence(self, key: SequenceKey) -> int:
         with self._lock:
             return self._sequences.get(key, 0)
@@ -82,26 +100,42 @@ class MemoryDatabase:
     def apply(self, changes: ChangeSet) -> None:
         """Valide puis applique `changes` d'un bloc ; lève sans rien écrire en cas de conflit."""
         with self._lock:
-            staged = {name: dict(rows) for name, rows in self._tables.items()}
-            for write in changes.writes:
-                table = staged.setdefault(write.table, {})
-                current = table.get(write.row.entity_id)
-                if write.expected_version is None and current is not None:
-                    raise duplicate(write.table, PRIMARY_KEY)
-                if write.expected_version is not None and (
-                    current is None or current.version != write.expected_version
-                ):
-                    raise version_conflict(
-                        write.expected_version, None if current is None else current.version
-                    )
-                table[write.row.entity_id] = write.row
-            for write in changes.writes:
-                clash = find_unique_clash(staged[write.table], write.row)
-                if clash is not None:
-                    raise duplicate(write.table, clash)
-            for key, (read, _) in changes.sequences.items():
-                if self._sequences.get(key, 0) != read:
-                    raise version_conflict(read, self._sequences.get(key, 0))
-            self._tables = staged
-            for key, (_, new) in changes.sequences.items():
-                self._sequences[key] = new
+            self.install(self.stage(changes))
+
+    @contextmanager
+    def locked(self) -> Iterator[None]:
+        """Verrou de l'état validé, pour `stage`/`install` (jamais pris deux fois)."""
+        with self._lock:
+            yield
+
+    def stage(self, changes: ChangeSet, onto: Staged | None = None) -> Staged:
+        """Copie de l'état (ou de `onto`) avec `changes` appliqués et vérifiés ; sous `locked()`."""
+        base_tables = self._tables if onto is None else onto.tables
+        sequences = dict(self._sequences if onto is None else onto.sequences)
+        staged = {name: dict(rows) for name, rows in base_tables.items()}
+        for write in changes.writes:
+            table = staged.setdefault(write.table, {})
+            current = table.get(write.row.entity_id)
+            if write.expected_version is None and current is not None:
+                raise duplicate(write.table, PRIMARY_KEY)
+            if write.expected_version is not None and (
+                current is None or current.version != write.expected_version
+            ):
+                raise version_conflict(
+                    write.expected_version, None if current is None else current.version
+                )
+            table[write.row.entity_id] = write.row
+        for write in changes.writes:
+            clash = find_unique_clash(staged[write.table], write.row)
+            if clash is not None:
+                raise duplicate(write.table, clash)
+        for key, (read, new_value) in changes.sequences.items():
+            if sequences.get(key, 0) != read:
+                raise version_conflict(read, sequences.get(key, 0))
+            sequences[key] = new_value
+        return Staged(staged, sequences)
+
+    def install(self, staged: Staged) -> None:
+        """Remplace l'état validé par `staged` ; sous `locked()`."""
+        self._tables = staged.tables
+        self._sequences = staged.sequences

@@ -10,9 +10,16 @@ from typing import Protocol
 
 import pytest
 
+from app.application.identity.ports import (
+    AdminDelegationDirectory,
+    IdentityEventHandler,
+    MembershipDirectory,
+)
+from app.application.identity.uow import IdentityUnitOfWork
 from app.application.plans.ports import EntitlementOverrides
 from app.application.ports.event_handler import EventHandler
 from app.application.ports.uow import UnitOfWork
+from app.application.shops.ports import ShopCatalog
 from app.domain.shared.ids import ShopId
 from tests.contracts.backends import postgres
 from tests.contracts.backends.memory import MemoryContractBackend
@@ -29,6 +36,20 @@ class ContractBackend(Protocol):
     def entitlement_overrides(self) -> EntitlementOverrides:
         """Surcharges de droits d'offre sur la base du test (portée plateforme)."""
         ...
+
+    def platform_uow(
+        self,
+        handlers: Sequence[IdentityEventHandler] = (),
+        shop_handlers: Sequence[EventHandler] = (),
+    ) -> IdentityUnitOfWork:
+        """Unité plateforme (identité, comptes) capable de joindre des boutiques (T10)."""
+        ...
+
+    def memberships(self) -> MembershipDirectory: ...
+
+    def catalog(self) -> ShopCatalog: ...
+
+    def delegations(self) -> AdminDelegationDirectory: ...
 
 
 def require_available(name: str) -> None:

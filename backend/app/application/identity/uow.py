@@ -1,21 +1,25 @@
-"""`IdentityUnitOfWork` : transaction de **portée plateforme** pour `User` et `DeviceSession`.
+"""`IdentityUnitOfWork` : transaction de **portée plateforme** (`User`, `DeviceSession`,
+`MerchantAccount`), qui peut **joindre** des unités de travail de boutique (T10).
 
-Voir `ports.py` pour la raison d'être (le `UnitOfWork` de T05 est lié à une boutique). Le cycle
-de vie reprend exactement celui de T05, à usage unique :
+Voir `ports.py` pour la raison d'être (le `UnitOfWork` de T05 est lié à une boutique). Cycle de
+vie identique à T05, à usage unique : exception dans le `with` → rollback ; sortie sans
+`commit()` avec des écritures → `UncommittedChanges` ; au `commit()`, les événements des
+agrégats écrits sont remis aux handlers **avant** la validation (lu, porteur d'événements et
+non réécrit → `UnsavedChanges`).
 
-    with identity_uow_factory() as uow:
-        user = uow.users.get(user_id)
-        ...
-        uow.users.update(user)
-        uow.commit()
+**Transaction commune (T10).** `join_shop(shop_id)` rend une unité de travail de boutique
+**jointe** : mêmes dépôts et handlers (journal, alertes) que d'habitude, mais **la même
+transaction**. Son `commit()` remet ses événements à ses handlers sans rien valider ; seule
+l'unité plateforme valide (ou annule) le tout. Une exception dans une unité jointe condamne la
+transaction entière. Ouvrir une boutique (compte + propriétaire + boutique) et inscrire un
+événement de l'identité au journal des boutiques de l'utilisateur sont ainsi atomiques.
 
-- exception dans le `with` → rollback, l'exception remonte ;
-- sortie sans `commit()` alors que des écritures attendaient → `UncommittedChanges` ;
-- `commit()` : les événements des agrégats écrits sont remis aux handlers **avant** la
-  validation, dans la même transaction ; un agrégat lu, porteur d'événements et non réécrit →
-  `UnsavedChanges`.
-
-Aucune donnée de boutique ne passe par cette unité de travail.
+    with platform_uow_factory() as uow:
+        uow.users.add(owner)
+        with uow.join_shop(shop_id) as shop_uow:
+            MembershipRepository.within(shop_uow).add(membership)
+            shop_uow.commit()          # handlers de boutique, rien n'est encore validé
+        uow.commit()                   # tout est validé ensemble
 """
 
 from abc import ABC, abstractmethod
@@ -27,15 +31,14 @@ from typing import Protocol, Self
 from app.application.identity.ports import IdentityEventHandler
 from app.application.identity.repositories import (
     DeviceSessionRepository,
+    MerchantAccountRepository,
     PlatformAggregate,
     UserRepository,
 )
-from app.application.ports.errors import (
-    UncommittedChanges,
-    UnitOfWorkStateError,
-    UnsavedChanges,
-)
+from app.application.ports.errors import UncommittedChanges, UnitOfWorkStateError, UnsavedChanges
+from app.application.ports.uow import UnitOfWork
 from app.domain.identity.events import IdentityEvent
+from app.domain.shared.ids import ShopId
 
 MAX_DISPATCH_ROUNDS = 16
 
@@ -107,6 +110,16 @@ class IdentityUnitOfWork(ABC):
         self._require_open("sessions")
         return self._sessions()
 
+    @property
+    def merchants(self) -> MerchantAccountRepository:
+        self._require_open("merchants")
+        return self._merchants()
+
+    def join_shop(self, shop_id: ShopId) -> UnitOfWork:
+        """Unité de travail de boutique dans **cette** transaction (voir l'en-tête du module)."""
+        self._require_open("join_shop")
+        return self._join_shop(shop_id)
+
     def track(self, aggregate: PlatformAggregate, *, saved: bool) -> None:
         """Appelé par les dépôts : mémorise les agrégats dont les événements seront remis."""
         self._require_open("track")
@@ -154,8 +167,7 @@ class IdentityUnitOfWork(ABC):
     def _begin(self) -> None: ...
 
     @abstractmethod
-    def _commit(self) -> None:
-        """Valide tout ou rien ; peut lever `VersionConflict`/`Duplicate` (rien n'est écrit)."""
+    def _commit(self) -> None: ...  # tout ou rien ; `VersionConflict`/`Duplicate` possibles
 
     @abstractmethod
     def _rollback(self) -> None: ...
@@ -163,12 +175,19 @@ class IdentityUnitOfWork(ABC):
     @abstractmethod
     def _has_pending_changes(self) -> bool: ...
 
+    # Dépôts liés à cette transaction (une instance par unité de travail).
     @abstractmethod
-    def _users(self) -> UserRepository:
-        """Dépôt des utilisateurs lié à cette transaction (une instance par unité de travail)."""
+    def _users(self) -> UserRepository: ...
 
     @abstractmethod
     def _sessions(self) -> DeviceSessionRepository: ...
+
+    @abstractmethod
+    def _merchants(self) -> MerchantAccountRepository: ...
+
+    @abstractmethod
+    def _join_shop(self, shop_id: ShopId) -> UnitOfWork:
+        """Unité de boutique neuve sur la transaction de celle-ci ; `LookupError` si impossible."""
 
 
 class IdentityUnitOfWorkFactory(Protocol):

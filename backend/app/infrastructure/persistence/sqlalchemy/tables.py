@@ -1,23 +1,27 @@
 """Schéma SQL de production (cible des migrations Alembic, `alembic/env.py`).
 
-Les tables métier rejoignent `metadata` avec leur module (T10+) ; chaque ajout s'accompagne
-d'une migration. Conventions (specs § 5.1) : identifiants UUIDv7 fournis par l'application
+Les tables métier rejoignent `metadata` (`schema.py`) avec leur module : `tables_identity`
+(comptes, sessions, comptes commerçants) et `tables_shops` (socle des boutiques) depuis T10,
+importés ici pour que ce module expose **tout** le schéma ; chaque ajout s'accompagne d'une
+migration. Conventions (specs § 5.1) : identifiants UUIDv7 fournis par l'application
 (`sa.Uuid`, natif sur PostgreSQL, `CHAR(32)` ailleurs), `shop_id` en tête des index, `version`
 pour le verrou optimiste, `BIGINT` pour les compteurs et montants. Aucun trigger ni procédure.
 """
 
 import sqlalchemy as sa
 
-NAMING_CONVENTION = {
-    "pk": "%(table_name)s_pkey",
-    "uq": "%(table_name)s_%(column_0_N_name)s_key",
-    "ix": "%(table_name)s_%(column_0_N_name)s_idx",
-    "ck": "%(table_name)s_%(constraint_name)s_check",
-    "fk": "%(table_name)s_%(column_0_name)s_fkey",
-}
-"""Noms explicites et stables (identiques sur toute base) : ils apparaissent dans les erreurs."""
+from app.infrastructure.persistence.sqlalchemy import tables_identity as tables_identity
+from app.infrastructure.persistence.sqlalchemy import tables_shops as tables_shops
+from app.infrastructure.persistence.sqlalchemy.schema import NAMING_CONVENTION, metadata
 
-metadata = sa.MetaData(naming_convention=NAMING_CONVENTION)
+__all__ = [
+    "NAMING_CONVENTION",
+    "alert",
+    "audit_entry",
+    "document_counter",
+    "entitlement_override",
+    "metadata",
+]
 
 document_counter = sa.Table(
     "document_counter",

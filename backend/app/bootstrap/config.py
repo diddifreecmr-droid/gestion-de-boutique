@@ -80,6 +80,13 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_TTL_DAYS: int = Field(default=30, ge=1, le=365)
     ADMIN_SESSION_TTL_HOURS: int = Field(default=8, ge=1, le=24)
 
+    # Limitation de débit de /auth/* (T10, specs § 8.1). Absent : active sauf ENVIRONMENT=test.
+    AUTH_RATE_LIMIT_ENABLED: bool | None = None
+    AUTH_RATE_LIMIT_PER_IP: int = Field(default=30, ge=1, le=10_000)
+    """Demandes par minute et par adresse IP, toutes routes /auth/* confondues."""
+    AUTH_RATE_LIMIT_PER_PHONE: int = Field(default=10, ge=1, le=1_000)
+    """Tentatives de connexion par 15 minutes et par numéro."""
+
     @field_validator("JWT_SECRET")
     @classmethod
     def _strong_jwt_secret(cls, value: SecretStr) -> SecretStr:

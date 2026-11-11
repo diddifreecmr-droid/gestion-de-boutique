@@ -7,10 +7,11 @@ Les `IdentityEvent` n'ont pas de `shop_id` (un compte est plateforme). Règle d'
 - action d'un tiers `by` (propriétaire : déblocage, code provisoire, désactivation,
   déconnexion à distance) → seulement dans les boutiques où **les deux** sont rattachés.
 
-Câblage (T10) : `identity_audit_entries` est pur (aucune écriture). Il sera appelé par un
-`IdentityEventHandler` quand l'identité et les boutiques partageront une transaction (adaptateur
-SQL de l'identité + agrégat `MEMBERSHIP`) ; aujourd'hui leurs stockages sont distincts et
-l'écriture ne pourrait pas être atomique (TR-09), elle n'est donc pas branchée.
+Câblage (T10) : `identity_audit_entries` est pur (aucune écriture) ; le handler
+`IdentityAuditRecorder` (`identity_recorder.py`) l'appelle au `commit()` de l'unité plateforme
+et inscrit chaque entrée par une unité de boutique **jointe** (même transaction que l'action
+de l'identité, TR-09) : l'action et sa trace sont validées ensemble, ou pas du tout. Les
+rattachements sont lus dans l'état validé (aucune action de l'identité n'en crée).
 """
 
 from collections.abc import Callable

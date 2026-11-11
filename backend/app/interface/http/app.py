@@ -10,12 +10,20 @@ from app.interface.http.errors import register_error_handlers
 from app.interface.http.routes import health
 from app.interface.http.routes.auth import AuthComponents, build_auth_router
 from app.interface.http.routes.journal import JournalComponents, build_journal_router
+from app.interface.http.routes.members import build_members_router
+from app.interface.http.routes.places import build_places_router
+from app.interface.http.routes.platform import build_platform_router
+from app.interface.http.routes.shop_components import ShopsComponents
+from app.interface.http.routes.shop_profile import build_shop_profile_router
 
 
 def create_app(
-    config: HttpConfig, auth: AuthComponents, journal: JournalComponents | None = None
+    config: HttpConfig,
+    auth: AuthComponents,
+    journal: JournalComponents | None = None,
+    shops: ShopsComponents | None = None,
 ) -> FastAPI:
-    """`journal` absent : routes du journal et des alertes non montées (outils, tests ciblés)."""
+    """`journal`/`shops` absents : leurs routes ne sont pas montées (outils, tests ciblés)."""
     prefix = config.api_prefix
     expose_docs = config.expose_docs
     app = FastAPI(
@@ -30,4 +38,12 @@ def create_app(
     app.include_router(build_auth_router(auth, prefix), prefix=prefix)
     if journal is not None:
         app.include_router(build_journal_router(journal), prefix=prefix)
+    if shops is not None:
+        for build in (
+            build_platform_router,
+            build_shop_profile_router,
+            build_places_router,
+            build_members_router,
+        ):
+            app.include_router(build(shops), prefix=prefix)
     return app

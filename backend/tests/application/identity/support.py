@@ -72,7 +72,9 @@ class World:
         self.tokens = JwtTokenService(SECRET, self.clock)
         self.secrets = RandomRefreshSecrets()
         self.issuer = SessionIssuer(self.tokens, self.secrets, self.policy_settings)
-        self.login_uc = Login(self.uow_factory, self.hasher, self.issuer, self.clock)
+        self.login_uc = Login(
+            self.uow_factory, self.hasher, self.issuer, self.clock, self.memberships
+        )
         self.authenticate = Authenticate(
             self.uow_factory, self.tokens, self.memberships, self.clock
         )

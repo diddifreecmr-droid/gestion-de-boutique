@@ -15,7 +15,9 @@ from tests.application.identity.support import PASSWORD, T0, World
 
 
 def refresh_uc(world: World) -> RefreshSession:
-    return RefreshSession(world.uow_factory, world.secrets, world.issuer, world.clock)
+    return RefreshSession(
+        world.uow_factory, world.secrets, world.issuer, world.clock, world.memberships
+    )
 
 
 def logout_uc(world: World) -> Logout:

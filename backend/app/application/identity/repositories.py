@@ -1,10 +1,11 @@
-"""Dépôts **plateforme** de l'identité : `User` et `DeviceSession` (aucun `shop_id`).
+"""Dépôts **plateforme** : `User`, `DeviceSession` et `MerchantAccount` (aucun `shop_id`).
 
 Même sémantique que le gabarit `Repository` de T05, sans la boutique :
 
 - `get(id)` lève `NotFound` si absent ; `add` exige la version 0 et la passe à 1 ;
   `update` applique le verrou optimiste (`VersionConflict`) ;
-- unicité **sur toute la plateforme** (téléphone d'un utilisateur) → `Duplicate`.
+- unicité **sur toute la plateforme** (téléphone d'un utilisateur, d'un compte commerçant)
+  → `Duplicate`.
 
 Un adaptateur fournit `_load`, `_insert`, `_save` et les requêtes propres à chaque port.
 """
@@ -19,6 +20,8 @@ from app.domain.identity.phone import PhoneNumber
 from app.domain.identity.session import DeviceSession
 from app.domain.identity.user import User
 from app.domain.shared.ids import DeviceId, EntityId, UserId
+from app.domain.shops.account import MerchantAccount
+from app.domain.shops.ids import MerchantAccountId
 
 
 class PlatformAggregate(Protocol):
@@ -113,3 +116,10 @@ class DeviceSessionRepository(PlatformRepository[SessionId, DeviceSession]):
     @abstractmethod
     def active_for_device(self, user_id: UserId, device_id: DeviceId) -> DeviceSession | None:
         """Session non révoquée de cet utilisateur sur cet appareil, s'il y en a une."""
+
+
+class MerchantAccountRepository(PlatformRepository[MerchantAccountId, MerchantAccount]):
+    """Comptes commerçants (T10) ; le téléphone principal est unique sur la plateforme."""
+
+    @abstractmethod
+    def find_by_phone(self, phone: PhoneNumber) -> MerchantAccount | None: ...

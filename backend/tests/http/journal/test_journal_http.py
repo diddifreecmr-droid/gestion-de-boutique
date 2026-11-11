@@ -32,7 +32,9 @@ def test_seller_is_refused_the_journal_and_the_refusal_is_journaled(shop: Shop) 
         "device_id": str(seller.device),
     }
     assert (first["action_label"], first["entity"]["number"]) == ("Accès refusé", "AUDIT_READ")
-    rest = shop.call("GET", "/audit", owner, cursor=body["next_cursor"]).json()
+    rest = shop.call(
+        "GET", "/audit", owner, action="access_denied", cursor=body["next_cursor"]
+    ).json()
     assert len(rest["items"]) == 1
     assert rest["next_cursor"] is None
 
@@ -42,10 +44,11 @@ def test_owner_filters_by_user_period_and_entity(shop: Shop) -> None:
     seller = shop.member("677000002", Role.SELLER)
     shop.call("GET", "/audit", seller)
     activity = shop.call("GET", f"/audit/users/{seller.user.id}", owner).json()
-    assert [i["action"] for i in activity["items"]] == ["access_denied"]
+    # Depuis T10, la connexion du vendeur est aussi inscrite (journal de l'identité branché).
+    assert [i["action"] for i in activity["items"]] == ["access_denied", "login"]
     today = T0.date().isoformat()
     period = shop.call("GET", "/audit", owner, **{"from": today, "to": today}).json()
-    assert len(period["items"]) == 1
+    assert len(period["items"]) == 3  # deux connexions et un refus
     yesterday = shop.call("GET", "/audit", owner, **{"from": "2026-11-01"}).json()
     assert yesterday["items"] == []
     history = shop.call("GET", f"/audit/entities/sale/{seller.user.id}", owner).json()

@@ -8,9 +8,14 @@ L'`UnitOfWork` de T05 est lié à **une** boutique ; plutôt que d'inventer une 
 ne servent que les agrégats `User` et `DeviceSession` ; aucune donnée de boutique n'y transite.
 Les ports existants (`app.application.ports`) ne sont pas modifiés.
 
-**Rattachements.** `MEMBERSHIP` n'existe pas encore (T10) : `MembershipDirectory` est un port
-de **lecture** minimal (boutiques et rôles d'un utilisateur), relu à chaque requête pour
-construire l'`Actor` (specs § 8.1). T10 l'implémentera sur le vrai agrégat.
+**Rattachements.** `MembershipDirectory` est un port de **lecture** (boutiques et rôles d'un
+utilisateur), relu à chaque requête pour construire l'`Actor` (specs § 8.1). Depuis T10, ses
+adaptateurs lisent l'agrégat `Membership` (`domain/shops`) et l'état de la boutique ; il lit
+l'état **validé** (jamais une transaction en cours).
+
+**Délégation de l'administrateur (T10).** `AdminDelegationDirectory` dit jusqu'à quand une
+boutique a ouvert ses données à l'administrateur (`ADMIN_ACCESS_GRANT`) ;
+`DelegatedAccessJournal` inscrit chacun de ses accès au journal de la boutique (specs § 8.3).
 """
 
 from abc import ABC, abstractmethod
@@ -19,7 +24,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from app.application.security.actor import require_utc
+from app.application.security.actor import Actor, require_utc
 from app.application.security.roles import Role
 from app.domain.identity.events import IdentityEvent, SessionId
 from app.domain.shared.ids import ShopId, UserId
@@ -101,10 +106,17 @@ class MembershipView:
     shop_name: str
     role: Role
     active: bool
+    """Rattachement actif (RG-D06 : un compte désactivé l'est **dans cette boutique**)."""
+    shop_active: bool = True
+    """Boutique ouverte ; une boutique fermée par l'administrateur est introuvable (404)."""
+
+    @property
+    def usable(self) -> bool:
+        return self.active and self.shop_active
 
 
 class MembershipDirectory(ABC):
-    """Lecture des rattachements (T10 fournira l'adaptateur sur l'agrégat `MEMBERSHIP`)."""
+    """Lecture des rattachements (adaptateurs sur l'agrégat `Membership`, T10)."""
 
     @abstractmethod
     def for_user(self, user_id: UserId) -> Sequence[MembershipView]:
@@ -113,6 +125,22 @@ class MembershipDirectory(ABC):
     @abstractmethod
     def find(self, user_id: UserId, shop_id: ShopId) -> MembershipView | None:
         """Rattachement de l'utilisateur à cette boutique (actif ou non), ou `None`."""
+
+
+class AdminDelegationDirectory(ABC):
+    """Délégations accordées par les propriétaires (lecture de l'état validé)."""
+
+    @abstractmethod
+    def active_until(self, shop_id: ShopId, now: datetime) -> datetime | None:
+        """Fin de la délégation active de la boutique à `now`, ou `None` s'il n'y en a pas."""
+
+
+class DelegatedAccessJournal(ABC):
+    """Inscrit au journal de la boutique un accès de l'administrateur sous délégation."""
+
+    @abstractmethod
+    def record(self, actor: Actor) -> None:
+        """Écriture dans sa propre transaction ; toute erreur remonte (la requête échoue)."""
 
 
 class IdentityEventHandler(ABC):

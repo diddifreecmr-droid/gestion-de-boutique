@@ -24,7 +24,8 @@ from app.domain.shared.ids import ShopId
 
 
 class FixedShopPlans(ShopPlans):
-    """Toutes les boutiques sur une même offre (gratuite) — jusqu'au stockage de l'offre (T10)."""
+    """Toutes les boutiques sur une même offre — tests ; l'application lit le compte (T10,
+    `application/shops/plans.py`)."""
 
     def __init__(self, plan: PlanCode = PlanCode.FREE) -> None:
         self._plan = PlanCode(plan)
