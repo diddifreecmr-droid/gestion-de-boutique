@@ -1417,6 +1417,9 @@ Chaque lot se termine par : tous les tests verts, critères d'acceptation du lot
 | Q-02 Rejeu du CMP | Rejeu sur le **stock réel** au moment de chaque achat, ventes et sorties intermédiaires comprises (RG-T12) : 515 000 dans l'exemple de la recette |
 | Q-09 Annulation | L'argent encaissé et les ventes sont retirés **le jour de l'annulation** ; les chiffres d'une journée passée ne changent jamais |
 | Identité (T08) | Pendant un blocage, la réponse indique l'heure de fin (423) ; un code provisoire donné par le propriétaire lève aussi le blocage ; « déconnecter tous les appareils », débloquer et redonner un code agissent sur le compte entier (toutes ses boutiques) |
+| Prix vu par le vendeur | Le vendeur voit le prix de base **et** le prix minimum ; il peut vendre sous le prix de base (négociation) |
+| Nom d'article (prêt-à-porter, textile) | **Unique dans la boutique** (sans tenir compte des majuscules ni des accents), en plus de la référence |
+| Dépense annulée | On garde : tableau de bord = retirée le jour de l'annulation ; liste des dépenses = hors annulées |
 | Changer mon code | **Compteur d'essais séparé** de la connexion : 5 codes actuels faux ⇒ changement de code bloqué 15 min (`PIN_CHANGE_LOCKED`, 423) ; la session et la connexion restent utilisables ; un code provisoire du propriétaire lève ce blocage |
 | Q-51 Rapidité et cache | < 2 s aux visites suivantes ; première visite la plus légère possible avec indicateur de progression ; politique de cache § 7.3 |
 
