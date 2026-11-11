@@ -11,6 +11,7 @@ import {
   tokenBody,
   type Reply,
 } from "../../testing/fakeApi";
+import { HOME, homeBody } from "../../testing/dashboard";
 import { renderApp } from "../../testing/renderApp";
 import { formatTime } from "../../shared/format";
 
@@ -19,6 +20,8 @@ function openLogin(login: Reply | Reply[], extra: Record<string, Reply | Reply[]
     [ROUTES.refresh]: NO_SESSION(),
     [ROUTES.login]: login,
     [ROUTES.me]: json(200, meBody()),
+    // Accueil du vendeur, ouvert après la connexion.
+    [HOME]: json(200, homeBody("seller")),
     ...extra,
   });
 }
