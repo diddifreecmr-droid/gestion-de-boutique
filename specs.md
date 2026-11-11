@@ -1418,6 +1418,8 @@ Chaque lot se termine par : tous les tests verts, critères d'acceptation du lot
 | Q-09 Annulation | L'argent encaissé et les ventes sont retirés **le jour de l'annulation** ; les chiffres d'une journée passée ne changent jamais |
 | Identité (T08) | Pendant un blocage, la réponse indique l'heure de fin (423) ; un code provisoire donné par le propriétaire lève aussi le blocage ; « déconnecter tous les appareils », débloquer et redonner un code agissent sur le compte entier (toutes ses boutiques) |
 | Prix vu par le vendeur | Le vendeur voit le prix de base **et** le prix minimum ; il peut vendre sous le prix de base (négociation) |
+| Sous le prix minimum | **Pas d'accord du propriétaire par défaut** (remplace H9 / UC-VEN-03) : avertissement à l'écran, vente acceptée, inscrite au journal comme action sensible. L'accord reste disponible par un réglage de boutique « Accord du propriétaire sous le prix minimum », désactivé par défaut |
+| Échange | La nouvelle vente d'un échange peut être **à crédit** (client de la vente d'origine ; la différence devient une créance) |
 | Nom d'article (prêt-à-porter, textile) | **Unique dans la boutique** (sans tenir compte des majuscules ni des accents), en plus de la référence |
 | Dépense annulée | On garde : tableau de bord = retirée le jour de l'annulation ; liste des dépenses = hors annulées |
 | Changer mon code | **Compteur d'essais séparé** de la connexion : 5 codes actuels faux ⇒ changement de code bloqué 15 min (`PIN_CHANGE_LOCKED`, 423) ; la session et la connexion restent utilisables ; un code provisoire du propriétaire lève ce blocage |
