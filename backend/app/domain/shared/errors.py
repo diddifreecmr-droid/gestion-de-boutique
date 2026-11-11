@@ -110,3 +110,12 @@ class InvalidStateTransition(DomainError):
     """Transition interdite par le cycle de vie de l'agrégat (specs § 7.1) → HTTP 422."""
 
     code = "INVALID_STATE_TRANSITION"
+
+
+class FeatureDisabled(Forbidden):
+    """Fonction non comprise dans l'offre de la boutique (TR-26, D17) → HTTP 403.
+
+    `details.entitlement` nomme le droit manquant (ex. `offline_capture`, `POST /sync`).
+    """
+
+    code = "FEATURE_DISABLED"

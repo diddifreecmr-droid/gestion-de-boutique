@@ -6,13 +6,12 @@ port demandé est servi par l'unique adaptateur qui en hérite.
 """
 
 from collections.abc import Sequence
-from typing import Any
 
-from app.application.ports.repository import Repository
+from app.application.ports.shop_bound import ShopBoundPort
 
 
-def select_adapter[AdapterT: type[Repository[Any, Any]]](
-    registry: Sequence[AdapterT], port: type[Repository[Any, Any]], kind: str
+def select_adapter[AdapterT: type[ShopBoundPort]](
+    registry: Sequence[AdapterT], port: type[ShopBoundPort], kind: str
 ) -> AdapterT:
     """Unique adaptateur de `registry` qui implémente `port` ; `LookupError` sinon."""
     candidates = [adapter for adapter in registry if issubclass(adapter, port)]

@@ -6,6 +6,8 @@
 | `InvalidCredentials` | `UNAUTHENTICATED` | 401 — message générique (aucune fuite) |
 | `SessionRevoked` | `SESSION_REVOKED` | 401 — appareil déconnecté, jeton réutilisé |
 | `AccountLocked` | `ACCOUNT_LOCKED` | 423 — `details.until` (ISO 8601 UTC) |
+| `PinChangeLocked` | `PIN_CHANGE_LOCKED` | 423 — `details.until` ; change-pin seul |
+| `CurrentPinInvalid` | `CURRENT_PIN_INVALID` | 422 — `details.remaining_attempts` |
 | `AccountDisabled` | `ACCOUNT_DISABLED` | 403 — code **ajouté** par T08 (recette Q-31) |
 | `PinChangeRequired` | `PIN_CHANGE_REQUIRED` | 403 — première connexion ou code provisoire |
 | `PinTooSimple` | `PIN_TOO_SIMPLE` | 422 — `details.reason` |
@@ -55,6 +57,38 @@ class AccountLocked(DomainError):
             details={"until": until_utc.isoformat()},
         )
         self.until = until_utc
+
+
+class PinChangeLocked(DomainError):
+    """« Changer mon code » bloqué après 5 codes actuels faux → 423 (décision du 11/11/2026).
+
+    Code **ajouté** par T08 bis. La session, le login et les autres routes restent permis.
+    """
+
+    code = "PIN_CHANGE_LOCKED"
+
+    def __init__(self, until: datetime) -> None:
+        until_utc = require_aware(until)
+        super().__init__(
+            "Changement de code bloqué temporairement après plusieurs codes faux",
+            details={"until": until_utc.isoformat()},
+        )
+        self.until = until_utc
+
+
+class CurrentPinInvalid(DomainError):
+    """Code actuel faux dans « Changer mon code » → 422, **jamais 401** (décision T08 ter).
+
+    Un 401 serait lu par le client comme une session expirée et déconnecterait l'utilisateur.
+    `remaining_attempts` : essais restants avant le blocage du changement de code (0 au 5ᵉ).
+    """
+
+    code = "CURRENT_PIN_INVALID"
+
+    def __init__(self, remaining_attempts: int) -> None:
+        super().__init__(
+            "Code actuel incorrect", details={"remaining_attempts": remaining_attempts}
+        )
 
 
 class AccountDisabled(Forbidden):

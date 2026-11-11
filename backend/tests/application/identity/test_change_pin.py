@@ -1,14 +1,10 @@
 """UC-SOC-07 — changer son code (recette PIN-01, PIN-02) ; mot de passe admin (§ 15.1)."""
 
-from datetime import timedelta
-
 import pytest
 
 from app.application.identity.use_cases.change_pin import ChangePin, ChangePinCommand
 from app.application.identity.use_cases.login import CredentialKind
 from app.domain.identity.errors import (
-    AccountLocked,
-    InvalidCredentials,
     PasswordTooWeak,
     PinTooSimple,
 )
@@ -73,27 +69,6 @@ def test_malformed_new_code_is_a_validation_error() -> None:
     user = world.register()
     with pytest.raises(ValidationFailed):
         change(world, user, PIN, "12345a")
-
-
-def test_wrong_current_code_counts_as_a_failed_attempt_up_to_the_lock() -> None:
-    world = World()
-    user = world.register()
-    device = DeviceId.new()
-    identity = world.identity(world.login(device=device), device)
-    use_case = ChangePin(world.uow_factory, world.hasher, world.clock)
-    wrong = ChangePinCommand(current="999111", new=NEW, confirmation=NEW)
-    for _ in range(4):
-        with pytest.raises(InvalidCredentials):
-            use_case.execute(identity, wrong)
-    assert world.user(user).failed_attempts == 4
-    with pytest.raises(InvalidCredentials):
-        use_case.execute(identity, wrong)
-    right = ChangePinCommand(current=PIN, new=NEW, confirmation=NEW)
-    with pytest.raises(AccountLocked):
-        use_case.execute(identity, right)
-    world.clock.advance(timedelta(minutes=15))
-    use_case.execute(identity, right)
-    assert world.hasher.verify(world.user(user).secret_hash, NEW)
 
 
 def test_admin_changes_a_password_under_the_password_policy() -> None:

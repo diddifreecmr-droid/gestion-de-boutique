@@ -10,6 +10,7 @@ from typing import Protocol
 
 import pytest
 
+from app.application.plans.ports import EntitlementOverrides
 from app.application.ports.event_handler import EventHandler
 from app.application.ports.uow import UnitOfWork
 from app.domain.shared.ids import ShopId
@@ -23,6 +24,10 @@ DEFAULT_BACKEND = "memory"
 class ContractBackend(Protocol):
     def uow(self, shop_id: ShopId, handlers: Sequence[EventHandler] = ()) -> UnitOfWork:
         """Unité de travail neuve sur la base du test, avec ces handlers d'événements."""
+        ...
+
+    def entitlement_overrides(self) -> EntitlementOverrides:
+        """Surcharges de droits d'offre sur la base du test (portée plateforme)."""
         ...
 
 

@@ -6,16 +6,19 @@ from typing import Any
 from app.application.ports.errors import UnitOfWorkStateError
 from app.application.ports.event_handler import EventHandler
 from app.application.ports.numbering import DocumentNumberAllocator
-from app.application.ports.repository import Repository
+from app.application.ports.shop_bound import ShopBoundPort
 from app.application.ports.uow import UnitOfWork
 from app.domain.shared.ids import ShopId
 from app.infrastructure.persistence.memory.database import MemoryDatabase
 from app.infrastructure.persistence.memory.numbering import MemoryDocumentNumberAllocator
 from app.infrastructure.persistence.memory.repository import MemoryRepository
+from app.infrastructure.persistence.memory.shop_store import MemoryShopStore
 from app.infrastructure.persistence.memory.transaction import MemoryTransaction
 from app.infrastructure.persistence.registry import select_adapter
 
-RepositoryRegistry = Sequence[type[MemoryRepository[Any, Any]]]
+MemoryAdapter = type[MemoryRepository[Any, Any]] | type[MemoryShopStore]
+"""Adaptateur mémoire d'un port de boutique : dépôt d'agrégats ou port sans agrégat (journal)."""
+RepositoryRegistry = Sequence[MemoryAdapter]
 
 
 class MemoryUnitOfWork(UnitOfWork):
@@ -48,7 +51,7 @@ class MemoryUnitOfWork(UnitOfWork):
     def _has_pending_changes(self) -> bool:
         return self._require_transaction().has_changes
 
-    def _build_repository(self, port: type[Repository[Any, Any]]) -> Repository[Any, Any]:
+    def _build_repository(self, port: type[ShopBoundPort]) -> ShopBoundPort:
         adapter = select_adapter(self._registry, port, "mémoire")
         return adapter(self.shop_id, self, self._require_transaction())
 

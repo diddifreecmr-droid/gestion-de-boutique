@@ -21,7 +21,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from enum import Enum, auto
 from types import TracebackType
-from typing import Any, Protocol, Self
+from typing import Protocol, Self
 
 from app.application.ports.aggregate import Aggregate
 from app.application.ports.errors import (
@@ -32,7 +32,7 @@ from app.application.ports.errors import (
 )
 from app.application.ports.event_handler import EventHandler
 from app.application.ports.numbering import DocumentNumberAllocator
-from app.application.ports.repository import Repository
+from app.application.ports.shop_bound import ShopBoundPort
 from app.domain.shared.events import DomainEvent
 from app.domain.shared.ids import ShopId
 
@@ -59,7 +59,7 @@ class UnitOfWork(ABC):
         self._state = _State.NEW
         self._tracked: dict[int, Aggregate] = {}  # id(objet) → agrégat, ordre de première vue
         self._saved: set[int] = set()
-        self._repositories: dict[type[Repository[Any, Any]], Repository[Any, Any]] = {}
+        self._repositories: dict[type[ShopBoundPort], ShopBoundPort] = {}
 
     @property
     def shop_id(self) -> ShopId:
@@ -107,8 +107,8 @@ class UnitOfWork(ABC):
         self._abort()
 
     # ------------------------------------------------------------------ accès
-    def repository_for(self, port: type[Repository[Any, Any]]) -> Repository[Any, Any]:
-        """Préférer `Port.within(uow)`, typé. Une instance par port et par unité de travail."""
+    def repository_for(self, port: type[ShopBoundPort]) -> ShopBoundPort:
+        """Préférer `Port.within(uow)`. Une instance par port (dépôt ou ajout seul) et par UoW."""
         self._require_open("repository_for")
         repository = self._repositories.get(port)
         if repository is None:
@@ -186,7 +186,7 @@ class UnitOfWork(ABC):
         """Vrai si une écriture ou un numéro attend la validation."""
 
     @abstractmethod
-    def _build_repository(self, port: type[Repository[Any, Any]]) -> Repository[Any, Any]:
+    def _build_repository(self, port: type[ShopBoundPort]) -> ShopBoundPort:
         """Adaptateur de `port`, lié à cette transaction et à `shop_id` ; `LookupError` sinon."""
 
     @abstractmethod

@@ -54,6 +54,20 @@ uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres
 - Tables métier : les déclarer dans `app/infrastructure/persistence/sqlalchemy/tables.py`
   (contraintes `UNIQUE (shop_id, …)` nommées comme les `UniqueKey` du port) + migration.
 
+## Journal, alertes, droits d'offre (T09)
+
+- **Journal** (`app/domain/audit`, port `AuditLog`) : en ajout seul, écrit par le handler
+  `AuditRecorder` dans la transaction de l'action. Tout événement de domaine hérite
+  d'`AuditableEvent` (`audit_record()`) ou de `NotAudited` ; sinon `UnauditedEvent` annule la
+  transaction. Les refus d'accès sont inscrits par le gestionnaire d'erreurs HTTP
+  (`RecordAccessDenied`).
+- **Alertes** (`app/domain/alerts`, `AlertDispatcher`) : un module branche ses règles par
+  `app.state.journal.alerts.register(TypeDEvénement, règle)` ; `dedup_key` = « une seule fois ».
+- **Droits d'offre** : `require_entitlement(entitlements, shop_id, Entitlement.OFFLINE_CAPTURE)`
+  lève `403 FEATURE_DISABLED` (offre gratuite : faux, sauf surcharge de l'administrateur).
+- Nouveau port lié à la boutique sans agrégat : hériter de `ShopBoundPort`, adaptateurs
+  `MemoryShopStore` / `SqlShopStore`, inscrits dans `MEMORY_REPOSITORIES` / `SQL_REPOSITORIES`.
+
 ## Couches
 
 | Package | Peut importer |

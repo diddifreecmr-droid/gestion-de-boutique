@@ -42,6 +42,15 @@ class MemoryTransaction:
             return None
         return row
 
+    def rows(self, table: str) -> list[Row]:
+        """Toutes les lignes visibles de la boutique (validées + écrites ici), ordre quelconque."""
+        self._require_open()
+        visible = self._database.rows(table, self._shop_id)
+        for (name, entity_id), write in self._writes.items():
+            if name == table:
+                visible[entity_id] = write.row
+        return list(visible.values())
+
     # ------------------------------------------------------------------ écriture
     def insert(self, table: str, row: Row) -> None:
         self._require_open()

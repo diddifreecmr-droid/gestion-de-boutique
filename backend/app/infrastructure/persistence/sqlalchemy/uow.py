@@ -13,15 +13,18 @@ import sqlalchemy as sa
 from app.application.ports.errors import UnitOfWorkStateError
 from app.application.ports.event_handler import EventHandler
 from app.application.ports.numbering import DocumentNumberAllocator
-from app.application.ports.repository import Repository
+from app.application.ports.shop_bound import ShopBoundPort
 from app.application.ports.uow import UnitOfWork
 from app.domain.shared.ids import ShopId
 from app.infrastructure.persistence.registry import select_adapter
 from app.infrastructure.persistence.sqlalchemy.numbering import SqlDocumentNumberAllocator
 from app.infrastructure.persistence.sqlalchemy.repository import SqlRepository
+from app.infrastructure.persistence.sqlalchemy.shop_store import SqlShopStore
 from app.infrastructure.persistence.sqlalchemy.transaction import SqlTransaction
 
-SqlRepositoryRegistry = Sequence[type[SqlRepository[Any, Any]]]
+SqlAdapter = type[SqlRepository[Any, Any]] | type[SqlShopStore]
+"""Adaptateur SQL d'un port de boutique : dépôt d'agrégats ou port sans agrégat (journal)."""
+SqlRepositoryRegistry = Sequence[SqlAdapter]
 
 
 class SqlUnitOfWork(UnitOfWork):
@@ -54,7 +57,7 @@ class SqlUnitOfWork(UnitOfWork):
     def _has_pending_changes(self) -> bool:
         return self._require_transaction().has_changes
 
-    def _build_repository(self, port: type[Repository[Any, Any]]) -> Repository[Any, Any]:
+    def _build_repository(self, port: type[ShopBoundPort]) -> ShopBoundPort:
         adapter = select_adapter(self._registry, port, "SQL")
         return adapter(self.shop_id, self, self._require_transaction())
 

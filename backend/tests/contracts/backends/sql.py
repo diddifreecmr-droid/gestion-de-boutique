@@ -13,10 +13,14 @@ import sqlalchemy as sa
 from alembic.config import Config
 
 from alembic import command
+from app.application.plans.ports import EntitlementOverrides
 from app.application.ports.event_handler import EventHandler
 from app.domain.shared.ids import ShopId
+from app.infrastructure.persistence.sqlalchemy.alerts import SqlAlertRepository
+from app.infrastructure.persistence.sqlalchemy.audit_log import SqlAuditLog
+from app.infrastructure.persistence.sqlalchemy.entitlements import SqlEntitlementOverrides
 from app.infrastructure.persistence.sqlalchemy.repository import SqlRepository
-from app.infrastructure.persistence.sqlalchemy.tables import NAMING_CONVENTION, document_counter
+from app.infrastructure.persistence.sqlalchemy.tables import NAMING_CONVENTION, metadata
 from app.infrastructure.persistence.sqlalchemy.uow import SqlRepositoryRegistry, SqlUnitOfWork
 from tests.contracts.widget import Widget, WidgetId, WidgetRepository
 
@@ -53,7 +57,7 @@ class SqlWidgetRepository(SqlRepository[WidgetId, Widget], WidgetRepository):
         )
 
 
-SQL_REGISTRY: SqlRepositoryRegistry = (SqlWidgetRepository,)
+SQL_REGISTRY: SqlRepositoryRegistry = (SqlWidgetRepository, SqlAuditLog, SqlAlertRepository)
 
 
 def migrate(engine: sa.Engine) -> None:
@@ -69,7 +73,8 @@ def wipe(engine: sa.Engine) -> None:
     """Base vierge : vide les tables touchées par les contrats (rapide, portable)."""
     with engine.begin() as connection:
         connection.execute(widget_table.delete())
-        connection.execute(document_counter.delete())
+        for table in metadata.sorted_tables:  # toutes les tables de production
+            connection.execute(table.delete())
 
 
 class SqlContractBackend:
@@ -81,3 +86,6 @@ class SqlContractBackend:
 
     def uow(self, shop_id: ShopId, handlers: Sequence[EventHandler] = ()) -> SqlUnitOfWork:
         return SqlUnitOfWork(self.engine, shop_id, repositories=SQL_REGISTRY, handlers=handlers)
+
+    def entitlement_overrides(self) -> EntitlementOverrides:
+        return SqlEntitlementOverrides(self.engine)

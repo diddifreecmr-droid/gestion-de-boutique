@@ -35,6 +35,11 @@ class SqlTransaction:
         self._require_open()
         return self._connection.execute(statement).mappings().first()
 
+    def fetch_all(self, statement: sa.Select[Any]) -> list[sa.RowMapping]:
+        """Toutes les lignes de `statement`, dans l'ordre de la requête."""
+        self._require_open()
+        return list(self._connection.execute(statement).mappings().all())
+
     def exists(self, statement: sa.Select[Any]) -> bool:
         return self.fetch_one(statement.limit(1)) is not None
 

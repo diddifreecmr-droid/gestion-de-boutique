@@ -6,12 +6,17 @@ import pytest
 
 from app.application.ports.errors import IsolationViolation, UnitOfWorkStateError
 from app.application.ports.repository import Repository
+from app.application.ports.shop_bound import ShopBoundPort
 from app.application.ports.uow import UnitOfWorkFactory
 from app.domain.shared.ids import ShopId, UserId
 from app.infrastructure.persistence.memory.database import MemoryDatabase
 from app.infrastructure.persistence.memory.repository import MemoryRepository
 from app.infrastructure.persistence.memory.transaction import MemoryTransaction
-from app.infrastructure.persistence.memory.uow import MemoryUnitOfWork, MemoryUnitOfWorkFactory
+from app.infrastructure.persistence.memory.uow import (
+    MemoryAdapter,
+    MemoryUnitOfWork,
+    MemoryUnitOfWorkFactory,
+)
 from tests.contracts.backends.memory import REGISTRY, MemoryWidgetRepository
 from tests.contracts.handlers import RecordingHandler
 from tests.contracts.widget import Widget, WidgetId, WidgetRepository
@@ -27,7 +32,7 @@ class SecondWidgetRepository(MemoryWidgetRepository):
     table = "widgets_bis"
 
 
-def memory_uow(*adapters: type[MemoryRepository[Any, Any]]) -> MemoryUnitOfWork:
+def memory_uow(*adapters: MemoryAdapter) -> MemoryUnitOfWork:
     return MemoryUnitOfWork(MemoryDatabase(), SHOP, repositories=adapters)
 
 
@@ -56,7 +61,7 @@ def test_ambiguous_registry_is_a_lookup_error() -> None:
 
 def test_within_refuses_an_adapter_of_another_port() -> None:
     class WrongProvider:
-        def repository_for(self, port: type[Repository[Any, Any]]) -> Repository[Any, Any]:
+        def repository_for(self, port: type[ShopBoundPort]) -> ShopBoundPort:
             with memory_uow(*REGISTRY) as uow:
                 return WidgetRepository.within(uow)
 

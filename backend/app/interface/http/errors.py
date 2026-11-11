@@ -7,15 +7,17 @@
 """
 
 import logging
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from http import HTTPStatus
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.domain.identity.errors import AccountLocked, Unauthenticated
+from app.application.audit.access_denied import ACCESS_DENIALS, AccessDenial
+from app.domain.identity.errors import AccountLocked, PinChangeLocked, Unauthenticated
 from app.domain.shared.errors import Conflict, DomainError, Forbidden, NotFound, ValidationFailed
 
 logger = logging.getLogger(__name__)
@@ -28,6 +30,7 @@ _STATUS_BY_TYPE: Mapping[type[object], int] = {
     NotFound: HTTPStatus.NOT_FOUND,
     Conflict: HTTPStatus.CONFLICT,
     AccountLocked: HTTPStatus.LOCKED,
+    PinChangeLocked: HTTPStatus.LOCKED,
 }
 # Règle métier violée (STOCK_INSUFFICIENT, PRICE_BELOW_MINIMUM…) : 422.
 _DEFAULT_DOMAIN_STATUS = HTTPStatus.UNPROCESSABLE_ENTITY
@@ -61,9 +64,15 @@ def _field_errors(exc: RequestValidationError) -> list[dict[str, str]]:
     ]
 
 
-def register_error_handlers(app: FastAPI) -> None:
+def register_error_handlers(
+    app: FastAPI, on_access_denied: Callable[[AccessDenial], object] | None = None
+) -> None:
+    """`on_access_denied` : journalise un refus d'accès (RG-D01) avant la réponse 403/404."""
+
     @app.exception_handler(DomainError)
     async def _domain(_: Request, exc: DomainError) -> JSONResponse:
+        if on_access_denied is not None and isinstance(exc, ACCESS_DENIALS):
+            await run_in_threadpool(on_access_denied, exc)  # échec → 500 (fail-fast)
         status = status_for(exc)
         # RFC 9110 § 15.5.2 : un 401 annonce le schéma d'authentification attendu.
         headers = {"WWW-Authenticate": "Bearer"} if status == HTTPStatus.UNAUTHORIZED else None

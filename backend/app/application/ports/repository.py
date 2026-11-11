@@ -18,14 +18,14 @@ Un agrégat d'une autre boutique passé à `add`/`update` est un bogue : `Isolat
 Accès depuis une unité de travail : `WidgetRepository.within(uow)` (typé, sans transtypage).
 """
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from collections.abc import Sequence
-from typing import Any, Protocol, Self
 
-from app.application.ports.aggregate import Aggregate, AggregateTracker, UniqueKey
+from app.application.ports.aggregate import Aggregate, UniqueKey
 from app.application.ports.errors import IsolationViolation
+from app.application.ports.shop_bound import PortProvider, ShopBoundPort
 from app.domain.shared.errors import NotFound
-from app.domain.shared.ids import EntityId, ShopId
+from app.domain.shared.ids import EntityId
 
 NOT_FOUND_MESSAGE = "Élément introuvable"
 
@@ -35,34 +35,15 @@ def not_found(entity_id: EntityId) -> NotFound:
     return NotFound(NOT_FOUND_MESSAGE, details={"id": str(entity_id)})
 
 
-class RepositoryProvider(Protocol):
-    """Ce qu'offre une unité de travail aux dépôts : l'instance liée à sa transaction."""
-
-    def repository_for(self, port: "type[Repository[Any, Any]]") -> "Repository[Any, Any]": ...
+RepositoryProvider = PortProvider
+"""Ancien nom du fournisseur de ports (une unité de travail), conservé pour compatibilité."""
 
 
-class Repository[IdT: EntityId, AggT: Aggregate](ABC):
-    """Base de tout port de dépôt : `class SaleRepository(Repository[SaleId, Sale])`."""
+class Repository[IdT: EntityId, AggT: Aggregate](ShopBoundPort):
+    """Base de tout port de dépôt : `class SaleRepository(Repository[SaleId, Sale])`.
 
-    def __init__(self, shop_id: ShopId, tracker: AggregateTracker) -> None:
-        if not isinstance(shop_id, ShopId):
-            msg = f"Un dépôt est lié à un ShopId, reçu {type(shop_id).__name__}"
-            raise TypeError(msg)
-        self._shop_id = shop_id
-        self._tracker = tracker
-
-    @classmethod
-    def within(cls, uow: RepositoryProvider) -> Self:
-        """Instance de ce port liée à la transaction et à la boutique de `uow`."""
-        repository = uow.repository_for(cls)
-        if not isinstance(repository, cls):
-            msg = f"L'adaptateur fourni pour {cls.__name__} n'implémente pas ce port"
-            raise TypeError(msg)
-        return repository
-
-    @property
-    def shop_id(self) -> ShopId:
-        return self._shop_id
+    Construction, `within(uow)` et `shop_id` viennent de `ShopBoundPort`.
+    """
 
     def unique_keys(self) -> Sequence[UniqueKey[AggT]]:
         """Contraintes d'unicité métier du port, par boutique. Aucune par défaut."""

@@ -102,6 +102,21 @@ class PinChanged(IdentityEvent):
 
 
 @dataclass(frozen=True, kw_only=True)
+class PinChangeFailed(IdentityEvent):
+    """Code actuel faux dans « Changer mon code » (compteur distinct du login)."""
+
+    device_id: DeviceId
+    failed_attempts: int
+
+
+@dataclass(frozen=True, kw_only=True)
+class PinChangeLockedEvent(IdentityEvent):
+    """Changement de code bloqué (action sensible) ; le login n'est pas touché."""
+
+    locked_until: datetime
+
+
+@dataclass(frozen=True, kw_only=True)
 class PinReset(IdentityEvent):
     """Code provisoire attribué par le propriétaire `by`."""
 
