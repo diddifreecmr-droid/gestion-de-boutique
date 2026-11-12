@@ -70,6 +70,15 @@ jobs:
       - run: uv run alembic check
       - run: uv run pytest tests/contracts tests/infrastructure/postgres --backend=postgres -ra
 
+  infra:
+    # Compose de production lisible avec les variables d'exemple ; images construites (T25).
+    name: Infra (compose de prod, images)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker compose --env-file infra/.env.prod.example -f infra/docker-compose.prod.yml config -q
+      - run: docker compose --env-file infra/.env.prod.example -f infra/docker-compose.prod.yml build
+
   frontend:
     name: Frontend (lint, types, tests, build, poids)
     runs-on: ubuntu-latest

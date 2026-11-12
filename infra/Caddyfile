@@ -1,0 +1,55 @@
+# Caddy de production (T25, specs § 4.7, § 7.3, § 8.4). Copié dans l'image caddy par
+# frontend/Dockerfile ; variables lues dans l'environnement du conteneur (compose de prod) :
+#   API_PUBLIC_HOST  nom public, ex. api.169-58-70-37.sslip.io (certificat Let's Encrypt auto)
+#   ACME_EMAIL       adresse de contact Let's Encrypt (expiration, incidents)
+#
+# Sert le build du frontend (fallback SPA) et proxifie /api/* vers le conteneur api. Le même
+# hôte reçoit aussi les appels relayés par Vercel (rewrite /api/* de frontend/vercel.json).
+{
+	email {$ACME_EMAIL}
+	# Pas d'interface d'administration exposée (rechargement : redémarrer le conteneur).
+	admin off
+}
+
+{$API_PUBLIC_HOST} {
+	encode zstd gzip
+
+	# En-têtes de sécurité (specs § 8.4), pour toutes les réponses. CSP : scripts du seul site ;
+	# style-src accepte « unsafe-inline » pour les règles @page des reçus (élément <style> rendu
+	# par React, specs § 9.1). Aucun script inline n'est permis.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=(), usb=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+		-Server
+	}
+
+	# API : jamais en cache (specs § 7.3, RG-T25). X-Forwarded-For est posé par Caddy ; l'API
+	# ne le lit que si la connexion vient du réseau interne (AUTH_TRUSTED_PROXIES).
+	handle /api/* {
+		header Cache-Control "no-store"
+		reverse_proxy api:8000 {
+			health_uri /api/v1/health
+			health_interval 30s
+		}
+	}
+
+	# Frontend (specs § 7.3) :
+	# - /assets/* : noms à empreinte (changent à chaque version) → cache 24 h au plus ;
+	# - tout le reste (index.html, sw.js, manifest, icônes, routes de l'application) :
+	#   « no-cache » = toujours revalidé auprès du serveur avant usage.
+	handle {
+		root * /srv
+		@hashed path /assets/*
+		@fresh not path /assets/*
+		header @hashed Cache-Control "public, max-age=86400, immutable"
+		header @fresh Cache-Control "no-cache"
+		# Fallback SPA : une route inconnue sert index.html (le routeur React prend la suite).
+		try_files {path} /index.html
+		file_server
+	}
+}

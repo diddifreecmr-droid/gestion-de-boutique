@@ -15,6 +15,8 @@ tour suivant).
 from dataclasses import dataclass
 from typing import assert_never
 
+import sqlalchemy as sa
+
 from app.application.alerts.dispatcher import AlertDispatcher
 from app.application.audit.identity_recorder import IdentityAuditRecorder
 from app.application.audit.recorder import AuditRecorder
@@ -67,6 +69,8 @@ class Core:
     overrides: EntitlementOverrides
     database: MemoryDatabase | None = None
     """Base mémoire (adaptateur `memory`), exposée aux outils de démonstration et aux tests."""
+    engine: sa.Engine | None = None
+    """Moteur SQL (adaptateur `postgres`), vérifié au démarrage de l'API (`container.py`)."""
 
 
 def build_core(settings: Settings, clock: Clock) -> Core:
@@ -111,5 +115,6 @@ def build_core(settings: Settings, clock: Clock) -> Core:
             catalog=SqlShopCatalog(engine),
             delegations=SqlAdminDelegations(engine),
             overrides=SqlEntitlementOverrides(engine),
+            engine=engine,
         )
     assert_never(backend)

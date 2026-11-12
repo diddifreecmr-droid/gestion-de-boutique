@@ -1,0 +1,17 @@
+# Contexte de build de backend/Dockerfile : seul le nécessaire part vers le démon Docker.
+.venv/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.env
+.env.*
+tests/
+tools/
+openapi.json
+README.md
+Dockerfile
+.dockerignore

@@ -72,7 +72,7 @@ flowchart LR
 | T08 | Agrégat `MEMBERSHIP` réel + adaptateur de `MembershipDirectory` ; routes `/shops/{id}/members/*` (révocation, déblocage, code provisoire, désactivation) | T10 |
 | T08 | Limitation de débit sur `/auth/*` par IP et par numéro (specs § 8.1) | T10 |
 | T08 | Route de création de la délégation admin (`ADMIN_ACCESS_GRANT`, 24 h) | T10 |
-| T06 | Vérifier la connexion à la base au démarrage de l'API (aujourd'hui : à la première requête) | T25 |
+| T06 | Vérifier la connexion à la base au démarrage de l'API (aujourd'hui : à la première requête) | T25 — fait (`verify_database`, refus de démarrer) |
 | T11 | Liste déroulante des boutiques dans `TopBar` (UC-SOC-03), navigation latérale ordinateur, arrière-plan `inert` des confirmations | T12 / T22 |
 | T11 | Token de voile (`--color-scrim`) à ajouter au design system si besoin | T22 |
 | T04 | Règle d'arrondi `quantité × prix` pour une ligne au mètre | T16 |

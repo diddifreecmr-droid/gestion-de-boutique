@@ -75,7 +75,17 @@ S3_ADDRESSING_STYLE=path
   après contrôle des droits (TR-17, § 8.4).
 - Console web : http://127.0.0.1:9001 (identifiants `MINIO_ROOT_*`).
 
+## Production
+
+`docker-compose.prod.yml` (une seule stack : caddy, api, postgres, silo, silo-init, backup),
+`Caddyfile`, `backup/` (sauvegarde et restauration), `.env.prod.example` (variables, valeurs
+factices). Procédure : [`docs/deploiement.md`](../docs/deploiement.md). Vérification locale :
+
+```bash
+docker compose --env-file infra/.env.prod.example -f infra/docker-compose.prod.yml config -q
+```
+
 ## Hors périmètre (à venir)
 
 - Rôle de base de données applicatif sans `UPDATE`/`DELETE` sur `audit_entry` (§ 8.4) : créé par les migrations Alembic.
-- Compose de production (Caddy, api, worker, migrate, backup — § 4.7, § 9.2).
+- Conteneur `worker` (planificateur) et copie hors site des sauvegardes (§ 9.2, étape 2).
