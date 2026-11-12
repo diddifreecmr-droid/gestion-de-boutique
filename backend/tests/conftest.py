@@ -38,6 +38,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=DEFAULT_BACKEND,
         help="Adaptateur de persistance sous contrat (tests/contracts, tests/infrastructure).",
     )
+    parser.addoption(
+        "--storage",
+        choices=("memory", "s3"),
+        default="memory",
+        help="Adaptateur FileStorage sous contrat (s3 : variables TEST_S3_*, Silo de dev).",
+    )
 
 
 def pytest_configure(config: pytest.Config) -> None:

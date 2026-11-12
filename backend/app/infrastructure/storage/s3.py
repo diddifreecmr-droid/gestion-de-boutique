@@ -2,7 +2,7 @@
 
 - Client `minio` (léger, signature SigV4), adressage par chemin (`http://hôte/bucket/clé`),
   région fixée par la configuration (aucun appel de découverte).
-- Délais courts (connexion 3 s, lecture 15 s, 2 nouvelles tentatives) : une panne remonte vite
+- Délais courts (connexion 3 s, lecture 15 s, 1 nouvelle tentative) : une panne remonte vite
   en `StorageUnavailable` (503) au lieu de bloquer un processus de l'API.
 - Bucket **privé**, créé par `silo-init` (infra/) : l'adaptateur ne le crée ni ne change ses
   droits. Clé absente à la lecture → `MissingFile` (500, incohérence base ↔ stockage).
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 CONNECT_TIMEOUT_S = 3.0
 READ_TIMEOUT_S = 15.0
-RETRIES = 2
+RETRIES = 1
 _MISSING_CODES = frozenset({"NoSuchKey", "NoSuchObject"})
 
 
