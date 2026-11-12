@@ -34,6 +34,7 @@ from app.domain.attachments.attachment import Attachment
 from app.domain.attachments.values import OwnerType
 from app.domain.receivables.ids import ReceivableId
 from app.domain.sales.ids import CustomerId
+from app.domain.shared.errors import ValidationFailed
 from app.domain.shared.ids import UserId
 
 P = Permission
@@ -71,6 +72,9 @@ class AttachmentAccess:
         permission = RIGHTS[owner_type].write
         self._policy.require(actor, permission)
         if owner_type.is_personal:
+            if owner_id is None:
+                msg = "Élément lié obligatoire pour un client ou une créance"
+                raise ValidationFailed(msg, details={"field": "owner_id"})
             self._require_owner_visible(uow, actor, owner_type, owner_id, permission)
 
     def require_read(self, uow: UnitOfWork, actor: Actor, attachment: Attachment) -> None:
