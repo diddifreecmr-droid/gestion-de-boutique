@@ -29,11 +29,11 @@ sentinelle 543 210, prix sentinelle 777 777, utilisateur U vendeur dans A et com
 | Matrice des droits SEC-M01 à M30 | 30 | 2 / 28 / 0 / 0 | 30 / 0 / 0 / 0 |
 | Non-fuite SEC-N01 à 06 | 6 | 2 / 3 / 1 / 0 | 5 / 0 / 1 / 0 |
 | Isolation SEC-I01 à 14 | 14 | 4 / 5 / 5 / 0 | 13 / 0 / 1 / 0 |
-| Blocage, révocation, désactivation SEC-L, R, X | 21 | 20 / 1 / 0 / 0 | 20 / 1 / 0 / 0 |
+| Blocage, révocation, désactivation SEC-L, R, X | 21 | 20 / 1 / 0 / 0 | 21 / 0 / 0 / 0 |
 | Erreurs par code ERR-* | 49 | 40 / 9 / 0 / 0 | 48 / 1 / 0 / 0 |
 | Hors-ligne OFF-01 à 10 | 10 | 10 / 0 / 0 / 0 | 10 / 0 / 0 / 0 |
 | Parcours E2E-01 à 10, A11Y-01 à 07, PERF-01 à 06 | 23 | 2 / 6 / 1 / 14 | 2 / 6 / 1 / 14 |
-| **Total** | **297** | **205 / 63 / 12 / 17** | **258 / 17 / 5 / 17** |
+| **Total** | **297** | **205 / 63 / 12 / 17** | **259 / 16 / 5 / 17** |
 
 La recette annonçait « 139 cas fonctionnels » : le décompte inclut 5 renvois « UC-STK-06 à 10 » qui ne sont pas des cas ;
 134 identifiants distincts sont tracés ici. Critères d'acceptation : voir § 2.
@@ -41,8 +41,9 @@ La recette annonçait « 139 cas fonctionnels » : le décompte inclut 5 renvois
 **Défauts trouvés et corrigés** (détail § 4) :
 
 1. `POST /sync` et `GET /offline-snapshot` : l'administrateur **sans délégation** recevait `403 FEATURE_DISABLED`
-   au lieu de `404` (specs § 8.3) ; avec le droit `offline_capture` ouvert, son envoi aurait été traité et ses
-   opérations refusées **écrites** dans la boutique (trace, journal, alerte au propriétaire).
+   au lieu de `404` (specs § 8.3), ce qui révélait l'existence de la boutique et l'état de ses droits d'offre ; avec
+   le droit `offline_capture` ouvert, aucun contrôle d'accès ne précédait le traitement des opérations (analyse du
+   code : chaque refus aurait été tracé dans la boutique).
 2. `POST /customers/{id}/installments` avec le client d'une autre boutique (ou inconnu) : `400 VALIDATION_ERROR`
    au lieu de `404`.
 
@@ -72,7 +73,7 @@ La recette annonçait « 139 cas fonctionnels » : le décompte inclut 5 renvois
 | E5 | AUD-08 : aucune protection du journal **dans PostgreSQL** (pas de `REVOKE UPDATE, DELETE` ni de déclencheur sur `audit_entry`) ; seule l'API l'interdit | AUD-08, RG-J01 | rôle de base séparé pour l'API au déploiement (T25) + test de refus de permission |
 | E6 | Clés « interdites » de la recette SEC-N02 trop larges : l'inventaire en cours expose au comptable `sales_since_start` et `sales_message` (exigés par UC-STK-07 / INV-06) ; noms de réglages (`margin_mm`, `min_price_enabled`…) | SEC-N02, SEC-N03 | accepter ces exceptions (listées dans `R/test_no_leak_http.py`) ; les valeurs sentinelles, elles, ne fuient jamais |
 | E7 | Admin **avec** délégation : `/sync` le laisse passer (lecture accordée) ; chaque opération est alors refusée par le cas d'utilisation, mais **tracée** comme « Saisie refusée » | — (droit `offline_capture` inactif en V1) | refuser l'écriture `/sync` à tout administrateur, à trancher avec l'ouverture du hors-ligne |
-| E8 | 51 questions Q-01 à Q-51 de la recette : celles tranchées par § 15.1 (Q-01, Q-02, Q-09, Q-51, Q7, Q8, changement de code, prix minimum, échange à crédit) sont testées selon la décision ; pour les autres, les tests figent le comportement **actuel** (noté « selon l'implémentation ») ou le cas reste « partiel » | MOD-03 [Q-06], ERR-VER-02, SEC-X03, INV-06 [Q-17], LOW-01 [Q-18], ERR-PRM-07 [Q-44] | confirmer ou corriger ces comportements (recette § 6) |
+| E8 | 51 questions Q-01 à Q-51 de la recette : celles tranchées par § 15.1 (Q-01, Q-02, Q-09, Q-51, Q7, Q8, changement de code, prix minimum, échange à crédit) sont testées selon la décision ; pour les autres, les tests figent le comportement **actuel** (noté « selon l'implémentation ») ou le cas reste « partiel » | MOD-03 [Q-06], ERR-VER-02, INV-06 [Q-17], LOW-01 [Q-18], ERR-PRM-07 [Q-44] | confirmer ou corriger ces comportements (recette § 6) |
 
 ## 4. Défauts trouvés et corrigés
 
@@ -304,7 +305,7 @@ refusé »**. Les colonnes NM et ADM (404 partout) sont balayées par `R/test_is
 | SEC-R06 | `test_member_actions.py::test_seller_cannot_revoke_devices` | couvert | couvert | |
 | SEC-X01 | `test_login.py::test_disabled_account_is_refused_only_after_a_correct_code` ; `test_login_http.py::test_disabled_account_gets_the_cdc_message` | couvert | couvert | |
 | SEC-X02 | `test_authenticate.py::test_disabled_user_is_refused_on_every_request` ; `test_refresh_logout.py::test_disabled_account_cannot_refresh` | couvert | couvert | |
-| SEC-X03 | — | partiel | partiel | ventes passées d'un vendeur désactivé non relues explicitement |
+| SEC-X03 | **`R/test_snapshots_http.py::test_history_of_a_disabled_seller_stays_listed`** | partiel | couvert | ventes, versements et fiche du vendeur désactivé toujours lus |
 | SEC-X04 | `bt/domain/identity/test_user.py::test_disable_and_reactivate` ; `test_members.py` | couvert | couvert | |
 | SEC-X05 | `test_members.py::test_role_change_and_last_owner_rule` ; `test_shops_http.py::test_members_and_roles` (`LAST_ACTIVE_OWNER`) | couvert | couvert | |
 | SEC-X06 | `test_members.py::test_deactivation_is_per_shop` | couvert | couvert | rattachement seulement [Q-27] |
@@ -408,7 +409,7 @@ refusé »**. Les colonnes NM et ADM (404 partout) sont balayées par `R/test_is
 | `R/test_numbering_chassis_http.py` | 7 | RG-T05 (refus sans numéro, annulé gardé, séquences par type et boutique), RG-M01 (5 graphies, même vente, A/B, libération) |
 | `R/test_scn01_reference_http.py` | 1 | critère A2 de bout en bout |
 | `R/test_journal_writes_http.py` | 2 | critère A7 : chaque écriture réussie journalisée ; aucune route `DELETE` métier |
-| `R/test_snapshots_http.py` | 1 | CAT-06, CAT-09 |
+| `R/test_snapshots_http.py` | 2 | CAT-06, CAT-09, SEC-X03 |
 | `R/test_dates_http.py` | 3 | ERR-DAT-01 à 04, 07 à 09 sur la vente |
 | `bt/contracts/test_port_signatures.py` | 3 | SEC-I13 |
 | `bt/infrastructure/postgres/test_sales_numbering.py` | 1 | critère A8 par 20 `RecordSale` concurrents |
