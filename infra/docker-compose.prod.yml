@@ -1,0 +1,174 @@
+# Stack de PRODUCTION — Gestion de boutiques (T25, specs § 4.7, § 9.2).
+# UNE SEULE stack Portainer (aussi pour les essais) : caddy, api, postgres, silo, backup.
+# Procédure pas à pas : docs/deploiement.md. Variables : infra/.env.prod.example.
+#
+# Vérifier localement : docker compose --env-file infra/.env.prod.example \
+#                         -f infra/docker-compose.prod.yml config
+#
+# Règles (vérifiées par backend/tests/infra/test_compose_prod.py) :
+# - aucun secret en dur : tout passe par ${VAR:?message} (absente = refus explicite) ;
+# - images tierces épinglées en version exacte ; images du projet construites depuis le dépôt ;
+# - seul caddy publie des ports (80/443) ; les autres services sont sur le réseau `internal`,
+#   sans accès à Internet ;
+# - données dans des volumes nommés (jamais supprimés par une mise à jour de la stack).
+
+name: boutique-prod
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+  caddy:
+    # Build Vite du frontend + infra/Caddyfile (HTTPS automatique Let's Encrypt).
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-}
+    image: boutique-prod/caddy:local
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      API_PUBLIC_HOST: ${API_PUBLIC_HOST:?API_PUBLIC_HOST manquant (ex. api.169-58-70-37.sslip.io)}
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL manquant (contact Let's Encrypt)}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - edge
+      - internal
+    logging: *logging
+
+  api:
+    # Au démarrage : `alembic upgrade head` puis uvicorn ; refuse de servir si la base est
+    # injoignable ou non migrée (backend/Dockerfile).
+    build:
+      context: ../backend
+    image: boutique-prod/api:local
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: prod
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      PERSISTENCE_BACKEND: postgres
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?POSTGRES_USER manquant}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB manquant}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET manquant (au moins 32 octets aléatoires)}
+      # Caddy est sur ce sous-réseau : seul lui peut fournir X-Forwarded-For (limitation de
+      # débit par IP de /auth/*, app/interface/http/client_ip.py).
+      AUTH_TRUSTED_PROXIES: ${INTERNAL_SUBNET:?INTERNAL_SUBNET manquant (ex. 172.30.57.0/24)}
+      WEB_CONCURRENCY: ${API_WORKERS:-1}
+    networks:
+      - internal
+    logging: *logging
+
+  postgres:
+    image: postgres:18.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER manquant}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB manquant}
+      TZ: UTC
+      PGTZ: UTC
+    volumes:
+      # Postgres >= 18 : volume sur /var/lib/postgresql (PGDATA = .../18/docker).
+      - pg_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+    networks:
+      - internal
+    logging: *logging
+
+  silo:
+    # Stockage objet S3 (fork de MinIO, D16) : pièces jointes, bucket privé. Non exposé.
+    image: pgsty/silo:RELEASE.2026-11-09T00-00-00Z
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${S3_ROOT_USER:?S3_ROOT_USER manquant}
+      MINIO_ROOT_PASSWORD: ${S3_ROOT_PASSWORD:?S3_ROOT_PASSWORD manquant (au moins 8 caractères)}
+    volumes:
+      - silo_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    networks:
+      - internal
+    logging: *logging
+
+  silo-init:
+    # Une seule fois à chaque déploiement : crée le bucket privé puis s'arrête (idempotent).
+    image: pgsty/mc:RELEASE.2026-11-09T00-00-00Z
+    restart: "no"
+    depends_on:
+      silo:
+        condition: service_healthy
+    environment:
+      MC_HOST_local: http://${S3_ROOT_USER:?S3_ROOT_USER manquant}:${S3_ROOT_PASSWORD:?S3_ROOT_PASSWORD manquant}@silo:9000
+      S3_BUCKET: ${S3_BUCKET:?S3_BUCKET manquant (ex. attachments)}
+    entrypoint: ["/bin/sh", "-euc"]
+    command:
+      - |
+        mc mb --ignore-existing "local/$${S3_BUCKET}"
+        mc anonymous set none "local/$${S3_BUCKET}"
+        echo "bucket $${S3_BUCKET} prêt (accès anonyme : $$(mc anonymous get "local/$${S3_BUCKET}"))"
+    networks:
+      - internal
+    logging: *logging
+
+  backup:
+    # pg_dump compressé dès le démarrage puis chaque nuit, rotation (specs § 9.2, étape 1).
+    build:
+      context: ./backup
+    image: boutique-prod/backup:local
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGUSER: ${POSTGRES_USER:?POSTGRES_USER manquant}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant}
+      PGDATABASE: ${POSTGRES_DB:?POSTGRES_DB manquant}
+      BACKUP_KEEP: ${BACKUP_KEEP:-30}
+      BACKUP_TIME_UTC: ${BACKUP_TIME_UTC:-01:30}
+    volumes:
+      - backups:/backups
+    networks:
+      - internal
+    logging: *logging
+
+networks:
+  edge:
+    # Réseau public de Caddy (ports publiés, accès Internet pour Let's Encrypt).
+  internal:
+    # Aucun accès Internet ; sous-réseau fixe pour déclarer Caddy en proxy de confiance.
+    internal: true
+    ipam:
+      config:
+        - subnet: ${INTERNAL_SUBNET:?INTERNAL_SUBNET manquant (ex. 172.30.57.0/24)}
+
+volumes:
+  pg_data:
+  silo_data:
+  caddy_data:
+  caddy_config:
+  backups:

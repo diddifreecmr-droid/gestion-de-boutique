@@ -1,0 +1,11 @@
+# Contexte de build RACINE (image caddy : frontend/Dockerfile). Liste blanche : seuls le
+# frontend et le Caddyfile partent vers le démon Docker. L'image api a son propre contexte
+# (backend/, voir backend/.dockerignore).
+*
+!frontend/
+!infra/Caddyfile
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/.env
+frontend/.env.*
