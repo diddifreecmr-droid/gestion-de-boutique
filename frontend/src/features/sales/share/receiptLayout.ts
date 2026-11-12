@@ -36,7 +36,8 @@ export function pageOf(printing: Receipt["printing"]): PdfPage {
 export function wrap(text: string, width: number): string[] {
   const out: string[] = [];
   let current = "";
-  for (const word of text.split(/\s+/).filter((part) => part !== "")) {
+  // Espaces ordinaires seulement : « 780 000 FCFA » (espaces fines insécables) reste entier.
+  for (const word of text.split(/[ \t\n]+/).filter((part) => part !== "")) {
     for (let rest = word; rest !== ""; rest = rest.slice(width)) {
       const piece = rest.slice(0, width);
       if (current === "") current = piece;

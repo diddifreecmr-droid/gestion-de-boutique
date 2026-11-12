@@ -72,7 +72,8 @@ export async function shareReceipt(
       return { kind: "shared" };
     } catch (error) {
       // Feuille de partage fermée par l'utilisateur : ce n'est pas une panne.
-      if (error instanceof DOMException && error.name === "AbortError") return { kind: "cancelled" };
+      if (error instanceof DOMException && error.name === "AbortError")
+        return { kind: "cancelled" };
       throw error;
     }
   }

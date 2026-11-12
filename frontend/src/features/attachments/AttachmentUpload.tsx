@@ -25,7 +25,8 @@ export interface AttachmentUploadProps {
   codec?: ImageCodec;
 }
 
-type Step = { kind: "idle" } | { kind: "busy" } | { kind: "done" } | { kind: "failed"; text: string };
+type Step =
+  { kind: "idle" } | { kind: "busy" } | { kind: "done" } | { kind: "failed"; text: string };
 
 /**
  * Prendre ou choisir une photo (ou un PDF), la réduire, l'envoyer (RG-T26, UC-CRE-07). En cas

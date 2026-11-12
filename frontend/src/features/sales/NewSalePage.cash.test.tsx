@@ -95,7 +95,7 @@ describe("Nouvelle vente au comptant (UC-VEN-01)", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("confirmation : total, Imprimer actif, Partager à venir, puis « Nouvelle vente » avec le dernier mode", async () => {
+  it("confirmation : total, Imprimer et Partager actifs, puis « Nouvelle vente » avec le dernier mode", async () => {
     const { user } = renderSale();
     await user.click(await articleButton("Sanya SY125-8"));
     await user.click(radio("MTN MoMo"));
@@ -103,11 +103,8 @@ describe("Nouvelle vente au comptant (UC-VEN-01)", () => {
     await screen.findByRole("heading", { name: /V-000124/ });
     expect(screen.getAllByText(money(650_000)).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Imprimer" })).not.toHaveAttribute("aria-disabled");
-    expect(screen.getByRole("button", { name: "Partager" })).toHaveAttribute(
-      "aria-disabled",
-      "true",
-    );
-    expect(screen.getByText("Partage PDF : à venir")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Partager" })).not.toHaveAttribute("aria-disabled");
+    expect(screen.queryByText("Pièce d'identité du client")).toBeNull(); // comptant
 
     await user.click(screen.getByRole("button", { name: "Nouvelle vente" }));
     await user.click(await articleButton("Sanya SY125-8"));

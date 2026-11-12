@@ -102,10 +102,7 @@ describe("Enregistrer un versement (UC-CRE-03)", () => {
       reference: null,
     });
     expect(call?.headers.get("X-Captured-At")).toMatch(/^2026-11-11T/);
-    expect(screen.getByRole("button", { name: "Partager" })).toHaveAttribute(
-      "aria-disabled",
-      "true",
-    );
+    expect(screen.getByRole("button", { name: "Partager" })).not.toHaveAttribute("aria-disabled");
 
     await user.click(screen.getByRole("button", { name: "Imprimer le reçu" }));
     const receipt = await screen.findByRole("article", { name: "Reçu de versement" });

@@ -83,7 +83,8 @@ function contentStream(lines: readonly PdfLine[], page: PdfPage, heightPt: numbe
   const x = page.marginMm * MM_TO_PT;
   let y = heightPt - page.marginMm * MM_TO_PT - page.fontPt;
   const ops = lines.map((line) => {
-    const op = `BT /${line.bold === true ? "F2" : "F1"} ${String(page.fontPt)} Tf ` +
+    const op =
+      `BT /${line.bold === true ? "F2" : "F1"} ${String(page.fontPt)} Tf ` +
       `1 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)} Tm ${literal(line.text)} Tj ET`;
     y -= step;
     return op;
@@ -94,7 +95,7 @@ function contentStream(lines: readonly PdfLine[], page: PdfPage, heightPt: numbe
 /** Document PDF complet (octets ASCII) : catalogue, pages, deux polices, table xref. */
 export function renderPdf(lines: readonly PdfLine[], page: PdfPage): Uint8Array {
   const widthPt = page.widthMm * MM_TO_PT;
-  const rollHeight = (2 * page.marginMm * MM_TO_PT) + (lines.length + 1) * page.fontPt * LEADING;
+  const rollHeight = 2 * page.marginMm * MM_TO_PT + (lines.length + 1) * page.fontPt * LEADING;
   const heightPt = page.heightMm === null ? rollHeight : page.heightMm * MM_TO_PT;
   const pages = pagesOf(lines, page);
   const objects: string[] = [];
@@ -102,7 +103,8 @@ export function renderPdf(lines: readonly PdfLine[], page: PdfPage): Uint8Array 
   objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
   objects[2] = `<< /Type /Pages /Kids [${pageIds.map((id) => `${String(id)} 0 R`).join(" ")}] /Count ${String(pages.length)} >>`;
   objects[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>";
-  objects[4] = "<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold /Encoding /WinAnsiEncoding >>";
+  objects[4] =
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold /Encoding /WinAnsiEncoding >>";
   pages.forEach((pageLines, index) => {
     const id = pageIds[index] ?? 0;
     const stream = contentStream(pageLines, page, heightPt);
@@ -118,7 +120,9 @@ export function renderPdf(lines: readonly PdfLine[], page: PdfPage): Uint8Array 
     body += `${String(id)} 0 obj\n${objects[id] ?? ""}\nendobj\n`;
   }
   const xref = body.length;
-  const entries = offsets.slice(1).map((offset) => `${String(offset).padStart(10, "0")} 00000 n \n`);
+  const entries = offsets
+    .slice(1)
+    .map((offset) => `${String(offset).padStart(10, "0")} 00000 n \n`);
   body += `xref\n0 ${String(objects.length)}\n0000000000 65535 f \n${entries.join("")}`;
   body += `trailer\n<< /Size ${String(objects.length)} /Root 1 0 R >>\nstartxref\n${String(xref)}\n%%EOF\n`;
   return new TextEncoder().encode(body);

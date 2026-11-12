@@ -21,8 +21,7 @@ export function CreditIdPhoto({ shopId, customerId }: CreditIdPhotoProps) {
         Pièce d'identité du client
       </h2>
       <p className="m-0 text-body text-text-muted">
-        Facultatif. Photo réduite avant l'envoi ; visible du propriétaire et du vendeur
-        responsable.
+        Facultatif. Photo réduite avant l'envoi ; visible du propriétaire et du vendeur responsable.
       </p>
       <AttachmentUpload
         shopId={shopId}
