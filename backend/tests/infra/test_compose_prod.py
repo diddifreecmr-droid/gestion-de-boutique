@@ -2,7 +2,8 @@
 
 - aucun secret en dur (toute valeur sensible vient d'une variable `${VAR:?…}`) ;
 - images tierces épinglées en version exacte, images du projet construites depuis le dépôt ;
-- seul `caddy` publie des ports, et seulement 80/443 ;
+- seul `caddy` publie un port, HTTP, pris dans `PUBLIC_HTTP_PORT` (jamais 80/443, tenus par
+  Nginx Proxy Manager sur le VPS partagé) ;
 - données dans des volumes nommés ; services de données sur le réseau interne seulement ;
 - chaque variable exigée par le compose est documentée dans `.env.prod.example`.
 """
@@ -53,11 +54,15 @@ def test_images_are_pinned_or_built_from_the_repository(name: str) -> None:
         assert EXACT_TAG.match(image), f"{name} : image non épinglée en version exacte ({image})"
 
 
-def test_only_caddy_publishes_ports_and_only_http_https() -> None:
+def test_only_caddy_publishes_one_http_port_taken_from_the_environment() -> None:
     exposed = {name for name, service in _services().items() if service.get("ports")}
     assert exposed == {"caddy"}
-    for port in _services()["caddy"]["ports"]:
-        assert port.split("/")[0] in {"80:80", "443:443"}
+    ports = _services()["caddy"]["ports"]
+    assert len(ports) == 1
+    host, _, container = ports[0].rpartition(":")
+    assert container == "80"
+    assert REQUIRED_VAR.findall(host) == ["PUBLIC_HTTP_PORT"]
+    assert env_example()["PUBLIC_HTTP_PORT"] not in {"80", "443"}
 
 
 def test_data_lives_in_named_volumes() -> None:

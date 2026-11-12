@@ -1,30 +1,32 @@
 # Caddy de production (T25, specs § 4.7, § 7.3, § 8.4). Copié dans l'image caddy par
-# frontend/Dockerfile ; variables lues dans l'environnement du conteneur (compose de prod) :
-#   API_PUBLIC_HOST  nom public, ex. api.169-58-70-37.sslip.io (certificat Let's Encrypt auto)
-#   ACME_EMAIL       adresse de contact Let's Encrypt (expiration, incidents)
+# frontend/Dockerfile.
 #
-# Sert le build du frontend (fallback SPA) et proxifie /api/* vers le conteneur api. Le même
-# hôte reçoit aussi les appels relayés par Vercel (rewrite /api/* de frontend/vercel.json).
+# Caddy écoute en HTTP simple sur :80 : le HTTPS est terminé EN AMONT, par Vercel (relais
+# /api/* de frontend/vercel.json) aujourd'hui, puis par Nginx Proxy Manager et un nom de
+# domaine (seul accès autorisé à terme, voir docs/deploiement.md § « Bascule »). Les ports
+# 80/443 du VPS appartiennent à Nginx Proxy Manager.
+#
+# Sert le build du frontend (fallback SPA) et proxifie /api/* vers le conteneur api.
 {
-	email {$ACME_EMAIL}
+	auto_https off
 	# Pas d'interface d'administration exposée (rechargement : redémarrer le conteneur).
 	admin off
 }
 
-{$API_PUBLIC_HOST} {
+http://:80 {
 	encode zstd gzip
 
-	# En-têtes de sécurité (specs § 8.4), pour toutes les réponses. CSP : scripts du seul site ;
+	# En-têtes de sécurité (specs § 8.4), pour toutes les réponses (HSTS : posé par le
+	# terminateur HTTPS en amont). CSP : scripts du seul site ;
 	# style-src accepte « unsafe-inline » pour les règles @page des reçus (élément <style> rendu
 	# par React, specs § 9.1). Aucun script inline n'est permis.
 	header {
-		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=(), usb=()"
 		Cross-Origin-Opener-Policy "same-origin"
-		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 		-Server
 	}
 

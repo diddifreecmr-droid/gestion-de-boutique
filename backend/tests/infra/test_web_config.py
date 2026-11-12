@@ -34,9 +34,13 @@ def _vercel_headers(source: str) -> dict[str, str]:
     raise AssertionError(msg)
 
 
-def test_caddy_serves_the_configured_host_and_proxies_the_api() -> None:
+VPS_IP = "169.58.70.37"
+
+
+def test_caddy_serves_plain_http_behind_an_upstream_tls_terminator() -> None:
     text = read(CADDYFILE)
-    assert "{$API_PUBLIC_HOST} {" in text
+    assert "auto_https off" in text
+    assert "http://:80 {" in text
     assert re.search(r"handle /api/\* \{\s+header Cache-Control \"no-store\"", text)
     assert "reverse_proxy api:8000" in text
     assert "try_files {path} /index.html" in text  # fallback SPA
@@ -52,18 +56,18 @@ def test_caddy_never_caches_the_entry_page_nor_the_service_worker() -> None:
 
 def test_caddy_sends_the_security_headers() -> None:
     text = read(CADDYFILE)
-    for header in (*SECURITY_HEADERS, "Strict-Transport-Security"):
+    for header in SECURITY_HEADERS:
         assert header in text, header
     assert "script-src 'self';" in text
     assert "admin off" in text
 
 
-def test_vercel_rewrites_the_api_to_the_vps_host_first() -> None:
+def test_vercel_rewrites_the_api_to_the_published_caddy_port_first() -> None:
     rewrites = _vercel()["rewrites"]
-    host = env_example()["API_PUBLIC_HOST"]
+    port = env_example()["PUBLIC_HTTP_PORT"]
     assert rewrites[0] == {
         "source": "/api/:path*",
-        "destination": f"https://{host}/api/:path*",
+        "destination": f"http://{VPS_IP}:{port}/api/:path*",
     }
     assert rewrites[-1]["destination"] == "/index.html"  # fallback SPA, après l'API
 

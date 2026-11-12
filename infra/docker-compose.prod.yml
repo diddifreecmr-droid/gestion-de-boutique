@@ -8,7 +8,7 @@
 # Règles (vérifiées par backend/tests/infra/test_compose_prod.py) :
 # - aucun secret en dur : tout passe par ${VAR:?message} (absente = refus explicite) ;
 # - images tierces épinglées en version exacte ; images du projet construites depuis le dépôt ;
-# - seul caddy publie des ports (80/443) ; les autres services sont sur le réseau `internal`,
+# - seul caddy publie un port (HTTP, provisoire, cf. PUBLIC_HTTP_PORT) ; les autres services sont sur le réseau `internal`,
 #   sans accès à Internet ;
 # - données dans des volumes nommés (jamais supprimés par une mise à jour de la stack).
 
@@ -22,7 +22,9 @@ x-logging: &logging
 
 services:
   caddy:
-    # Build Vite du frontend + infra/Caddyfile (HTTPS automatique Let's Encrypt).
+    # Build Vite du frontend + infra/Caddyfile, en HTTP : HTTPS terminé en amont (Vercel,
+    # puis Nginx Proxy Manager). PROVISOIRE : port publié pour l'accès par l'IP ; à la bascule
+    # vers le nom de domaine, retirer `ports` et rejoindre le réseau de Nginx Proxy Manager.
     build:
       context: ..
       dockerfile: frontend/Dockerfile
@@ -33,13 +35,8 @@ services:
     depends_on:
       api:
         condition: service_started
-    environment:
-      API_PUBLIC_HOST: ${API_PUBLIC_HOST:?API_PUBLIC_HOST manquant (ex. api.169-58-70-37.sslip.io)}
-      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL manquant (contact Let's Encrypt)}
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - "${PUBLIC_HTTP_PORT:?PUBLIC_HTTP_PORT manquant (ex. 8088)}:80"
     volumes:
       - caddy_data:/data
       - caddy_config:/config
@@ -66,7 +63,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET manquant (au moins 32 octets aléatoires)}
       # Caddy est sur ce sous-réseau : seul lui peut fournir X-Forwarded-For (limitation de
       # débit par IP de /auth/*, app/interface/http/client_ip.py).
-      AUTH_TRUSTED_PROXIES: ${INTERNAL_SUBNET:?INTERNAL_SUBNET manquant (ex. 172.30.57.0/24)}
+      AUTH_TRUSTED_PROXIES: ${INTERNAL_SUBNET:?INTERNAL_SUBNET manquant (ex. 172.29.57.0/24)}
       WEB_CONCURRENCY: ${API_WORKERS:-1}
     networks:
       - internal
@@ -164,7 +161,7 @@ networks:
     internal: true
     ipam:
       config:
-        - subnet: ${INTERNAL_SUBNET:?INTERNAL_SUBNET manquant (ex. 172.30.57.0/24)}
+        - subnet: ${INTERNAL_SUBNET:?INTERNAL_SUBNET manquant (ex. 172.29.57.0/24)}
 
 volumes:
   pg_data:

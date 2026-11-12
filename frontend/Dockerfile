@@ -20,6 +20,5 @@ RUN npm run build && test -f dist/index.html && test -f dist/sw.js
 FROM caddy:2.11.9-alpine AS runtime
 COPY infra/Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /build/dist /srv
-# Refuse une configuration invalide dès le build (les variables sont factices ici).
-RUN API_PUBLIC_HOST=build.invalid ACME_EMAIL=build@example.invalid \
-    caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+# Refuse une configuration invalide dès le build.
+RUN caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
