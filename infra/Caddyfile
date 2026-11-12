@@ -5,7 +5,6 @@
 #
 # Sert le build du frontend (fallback SPA) et proxifie /api/* vers le conteneur api. Le même
 # hôte reçoit aussi les appels relayés par Vercel (rewrite /api/* de frontend/vercel.json).
-
 {
 	email {$ACME_EMAIL}
 	# Pas d'interface d'administration exposée (rechargement : redémarrer le conteneur).

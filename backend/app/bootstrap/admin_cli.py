@@ -61,7 +61,8 @@ def create_platform_admin(
 def read_password_interactively() -> str:
     """Deux saisies masquées (terminal) ; une ligne de l'entrée standard sinon."""
     if not sys.stdin.isatty():
-        return sys.stdin.readline().rstrip("\n")
+        # Fin de ligne Windows et marque d'ordre d'octets (tube PowerShell 5) retirées.
+        return sys.stdin.readline().rstrip("\r\n").removeprefix("﻿")
     first = getpass.getpass("Mot de passe de l'administrateur : ")
     if getpass.getpass("Confirmer le mot de passe : ") != first:
         msg = "Les deux saisies diffèrent : aucun compte créé"

@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from typing import assert_never
 
 import sqlalchemy as sa
+
 from app.application.alerts.dispatcher import AlertDispatcher
 from app.application.audit.identity_recorder import IdentityAuditRecorder
 from app.application.audit.recorder import AuditRecorder

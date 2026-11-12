@@ -62,7 +62,8 @@ def test_main_rejects_a_mismatched_confirmation(
     monkeypatch.setenv("ENVIRONMENT", "test")
 
     def mismatch() -> str:
-        raise AdminCreationRefused("Les deux saisies diffèrent : aucun compte créé")
+        msg = "Les deux saisies diffèrent : aucun compte créé"
+        raise AdminCreationRefused(msg)
 
     assert main(["--phone", "699000001", "--name", "Admin"], read_password=mismatch) == 1
     assert "diffèrent" in capsys.readouterr().err
@@ -74,7 +75,7 @@ class _Tty(io.StringIO):
 
 
 def test_password_is_read_from_a_pipe_or_typed_twice(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("sys.stdin", io.StringIO(f"{STRONG}\n"))
+    monkeypatch.setattr("sys.stdin", io.StringIO(f"﻿{STRONG}\r\n"))  # tube PowerShell
     assert read_password_interactively() == STRONG
     monkeypatch.setattr("sys.stdin", _Tty())
     typed = iter([STRONG, "autre-chose-0123"])
