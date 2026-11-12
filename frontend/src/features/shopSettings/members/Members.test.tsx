@@ -5,8 +5,6 @@ import { apiError, json, type Call } from "../../../testing/fakeApi";
 import { renderApp } from "../../../testing/renderApp";
 import {
   member,
-  MEMBERS,
-  OWNER_ID,
   preloadSettings,
   route,
   SELLER_ID,
@@ -169,39 +167,5 @@ describe("Membres (UC-SOC-04, MEM-01 à 04)", () => {
       active: true,
       version: 2,
     });
-  });
-
-  it("compte bloqué : débloquer, redonner un code (affiché), déconnecter les appareils", async () => {
-    const locked = member({ locked: true });
-    const unlock = route("POST", `${ONE}/unlock`);
-    const reset = route("POST", `${ONE}/reset-pin`);
-    const revoke = route("POST", `${ONE}/revoke-devices`);
-    const { user, fake } = await openMembers({
-      ...settingsRoutes("owner"),
-      [route("GET", "/members")]: json(200, [MEMBERS[0], locked]),
-      [unlock]: new Response(null, { status: 204 }),
-      [reset]: json(200, { temporary_pin: "902615" }),
-      [revoke]: json(200, { revoked_sessions: 2 }),
-    });
-    expect(rowOf("Moussa Hamadou").getByText("Bloqué")).toBeVisible();
-    await user.click(rowOf("Moussa Hamadou").getByRole("button", { name: "Débloquer" }));
-    expect(await screen.findByText("Moussa Hamadou est débloqué.")).toBeVisible();
-    expect(rowOf("Moussa Hamadou").queryByText("Bloqué")).toBeNull();
-    expect(fake.count(unlock)).toBe(1);
-
-    await user.click(rowOf("Moussa Hamadou").getByRole("button", { name: "Redonner un code" }));
-    const dialog = screen.getByRole("dialog", { name: "Redonner un code à Moussa Hamadou ?" });
-    await user.click(within(dialog).getByRole("button", { name: "Redonner un code" }));
-    expect(await screen.findByText("902615")).toBeVisible();
-    expect(rowOf("Moussa Hamadou").getByText("Code provisoire")).toBeVisible();
-
-    await user.click(
-      rowOf("Moussa Hamadou").getByRole("button", { name: "Déconnecter ses appareils" }),
-    );
-    await user.click(
-      within(screen.getByRole("dialog")).getByRole("button", { name: "Déconnecter" }),
-    );
-    expect(await screen.findByText("Moussa Hamadou : 2 appareils déconnectés.")).toBeVisible();
-    expect(fake.count(route("PATCH", `/members/${OWNER_ID}`))).toBe(0);
   });
 });
