@@ -5,7 +5,7 @@ import { axeViolations } from "../../testing/axe";
 import {
   DASHBOARD_TODAY,
   dashboardBody,
-  HOME_PATH,
+  DASHBOARD_PATH,
   homeRoutes,
   NOW,
   preloadDashboard,
@@ -29,9 +29,9 @@ const figure = (amount: number) => plain(formatMoney(amount).replace(`${NBSP}FCF
 const card = (name: RegExp) => screen.findByRole("button", { name });
 const list = (name: string) => within(screen.getByRole("list", { name }));
 
-describe("accueil du propriétaire (UC-TDB-01, design-system § 7.2)", () => {
+describe("tableau de bord du propriétaire (UC-TDB-01, design-system § 7.2)", () => {
   it("tous les blocs, de haut en bas, avec la comparaison en mots ; 360 px, axe", async () => {
-    const { container, fake } = renderApp(HOME_PATH, homeRoutes("owner"));
+    const { container, fake } = renderApp(DASHBOARD_PATH, homeRoutes("owner"));
     const sales = await card(/^Ventes du jour/);
     expect(sales).toHaveTextContent(plain(figure(2_340_000)));
     expect(sales).toHaveTextContent(plain("3 ventes"));
@@ -75,7 +75,7 @@ describe("accueil du propriétaire (UC-TDB-01, design-system § 7.2)", () => {
   });
 
   it("« Voir aussi au CMP » : marge au CMP à côté de la marge au dernier coût, avec l'écart", async () => {
-    const { user } = renderApp(HOME_PATH, homeRoutes("owner"));
+    const { user } = renderApp(DASHBOARD_PATH, homeRoutes("owner"));
     await user.click(await screen.findByRole("button", { name: "Voir aussi au CMP" }));
     const terms = screen.getAllByRole("term").map((term) => term.textContent);
     expect(terms).toEqual(["Marge au dernier coût", "Marge au CMP", "Écart (CMP − dernier coût)"]);
@@ -86,7 +86,7 @@ describe("accueil du propriétaire (UC-TDB-01, design-system § 7.2)", () => {
   it("aucune vente sans coût : la ligne n'apparaît pas ; stock non calculable dit pourquoi", async () => {
     const body = dashboardBody();
     renderApp(
-      HOME_PATH,
+      DASHBOARD_PATH,
       homeRoutes("owner", {
         [DASHBOARD_TODAY]: json(200, {
           ...body,
@@ -109,7 +109,7 @@ describe("accueil du propriétaire (UC-TDB-01, design-system § 7.2)", () => {
 describe("hors connexion (RG-T25)", () => {
   it("« Chiffres disponibles avec internet » à la place des montants ; les accès restent", async () => {
     const { user, fake } = renderApp(
-      HOME_PATH,
+      DASHBOARD_PATH,
       homeRoutes("owner", { [DASHBOARD_TODAY]: new TypeError("Failed to fetch") }),
     );
     expect(await screen.findAllByText("Chiffres disponibles avec internet")).toHaveLength(2);
@@ -123,7 +123,7 @@ describe("hors connexion (RG-T25)", () => {
   });
 
   it("chiffres déjà lus puis réseau perdu : ils disparaissent, jamais de chiffre en cache", async () => {
-    renderApp(HOME_PATH, homeRoutes("owner"));
+    renderApp(DASHBOARD_PATH, homeRoutes("owner"));
     expect(await card(/^Ventes du jour/)).toHaveTextContent(plain(figure(2_340_000)));
     window.dispatchEvent(new Event("offline"));
     expect(await screen.findAllByText("Chiffres disponibles avec internet")).toHaveLength(2);

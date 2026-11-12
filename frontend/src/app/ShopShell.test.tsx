@@ -33,12 +33,13 @@ afterEach(() => {
 
 describe("coquille — menus par rôle (CDC § 17.4)", () => {
   it.each([
-    ["owner", ["Accueil", "Ventes", "Stock", "Camions", "Plus"], "Propriétaire"],
-    ["accountant", ["Accueil", "Achats", "Stock", "Déplacements", "Dépenses"], "Comptable"],
-    ["driver", ["Mon voyage", "Mes dépenses", "Mes voyages"], "Chauffeur"],
-  ])("%s : barre du bas et accueil provisoire", async (role, labels, roleLabel) => {
+    ["owner", ["Accueil", "Ventes", "Stock", "Camions", "Plus"]],
+    ["accountant", ["Accueil", "Achats", "Stock", "Déplacements", "Dépenses"]],
+    ["driver", ["Mon voyage", "Mes dépenses", "Mes voyages"]],
+  ])("%s : barre du bas et titre de l'accueil", async (role, labels) => {
     openAs(role);
-    expect(await screen.findByText(new RegExp(`Bonjour Awa Bello — ${roleLabel}`))).toBeVisible();
+    const [home = ""] = labels;
+    expect(await screen.findByRole("heading", { level: 1, name: home })).toBeInTheDocument();
     expect(
       nav()
         .getAllByRole("link")
@@ -103,10 +104,13 @@ describe("coquille — compte et bannières", () => {
     },
   );
 
-  it("« Mon compte » depuis l'accueil : déconnexion après confirmation", async () => {
+  it("« Mon compte » (barre du haut) : déconnexion après confirmation", async () => {
     const { user, router } = openAs("seller");
-    await screen.findByText(/Bonjour Awa Bello/);
-    await user.click(within(screen.getByRole("main")).getByRole("button", { name: "Mon compte" }));
+    await screen.findByText("Motos Garoua");
+    expect(
+      within(screen.getByRole("main")).queryByRole("button", { name: "Mon compte" }),
+    ).toBeNull();
+    await user.click(topBar().getByRole("button", { name: "Mon compte" }));
     await user.click(screen.getByRole("button", { name: "Se déconnecter" }));
     const dialog = screen.getByRole("dialog", { name: "Se déconnecter ?" });
     await user.click(within(dialog).getByRole("button", { name: "Se déconnecter" }));

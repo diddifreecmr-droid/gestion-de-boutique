@@ -4,7 +4,7 @@ import { formatMoney } from "../../shared/format";
 import { axeViolations } from "../../testing/axe";
 import {
   API,
-  HOME_PATH,
+  DASHBOARD_PATH,
   homeRoutes,
   NOW,
   preloadDashboard,
@@ -33,7 +33,7 @@ const money = (amount: number) => plain(formatMoney(amount));
 describe("changer de période (UC-TDB-02)", () => {
   it("six périodes ; « Cette semaine » : chiffres de la semaine, barres jour par jour, total et moyenne", async () => {
     const { user, router, fake, container } = renderApp(
-      HOME_PATH,
+      DASHBOARD_PATH,
       homeRoutes("owner", { [WEEK]: json(200, weekBody()) }),
     );
     const periods = await screen.findByRole("radiogroup", { name: "Période" });
@@ -76,14 +76,14 @@ describe("changer de période (UC-TDB-02)", () => {
   });
 
   it("aujourd'hui : pas de graphique (un seul jour)", async () => {
-    renderApp(HOME_PATH, homeRoutes("owner"));
+    renderApp(DASHBOARD_PATH, homeRoutes("owner"));
     await screen.findByRole("button", { name: /^Ventes du jour/ });
     expect(screen.queryByRole("list", { name: "Ventes et marge par jour" })).toBeNull();
   });
 
   it("période libre : du … au …, jamais après aujourd'hui ni à l'envers", async () => {
     const { user, fake, router } = renderApp(
-      HOME_PATH,
+      DASHBOARD_PATH,
       homeRoutes("owner", {
         [custom(TODAY, TODAY)]: json(200, weekBody()),
         [custom("2026-11-01", TODAY)]: json(200, weekBody()),
@@ -114,7 +114,7 @@ describe("changer de période (UC-TDB-02)", () => {
   });
 
   it("période libre vide : la date de début est demandée", async () => {
-    renderApp(`${HOME_PATH}?periode=custom`, homeRoutes("owner"));
+    renderApp(`${DASHBOARD_PATH}?periode=custom`, homeRoutes("owner"));
     expect(await screen.findByText("Choisissez la date de début")).toBeVisible();
     expect(screen.getByText("Choisissez une période valable")).toBeVisible();
   });

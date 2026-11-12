@@ -5,7 +5,7 @@ import { axeViolations } from "../../testing/axe";
 import {
   detailBody,
   detailRoute,
-  HOME_PATH,
+  DASHBOARD_PATH,
   homeRoutes,
   NOW,
   preloadDashboard,
@@ -60,9 +60,9 @@ const LOW = detailBody(
 );
 
 describe("détail d'un chiffre (UC-TDB-04)", () => {
-  it("« Ventes du jour » : la liste qui l'explique, fiche d'une vente, retour à l'accueil", async () => {
+  it("« Ventes du jour » : la liste qui l'explique, fiche d'une vente, retour au tableau de bord", async () => {
     const { user, router, container } = renderApp(
-      HOME_PATH,
+      DASHBOARD_PATH,
       homeRoutes("owner", { [detailRoute("sales")]: json(200, SALES) }),
     );
     await user.click(await screen.findByRole("button", { name: /^Ventes du jour/ }));
@@ -83,7 +83,7 @@ describe("détail d'un chiffre (UC-TDB-04)", () => {
     expect(screen.queryByRole("button", { name: /Retour sur la vente/ })).toBeNull();
     expect(await axeViolations(container)).toEqual([]);
 
-    await user.click(screen.getByRole("button", { name: "Retour à l'accueil" }));
+    await user.click(screen.getByRole("button", { name: "Retour au tableau de bord" }));
     expect(router.state.location.search).toBe("");
     expect(await screen.findByRole("button", { name: /^Ventes du jour/ })).toBeVisible();
 
@@ -96,7 +96,7 @@ describe("détail d'un chiffre (UC-TDB-04)", () => {
   it("argent encaissé : par mode de paiement, sur la période choisie", async () => {
     const week = "period=week";
     const { user, fake } = renderApp(
-      `${HOME_PATH}?periode=week`,
+      `${DASHBOARD_PATH}?periode=week`,
       homeRoutes("owner", {
         [`GET /api/v1/shops/${SHOP_A}/dashboard?${week}`]: json(200, weekBody()),
         [detailRoute("payments", week)]: json(200, PAYMENTS),
@@ -115,7 +115,7 @@ describe("détail d'un chiffre (UC-TDB-04)", () => {
 
   it("stock bas : articles sous le seuil, total en nombre d'articles", async () => {
     const { user } = renderApp(
-      HOME_PATH,
+      DASHBOARD_PATH,
       homeRoutes("owner", { [detailRoute("low_stock")]: json(200, LOW) }),
     );
     await user.click(await screen.findByRole("button", { name: /^Stock bas/ }));
@@ -124,7 +124,7 @@ describe("détail d'un chiffre (UC-TDB-04)", () => {
   });
 
   it("liste vide et hors connexion", async () => {
-    const { user } = renderApp(`${HOME_PATH}?detail=expenses`, {
+    const { user } = renderApp(`${DASHBOARD_PATH}?detail=expenses`, {
       ...homeRoutes("owner"),
       [detailRoute("expenses")]: [
         new TypeError("Failed to fetch"),

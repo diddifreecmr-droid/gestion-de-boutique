@@ -4,9 +4,11 @@
  * Sans lui, aucun point d'entrée vers le tableau de bord complet n'apparaît. Module léger :
  * « Plus » et l'accueil l'importent sans charger l'écran.
  */
+import { useState } from "react";
 import type { AppServices } from "../../core/services/createServices";
 import { useServices } from "../../core/services/servicesContext";
-import { useFigures, type Figures } from "./reportingContext";
+import { useLoad } from "../expenses/useLoad";
+import type { Figures } from "./reportingContext";
 
 export const DASHBOARD_MODULE = "dashboard";
 
@@ -26,11 +28,20 @@ export async function enabledModules(
 
 /**
  * Le module `dashboard` est-il actif ? Lu à chaque ouverture (l'administrateur peut le changer
- * à tout moment) ; hors connexion : « offline », l'entrée reste cachée.
+ * à tout moment). Ce n'est pas un chiffre : une réponse lue reste valable si le réseau tombe
+ * ensuite (le tableau de bord dit alors lui-même « Chiffres disponibles avec internet ») ; une
+ * première lecture sans réseau donne « offline » et l'entrée reste cachée.
  */
 export function useDashboardModule(shopId: string): Figures<boolean> {
   const services = useServices();
-  return useFigures(`modules:${shopId}`, async () =>
+  const [attempt, setAttempt] = useState(0);
+  const loaded = useLoad(`modules:${shopId}|${String(attempt)}`, async () =>
     (await enabledModules(services, shopId)).includes(DASHBOARD_MODULE),
   );
+  return {
+    loaded,
+    retry: () => {
+      setAttempt((current) => current + 1);
+    },
+  };
 }
