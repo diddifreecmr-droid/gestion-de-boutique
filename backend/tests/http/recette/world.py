@@ -13,7 +13,7 @@ from typing import Any
 import httpx2 as httpx
 
 from app.domain.sales.ids import SaleId
-from tests.http.shops.conftest import NEW_PIN, Api, Session
+from tests.http.shops.conftest import NEW_PIN, PREFIX, Api, Session
 
 SENTINEL_COST = 543_210
 SENTINEL_PRICE = 777_777
@@ -36,7 +36,12 @@ class Side:
         return self.sessions["owner"]
 
     def call(self, method: str, suffix: str, who: Session, **kwargs: Any) -> httpx.Response:
-        return self.api.call(method, f"/shops/{self.id}{suffix}", who, **kwargs)
+        extra = kwargs.pop("headers", None)
+        if extra is None:
+            return self.api.call(method, f"/shops/{self.id}{suffix}", who, **kwargs)
+        headers = {"X-Device-Id": str(who.device), "Authorization": f"Bearer {who.token}", **extra}
+        path = f"{PREFIX}/shops/{self.id}{suffix}"
+        return self.api.client.request(method, path, headers=headers, **kwargs)
 
     def ok(self, method: str, suffix: str, who: Session, **kwargs: Any) -> Any:
         response = self.call(method, suffix, who, **kwargs)
