@@ -24,6 +24,7 @@ from app.application.receivables.access import (
 )
 from app.application.receivables.ports import ReceivableRepository
 from app.application.receivables.retry import with_receivable_retry
+from app.application.sales.ports import CustomerRepository
 from app.application.security.actor import Actor
 from app.application.security.permissions import Permission
 from app.application.security.policy import Policy
@@ -141,6 +142,7 @@ class RecordInstallment:
         if command.customer_id is None:  # exclu par `execute` : défense en profondeur
             msg = "Client du versement manquant"
             raise ValidationFailed(msg, details={"field": "customer_id"})
+        CustomerRepository.within(uow).get(command.customer_id)  # inconnu ici → 404 (SEC-I)
         found = ReceivableRepository.within(uow).for_customer(
             command.customer_id, responsible=responsible
         )

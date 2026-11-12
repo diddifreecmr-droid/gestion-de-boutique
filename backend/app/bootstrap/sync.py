@@ -34,7 +34,7 @@ def build_sync(
     clock, uows = identity.clock, identity.core.shop_uow_factory
     runner = OperationRunner(sales.http.record, expenses.http.record)
     http = SyncComponents(
-        sync=SyncOperations(uows, journal.entitlements, runner, clock),
+        sync=SyncOperations(uows, journal.entitlements, runner, clock, Policy(clock=clock.now)),
         snapshot=ReadOfflineSnapshot(uows, journal.entitlements, Policy(clock=clock.now), clock),
         guard=identity.auth.guard,
     )

@@ -34,16 +34,21 @@ def _legacy(side: Side) -> dict[str, Any]:
     }
 
 
-def _customer_version(side: Side) -> int:
-    sheet = side.ok("GET", f"/customers/{side.ids['customer_seller']}", side.owner)
-    return int(sheet["customer"]["version"])
+def _sheet_version(path: str, key: str, nested: str) -> Body:
+    """Fiche qui emboîte l'objet (client, fournisseur) : version lue dans `nested`."""
+
+    def body(side: Side) -> dict[str, Any]:
+        sheet = side.ok("GET", f"{path}/{side.ids[key]}", side.owner)
+        return {"version": int(sheet[nested]["version"]), "city": "Garoua"}
+
+    return body
 
 
 TRADE_ROUTES: Mapping[str, Body | None] = {
     "GET /suppliers": None,
     "POST /suppliers": lambda s: {"name": unique("Fournisseur")},
     "GET /suppliers/{supplier_id}": None,
-    "PATCH /suppliers/{supplier_id}": versioned("/suppliers/{supplier_id}", city="Douala"),
+    "PATCH /suppliers/{supplier_id}": _sheet_version("/suppliers", "supplier", "supplier"),
     "GET /purchases": None,
     "POST /purchases": _purchase,
     "GET /purchases/{purchase_id}": None,
@@ -62,7 +67,7 @@ TRADE_ROUTES: Mapping[str, Body | None] = {
     "GET /customers": None,
     "POST /customers": lambda s: {"name": unique("Awa"), "phone": phone()},
     "GET /customers/{customer_id}": None,
-    "PATCH /customers/{customer_id}": lambda s: {"version": _customer_version(s), "city": "Garoua"},
+    "PATCH /customers/{customer_id}": _sheet_version("/customers", "customer_seller", "customer"),
     "POST /price-requests": lambda s: {"article_id": s.ids["article"],
                                        "requested_price": 700_000},
     "GET /price-requests": None,
