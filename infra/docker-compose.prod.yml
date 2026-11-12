@@ -58,6 +58,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      silo-init:
+        # Bucket privé et compte de service de l'API prêts avant de servir.
+        condition: service_completed_successfully
     environment:
       ENVIRONMENT: prod
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
@@ -68,6 +71,15 @@ services:
       # débit par IP de /auth/*, app/interface/http/client_ip.py).
       AUTH_TRUSTED_PROXIES: ${INTERNAL_SUBNET:?INTERNAL_SUBNET manquant (ex. 172.30.57.0/24)}
       WEB_CONCURRENCY: ${API_WORKERS:-1}
+      # Pièces jointes (TR-17, D16) : Silo sur le réseau interne, compte de service limité au
+      # bucket (lecture, écriture ; ni suppression ni administration), créé par silo-init.
+      # Le navigateur ne joint jamais Silo : l'API relaie le contenu (docs/deploiement.md).
+      STORAGE_BACKEND: s3
+      S3_ENDPOINT: http://silo:9000
+      S3_ACCESS_KEY: ${S3_API_ACCESS_KEY:?S3_API_ACCESS_KEY manquant (compte de service de l'API dans Silo)}
+      S3_SECRET_KEY: ${S3_API_SECRET_KEY:?S3_API_SECRET_KEY manquant (au moins 8 caractères)}
+      S3_BUCKET: ${S3_BUCKET:?S3_BUCKET manquant (ex. attachments)}
+      ATTACHMENT_LINK_TTL_SECONDS: ${ATTACHMENT_LINK_TTL_SECONDS:-60}
     networks:
       - internal
     logging: *logging
@@ -115,7 +127,8 @@ services:
     logging: *logging
 
   silo-init:
-    # Une seule fois à chaque déploiement : crée le bucket privé puis s'arrête (idempotent).
+    # Une seule fois à chaque déploiement (idempotent) : bucket privé, stratégie « boutique-api »
+    # (GetObject, PutObject sur ce bucket seulement) et compte de service de l'API, puis arrêt.
     image: pgsty/mc:RELEASE.2026-11-09T00-00-00Z
     restart: "no"
     depends_on:
@@ -124,11 +137,21 @@ services:
     environment:
       MC_HOST_local: http://${S3_ROOT_USER:?S3_ROOT_USER manquant}:${S3_ROOT_PASSWORD:?S3_ROOT_PASSWORD manquant}@silo:9000
       S3_BUCKET: ${S3_BUCKET:?S3_BUCKET manquant (ex. attachments)}
+      S3_API_ACCESS_KEY: ${S3_API_ACCESS_KEY:?S3_API_ACCESS_KEY manquant (compte de service de l'API dans Silo)}
+      S3_API_SECRET_KEY: ${S3_API_SECRET_KEY:?S3_API_SECRET_KEY manquant (au moins 8 caractères)}
     entrypoint: ["/bin/sh", "-euc"]
     command:
       - |
         mc mb --ignore-existing "local/$${S3_BUCKET}"
         mc anonymous set none "local/$${S3_BUCKET}"
+        cat > /tmp/boutique-api.json <<JSON
+        {"Version":"2012-10-17","Statement":[
+         {"Effect":"Allow","Action":["s3:GetObject","s3:PutObject"],"Resource":["arn:aws:s3:::$${S3_BUCKET}/*"]},
+         {"Effect":"Allow","Action":["s3:GetBucketLocation","s3:ListBucket"],"Resource":["arn:aws:s3:::$${S3_BUCKET}"]}]}
+        JSON
+        mc admin policy create local boutique-api /tmp/boutique-api.json
+        mc admin user add local "$${S3_API_ACCESS_KEY}" "$${S3_API_SECRET_KEY}"
+        mc admin policy attach local boutique-api --user "$${S3_API_ACCESS_KEY}"
         echo "bucket $${S3_BUCKET} prêt (accès anonyme : $$(mc anonymous get "local/$${S3_BUCKET}"))"
     networks:
       - internal

@@ -32,6 +32,13 @@
 	# ne le lit que si la connexion vient du réseau interne (AUTH_TRUSTED_PROXIES).
 	handle /api/* {
 		header Cache-Control "no-store"
+		# Envoi de pièces jointes : 5 Mo par fichier (RG-T26) + enveloppe multipart ; au-delà,
+		# refus par Caddy (413) avant l'API. Le contenu est servi par l'API (liens signés 60 s),
+		# jamais par Silo, qui reste sur le réseau interne (docs/deploiement.md).
+		@upload path_regexp ^/api/v1/shops/[^/]+/attachments$
+		request_body @upload {
+			max_size 6MB
+		}
 		reverse_proxy api:8000 {
 			health_uri /api/v1/health
 			health_interval 30s

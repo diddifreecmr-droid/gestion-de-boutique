@@ -14,7 +14,7 @@ Une **seule stack** Portainer, décrite par `infra/docker-compose.prod.yml` :
 | `api` | l'API (FastAPI). Au démarrage : applique les migrations, vérifie la base, puis sert | non |
 | `postgres` | la base de données (PostgreSQL 18.6) | non |
 | `silo` | le stockage des fichiers (compatible S3, bucket privé) | non |
-| `silo-init` | crée le bucket au démarrage, puis s'arrête (état « Exited (0) » normal) | non |
+| `silo-init` | crée le bucket privé et le compte de service de l'API, puis s'arrête (« Exited (0) » normal) | non |
 | `backup` | sauvegarde de la base au démarrage puis chaque nuit, garde 30 copies | non |
 
 Les données sont dans des **volumes nommés** (`pg_data`, `silo_data`, `backups`, `caddy_data`,
@@ -37,7 +37,8 @@ ce qui permet un vrai certificat HTTPS). Cette adresse sert l'application **et**
    python -c "import secrets; print(secrets.token_urlsafe(48))"
    ```
 
-   un pour `POSTGRES_PASSWORD`, un pour `JWT_SECRET`, un pour `S3_ROOT_PASSWORD`.
+   un pour `POSTGRES_PASSWORD`, un pour `JWT_SECRET`, un pour `S3_ROOT_PASSWORD`, un pour
+   `S3_API_SECRET_KEY` (quatre au total).
    Les ranger dans le gestionnaire de mots de passe de l'équipe. **Jamais dans git.**
 
 ## 3. Créer la stack dans Portainer
@@ -62,6 +63,9 @@ ce qui permet un vrai certificat HTTPS). Cette adresse sert l'application **et**
    | `S3_ROOT_USER` | oui | identifiant du stockage de fichiers |
    | `S3_ROOT_PASSWORD` | oui | mot de passe du stockage de fichiers, 8 caractères au moins (secret) |
    | `S3_BUCKET` | oui | nom du bucket des pièces jointes (ex. `attachments`) |
+   | `S3_API_ACCESS_KEY` | oui | identifiant du compte de service de l'API dans Silo (ex. `boutique-api`), différent de `S3_ROOT_USER` |
+   | `S3_API_SECRET_KEY` | oui | secret de ce compte, 8 caractères au moins (secret) |
+   | `ATTACHMENT_LINK_TTL_SECONDS` | non | durée des liens vers les pièces jointes (`60` s par défaut) |
    | `LOG_LEVEL` | non | niveau des journaux (`INFO` par défaut) |
    | `API_WORKERS` | non | nombre de processus de l'API (`1` par défaut) |
    | `BACKUP_KEEP` | non | nombre de sauvegardes gardées (`30` par défaut) |
@@ -171,7 +175,62 @@ La restauration **remplace** toute la base par le contenu de la sauvegarde.
    `Base de données joignable, révision …`).
 4. Tester chaque mois une restauration (exigence du CDC § 21), idéalement sur une copie.
 
-## 10. Bon à savoir
+## 10. Pièces jointes : comment le navigateur lit un fichier
+
+Photos de pièce d'identité, justificatifs, factures (TR-17, RG-T26). **Silo n'est jamais
+exposé** : ni port publié, ni route Caddy. Le contenu passe toujours par l'API.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant N as Navigateur
+    participant P as Vercel ou Caddy (/api/*)
+    participant A as API
+    participant S as Silo (réseau interne)
+    N->>P: GET /api/v1/shops/{id}/attachments/{pj}/url (jeton)
+    P->>A: relais
+    A->>A: droits de l'élément lié (403 / 404), puis signature HMAC (60 s)
+    A-->>N: {url: "/api/v1/shops/{id}/attachments/{pj}/content?expires=…&signature=…"}
+    N->>P: GET url (balise img, sans jeton)
+    P->>A: relais
+    A->>A: signature et expiration vérifiées (404 falsifiée, 410 expirée)
+    A->>S: GetObject (compte de service, http://silo:9000)
+    S-->>A: octets
+    A-->>N: image/jpeg, image/png ou application/pdf (nosniff, no-store)
+```
+
+Pourquoi ce choix plutôt qu'une URL signée par Silo :
+
+- **une seule origine** : le lien est un chemin `/api/…`, servi par le même nom que
+  l'application (Vercel relaie `/api/*`, Caddy aussi). Aucune adresse publique pour Silo, aucun
+  certificat ni DNS de plus, et la CSP reste `img-src 'self' data: blob:` (inchangée dans
+  `infra/Caddyfile` et `frontend/vercel.json`) ;
+- **aucun secret de plus** : la clé des liens est dérivée de `JWT_SECRET` ; la changer invalide
+  les liens en cours (60 s au plus) ;
+- **droits contrôlés à chaque délivrance**, horloge de l'API pour l'expiration (testable).
+
+Coût : chaque lecture traverse l'API (fichiers de 5 Mo au plus, photos réduites à ~0,3 Mo
+côté client) — négligeable au volume d'une boutique.
+
+Côté Silo, `silo-init` crée à chaque déploiement (sans effet s'ils existent) :
+
+- le bucket `S3_BUCKET`, **privé** (`mc anonymous set none`) ;
+- la stratégie `boutique-api` : `GetObject` et `PutObject` sur ce bucket seulement (ni
+  suppression, ni administration, ni autre bucket) ;
+- le compte `S3_API_ACCESS_KEY` / `S3_API_SECRET_KEY`, rattaché à cette stratégie. L'API
+  n'utilise jamais le compte racine `S3_ROOT_*`.
+
+Caddy refuse un envoi de plus de 6 Mo (`413`) avant l'API ; l'API refuse au-delà de 5 Mo
+(`400`), et tout format autre que JPG, PNG ou PDF, reconnu aux premiers octets (`400`). Si
+Silo ne répond pas : `503 STORAGE_UNAVAILABLE`, rien n'est inscrit, l'écran propose de
+réessayer. **Limite connue** : le relais de Vercel borne la taille des corps de requête ; les
+photos réduites passent largement, un PDF proche de 5 Mo peut être refusé par Vercel (envoyer
+alors depuis `https://<API_PUBLIC_HOST>/`, servi par Caddy).
+
+Vérification après déploiement : journaux de `silo-init` → `Attached Policies: [boutique-api]`
+et `bucket attachments prêt (accès anonyme : … private)`.
+
+## 11. Bon à savoir
 
 - **Changer `POSTGRES_PASSWORD`** après le premier démarrage ne change pas le mot de passe
   dans la base (il n'est lu qu'à la création du volume). Il faut d'abord, dans la console de
