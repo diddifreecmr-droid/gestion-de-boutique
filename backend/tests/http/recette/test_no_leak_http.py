@@ -2,7 +2,7 @@
 
 Pour chaque rôle, chaque route de lecture de `ROUTES` (et les réponses d'écriture et d'erreur
 utiles) : (1) aucune clé interdite, à toute profondeur ; (2) aucune valeur sentinelle — coût
-543 210, marge 234 567 (= 777 777 − 543 210), prix de vente 777 777, prix de base 780 000.
+543 210, marge 234 567 (= 777 777 - 543 210), prix de vente 777 777, prix de base 780 000.
 Un garde-fou compare `ROUTES` à l'OpenAPI : une route nouvelle doit être déclarée ici.
 """
 
@@ -46,7 +46,9 @@ def keys(value: object) -> set[str]:
 
 def leaks(role: str, body: Any) -> list[str]:
     words, allowed, sentinels = RULES[role]
-    found = sorted(k for k in keys(body) - allowed - SETTING_KEYS if any(w in k.lower() for w in words))
+    found = sorted(
+        k for k in keys(body) - allowed - SETTING_KEYS if any(w in k.lower() for w in words)
+    )
     text = json.dumps(body, ensure_ascii=False)
     found += [f"valeur {s}" for s in sentinels if re.search(rf"(?<![\w-]){s}(?![\w-])", text)]
     return found
@@ -86,8 +88,12 @@ def test_seller_write_and_error_responses_carry_no_cost(world: World) -> None:
             {"article_id": side.ids["article"], "quantity": "30", "unit_price": 1}],
             "payments": [{"mode_id": side.ids["cash"], "amount": 30}]}),
     ]  # fmt: skip
-    limited = side.ok("POST", "/customers", seller,
-                      json={"name": "Plafond", "phone": "655000001", "credit_limit": 100_000})  # fmt: skip
+    limited = side.ok(
+        "POST",
+        "/customers",
+        seller,
+        json={"name": "Plafond", "phone": "655000001", "credit_limit": 100_000},
+    )
     credit = {**cash_sale(side), "kind": "credit", "payments": [],
               "customer": {"id": limited["id"]}}  # fmt: skip
     responses.append(side.call("POST", "/sales", seller, json=credit))

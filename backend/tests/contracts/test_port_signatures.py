@@ -26,6 +26,7 @@ def _import_all() -> None:
 
 
 def _subclasses(base: type) -> Iterator[type]:
+    sub: type
     for sub in base.__subclasses__():
         if sub.__module__.startswith("app."):  # pas les témoins des tests
             yield sub

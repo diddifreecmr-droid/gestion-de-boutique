@@ -13,6 +13,7 @@ from datetime import UTC, datetime
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
 
 from app.bootstrap.catalog import build_catalog
 from app.bootstrap.config import Environment, PersistenceBackend, Settings
@@ -50,7 +51,7 @@ def _settings(backend: str) -> Settings:
     return Settings(
         ENVIRONMENT=Environment.TEST,
         PERSISTENCE_BACKEND=PersistenceBackend.POSTGRES,
-        DATABASE_URL=database_url_from_env(),
+        DATABASE_URL=SecretStr(database_url_from_env()),
         _env_file=None,
     )
 

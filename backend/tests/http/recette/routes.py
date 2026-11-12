@@ -57,7 +57,8 @@ SHOP_ROUTES: Mapping[str, Body | None] = {
     "GET /expenses/{expense_id}/repeat": None,
     "GET /expense-categories": None,
     "POST /expense-categories": lambda s: {"name": unique("Gardiennage")},
-    "PATCH /expense-categories/{category_id}": listed("/expense-categories", "fuel", display_order=1),
+    "PATCH /expense-categories/{category_id}": listed(
+        "/expense-categories", "fuel", display_order=1),
     "GET /tags": None,
     "POST /tags/merge": lambda s: {"source_id": s.ids["tag"], "target_id": s.ids["tag2"]},
     "GET /stock": None,

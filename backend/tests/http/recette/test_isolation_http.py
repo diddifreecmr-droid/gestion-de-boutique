@@ -67,12 +67,12 @@ def test_references_to_objects_of_b_in_a_body_are_not_found(world: World) -> Non
     foreign = [
         {**sale, "lines": [{**sale["lines"][0], "article_id": b.ids["article"]}]},  # SEC-I03
         {**sale, "kind": "credit", "customer": {"id": b.ids["customer_seller"]}},  # SEC-I04
-        {**sale, "payments": [{"mode_id": b.ids["cash"], "amount": sale["lines"][0]["unit_price"]}]},
+        {**sale, "payments": [{**sale["payments"][0], "mode_id": b.ids["cash"]}]},
         {**sale, "location_id": b.ids["garoua"]},
     ]  # fmt: skip
     for body in foreign:
         assert a.call("POST", "/sales", a.owner, json=body).status_code == 404, body
-    others = {
+    others: dict[str, dict[str, Any]] = {
         "/purchases": {"lines": [{"article_id": b.ids["article"], "quantity": "1",
                                   "unit_price": 1_000}]},
         "/expenses": {"amount": 1_000, "category_id": b.ids["fuel"]},
@@ -122,7 +122,7 @@ def test_alerts_journal_and_chassis_search_stay_in_their_shop(world: World) -> N
     b.ok("POST", "/sales", b.sessions["seller"], json=body)
     assert a.ok("GET", "/sales", a.owner, params={"q": "ZZB999"})["items"] == []
     assert b.ok("GET", "/sales", b.owner, params={"q": "ZZB999"})["items"] != []
-    b_ids = {v for v in b.ids.values()} | set(b.users.values()) | {b.id}
+    b_ids = set(b.ids.values()) | set(b.users.values()) | {b.id}
     text = json.dumps([a.ok("GET", "/audit", a.owner, params={"limit": 200}),
                        a.ok("GET", "/alerts", a.owner)])  # fmt: skip
     assert [i for i in b_ids if i in text] == []

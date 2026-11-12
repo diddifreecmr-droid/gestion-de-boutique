@@ -81,7 +81,9 @@ def test_m28_me_and_m29_platform_console(world: World) -> None:
         who = side.sessions[role]
         assert world.api.call("GET", "/me", who).status_code == 200
         for method in ("GET", "POST"):
-            refused = world.api.call(method, "/platform/shops", who, json={} if method == "POST" else None)
+            refused = world.api.call(
+                method, "/platform/shops", who, json={} if method == "POST" else None
+            )
             assert (refused.status_code, refused.json()["error"]["code"]) == (403, "FORBIDDEN")
         patch = world.api.call("PATCH", f"/platform/shops/{side.id}", who, json={})
         assert patch.status_code == 403

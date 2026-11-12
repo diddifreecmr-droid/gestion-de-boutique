@@ -60,7 +60,9 @@ def listed(path: str, key: str, **fields: Any) -> Body:
     def body(side: Side) -> dict[str, Any]:
         found = side.ok("GET", path, side.owner)
         items = found["items"] if isinstance(found, dict) else found
-        version = next(i["version"] for i in items if side.ids[key] in (i.get("id"), i.get("user_id")))
+        version = next(
+            i["version"] for i in items if side.ids[key] in (i.get("id"), i.get("user_id"))
+        )
         return {"version": version, **fields}
 
     return body

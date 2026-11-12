@@ -90,13 +90,19 @@ def _seed(side: Side) -> None:
     settings = side.ok("GET", "/settings", owner)
     side.ok("PATCH", "/settings", owner,
             json={"version": settings["version"], "min_price_enabled": True})  # fmt: skip
-    side.ok("PUT", f"/articles/{article['id']}/prices", owner,
-            json={"version": side.version(f"/articles/{article['id']}"), "min_price": 720_000})  # fmt: skip
+    side.ok(
+        "PUT",
+        f"/articles/{article['id']}/prices",
+        owner,
+        json={"version": side.version(f"/articles/{article['id']}"), "min_price": 720_000},
+    )
     modes = side.ok("GET", "/payment-modes", owner)
     side.ids["cash"] = next(m["id"] for m in modes if m["name"] == "Espèces")
     categories = side.ok("GET", "/expense-categories", owner)
     side.ids["fuel"] = next(c["id"] for c in categories if c["name"] == "Carburant")
-    side.ids["supplier"] = side.ok("POST", "/suppliers", accountant, json={"name": "Haojue SA"})["id"]
+    side.ids["supplier"] = side.ok("POST", "/suppliers", accountant, json={"name": "Haojue SA"})[
+        "id"
+    ]
     purchase = side.ok("POST", "/purchases", accountant, json={
         "lines": [{"article_id": article["id"], "quantity": "20", "unit_price": SENTINEL_COST}],
         "supplier_id": side.ids["supplier"], "location_id": side.ids["garoua"],
@@ -110,11 +116,19 @@ def _seed(side: Side) -> None:
         side.ids[f"sale_{who}"] = sale["id"]
         side.ids[f"receivable_{who}"] = sale["receivable"]["id"]
         side.ids[f"customer_{who}"] = sale["customer_id"]
-    paid = side.ok("POST", f"/receivables/{side.ids['receivable_seller']}/installments",
-                   side.sessions["seller"], json={"amount": 100_000, "mode_id": side.ids["cash"]})  # fmt: skip
+    paid = side.ok(
+        "POST",
+        f"/receivables/{side.ids['receivable_seller']}/installments",
+        side.sessions["seller"],
+        json={"amount": 100_000, "mode_id": side.ids["cash"]},
+    )
     side.ids["installment"] = paid["installment"]["id"]
-    expense = side.ok("POST", "/expenses", accountant,
-                      json={"amount": 25_000, "category_id": side.ids["fuel"], "tags": ["groupe"]})  # fmt: skip
+    expense = side.ok(
+        "POST",
+        "/expenses",
+        accountant,
+        json={"amount": 25_000, "category_id": side.ids["fuel"], "tags": ["groupe"]},
+    )
     side.ids["expense"] = expense["id"]
     _extras(side)
 
@@ -136,8 +150,12 @@ def _extras(side: Side) -> None:
     tags = {t["name"]: t["id"] for t in _items(side.ok("GET", "/tags", owner))}
     side.ids["tag"], side.ids["tag2"] = tags["groupe"], tags["groupe électrogène"]
     approval(side, True)
-    request = side.ok("POST", "/price-requests", seller,
-                      json={"article_id": side.ids["article"], "requested_price": 700_000})  # fmt: skip
+    request = side.ok(
+        "POST",
+        "/price-requests",
+        seller,
+        json={"article_id": side.ids["article"], "requested_price": 700_000},
+    )
     side.ids["price_request"] = request["id"]
     approval(side, False)
 
