@@ -5,12 +5,15 @@
  */
 import type { LucideIcon } from "lucide-react";
 import type { Role } from "../auth/me";
+import type { ModuleCode } from "./modules";
 
 export interface MenuEntry {
   /** Clé stable et segment d'URL : `/s/{shopId}/{key}` (l'accueil a la clé `""`). */
   key: string;
   label: string;
   icon: LucideIcon;
+  /** Module dont dépend l'entrée : absente de la boutique si ce module est éteint. */
+  module?: ModuleCode;
 }
 
 export interface ShopProfile {
