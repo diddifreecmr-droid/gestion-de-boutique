@@ -1419,6 +1419,57 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/shops/{shop_id}/attachments": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Upload */
+    post: operations["upload_attachment"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/attachments/{attachment_id}/url": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Issue Link */
+    get: operations["issue_link_api_v1_shops__shop_id__attachments__attachment_id__url_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/attachments/{attachment_id}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Read Content */
+    get: operations["read_content_api_v1_shops__shop_id__attachments__attachment_id__content_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1672,6 +1723,48 @@ export interface components {
       price_history?: components["schemas"]["PriceHistoryResponse"][] | null;
     };
     /**
+     * AttachmentKind
+     * @description Type de pièce jointe (CDC § 20.5).
+     * @enum {string}
+     */
+    AttachmentKind:
+      | "id_document"
+      | "contract"
+      | "debt_acknowledgement"
+      | "invoice"
+      | "receipt"
+      | "photo"
+      | "other";
+    /** AttachmentLinkResponse */
+    AttachmentLinkResponse: {
+      /** Url */
+      url: string;
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
+      mime: components["schemas"]["FileFormat"];
+      kind: components["schemas"]["AttachmentKind"];
+    };
+    /** AttachmentResponse */
+    AttachmentResponse: {
+      /** Id */
+      id: string;
+      owner_type: components["schemas"]["OwnerType"];
+      /** Owner Id */
+      owner_id: string | null;
+      kind: components["schemas"]["AttachmentKind"];
+      mime: components["schemas"]["FileFormat"];
+      /** Size Bytes */
+      size_bytes: number;
+      /**
+       * Uploaded At
+       * Format: date-time
+       */
+      uploaded_at: string;
+    };
+    /**
      * AuditAction
      * @description Les onze actions du CDC § 16.1 (code stable ; libellé français dans `label`).
      * @enum {string}
@@ -1725,6 +1818,17 @@ export interface components {
       items: components["schemas"]["AuditEntryResponse"][];
       /** Next Cursor */
       next_cursor: string | null;
+    };
+    /** Body_upload_attachment */
+    Body_upload_attachment: {
+      /** File */
+      file: string;
+      owner_type: components["schemas"]["OwnerType"];
+      kind: components["schemas"]["AttachmentKind"];
+      /** Owner Id */
+      owner_id?: string | null;
+      /** Id */
+      id?: string | null;
     };
     /** CancelSaleRequest */
     CancelSaleRequest: {
@@ -2311,6 +2415,12 @@ export interface components {
       choices: string[];
     };
     FieldValue: string | number | boolean | null;
+    /**
+     * FileFormat
+     * @description Format reconnu : valeur = type MIME servi au navigateur.
+     * @enum {string}
+     */
+    FileFormat: "image/jpeg" | "image/png" | "application/pdf";
     /** GuarantorRequest */
     GuarantorRequest: {
       /** Id */
@@ -2941,6 +3051,12 @@ export interface components {
       /** Phone */
       phone: string;
     };
+    /**
+     * OwnerType
+     * @description Élément auquel la pièce est rattachée ; il fixe les droits de lecture et d'envoi.
+     * @enum {string}
+     */
+    OwnerType: "customer" | "receivable" | "article" | "expense" | "purchase" | "stock_adjustment";
     /** PaymentModeCreateRequest */
     PaymentModeCreateRequest: {
       /** Id */
@@ -8545,6 +8661,116 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["OfflineSnapshotResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  upload_attachment: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["Body_upload_attachment"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AttachmentResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  issue_link_api_v1_shops__shop_id__attachments__attachment_id__url_get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        attachment_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AttachmentLinkResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  read_content_api_v1_shops__shop_id__attachments__attachment_id__content_get: {
+    parameters: {
+      query: {
+        expires: number;
+        signature: string;
+      };
+      header?: never;
+      path: {
+        shop_id: string;
+        attachment_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "image/jpeg": unknown;
+          "image/png": unknown;
+          "application/pdf": unknown;
         };
       };
       /** @description Validation Error */

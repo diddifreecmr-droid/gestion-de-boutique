@@ -15,7 +15,7 @@ import {
   route,
 } from "../../testing/receivables";
 import { renderApp } from "../../testing/renderApp";
-import { ATTACHMENTS_PENDING } from "./GuarantorsSection";
+import { attachment, ATTACHMENT_ID, pdfFile, UPLOAD } from "../../testing/attachments";
 
 const ADD_REMINDER = route("POST", `/receivables/${RECEIVABLE_ID}/reminders`);
 const PATCH_REMINDER = route("PATCH", "/reminders/rem-1");
@@ -115,19 +115,24 @@ describe("Rappels (UC-CRE-06)", () => {
 });
 
 describe("Garants (UC-CRE-07)", () => {
-  it("nom, téléphone, lien ; pièce d'identité désactivée avec sa raison", async () => {
+  it("nom, téléphone, lien, photo de la pièce d'identité envoyée puis rattachée", async () => {
     const guarantor = { id: "g-1", name: "Ali Bouba", phone: "+237690000009", relation: "frère" };
     const { user, fake } = renderApp(DETAIL_PATH, {
       ...receivableRoutes("seller"),
       [GET_ONE]: json(200, receivable()),
       [ADD_GUARANTOR]: json(201, receivable({ guarantors: [guarantor] })),
+      [UPLOAD]: json(201, attachment()),
     });
     await heading();
     const section = within(screen.getByRole("region", { name: "Garants" }));
     expect(section.getByText("Aucun garant.")).toBeVisible();
-    const idDoc = section.getByRole("button", { name: "Pièce d'identité" });
-    expect(idDoc).toHaveAttribute("aria-disabled", "true");
-    expect(section.getByText(ATTACHMENTS_PENDING)).toBeVisible();
+    const picker = section.getByLabelText("Photo de la pièce d'identité du garant");
+    await user.upload(picker, pdfFile());
+    expect(await section.findByText("Pièce enregistrée.")).toBeVisible();
+    const upload = fake.calls.find((c) => `${c.method} ${c.url}` === UPLOAD)?.form;
+    expect(upload?.get("owner_type")).toBe("receivable");
+    expect(upload?.get("owner_id")).toBe(RECEIVABLE_ID);
+    expect(upload?.get("kind")).toBe("id_document");
 
     await user.click(section.getByRole("button", { name: "Ajouter le garant" }));
     expect(section.getByText("Le nom est vide")).toBeVisible();
@@ -146,6 +151,7 @@ describe("Garants (UC-CRE-07)", () => {
       name: "Ali Bouba",
       phone: "+237690000009",
       relation: "frère",
+      id_doc_photo_id: ATTACHMENT_ID,
     });
     expect(section.getByLabelText("Nom du garant")).toHaveValue("");
   });

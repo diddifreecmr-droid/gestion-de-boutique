@@ -1,12 +1,15 @@
 import { useEffect, useRef } from "react";
 import { AlertTriangle, CheckCircle2, CirclePlus, Printer } from "lucide-react";
+import { useGateways } from "../../core/gateways/gateways";
 import type { SaleResult } from "../../core/gateways/salesContract";
 import { formatMoney, formatQuantity } from "../../shared/format";
+import { CreditIdPhoto } from "./CreditIdPhoto";
 import { ShareButton } from "./ShareButton";
 import { warningText } from "./warningText";
 import { ActionBar, Badge, Button, ListCard, ListCardRow, SummaryCard } from "../../shared/ui";
 
 export interface SaleConfirmationProps {
+  shopId: string;
   sale: SaleResult;
   /** Ouvre la vue d'impression du reçu (TR-18). */
   onPrint: () => void;
@@ -14,7 +17,8 @@ export interface SaleConfirmationProps {
 }
 
 /** Écran de confirmation (UC-VEN-01 étape 7) : numéro, total, Imprimer, Partager, Nouvelle vente. */
-export function SaleConfirmation({ sale, onPrint, onNewSale }: SaleConfirmationProps) {
+export function SaleConfirmation({ shopId, sale, onPrint, onNewSale }: SaleConfirmationProps) {
+  const { sales } = useGateways();
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     headingRef.current?.focus();
@@ -74,8 +78,13 @@ export function SaleConfirmation({ sale, onPrint, onNewSale }: SaleConfirmationP
         <Button variant="secondary" icon={Printer} fullWidth onClick={onPrint}>
           Imprimer
         </Button>
-        <ShareButton />
+        <ShareButton
+          load={async () => ({ kind: "sale", receipt: await sales.receipt(shopId, sale.id) })}
+        />
       </div>
+      {sale.kind === "credit" && sale.customer_id !== null && (
+        <CreditIdPhoto shopId={shopId} customerId={sale.customer_id} />
+      )}
       <div className="sticky bottom-16 z-20 -mx-4">
         <ActionBar fixed={false}>
           <Button size="lg" fullWidth icon={CirclePlus} onClick={onNewSale}>

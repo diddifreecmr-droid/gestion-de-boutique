@@ -9,6 +9,8 @@ export interface Call {
   url: string;
   headers: Headers;
   body: unknown;
+  /** Corps `multipart/form-data` (envoi de pièce jointe), sinon `undefined`. */
+  form?: FormData;
   credentials: RequestCredentials | undefined;
 }
 
@@ -72,6 +74,7 @@ export function createFakeFetch(routes: Record<string, Reply | Reply[]>) {
       url,
       headers: new Headers(init.headers),
       body: text === undefined ? undefined : (JSON.parse(text) as unknown),
+      ...(init.body instanceof FormData ? { form: init.body } : {}),
       credentials: init.credentials,
     };
     calls.push(call);
