@@ -66,7 +66,7 @@ class Side:
         return self.ok("POST", "/sales", who, json=body)
 
 
-def _open(api: Api, admin: Session, name: str, owner_phone: str, staff_prefix: str) -> Side:
+def open_shop(api: Api, admin: Session, name: str, owner_phone: str, staff_prefix: str) -> Side:
     opened = api.call("POST", "/platform/shops", admin, json={
         "profile_code": "motos", "name": name, "city": "Garoua", "phone": "222000000",
         "owner": {"name": f"Propriétaire {name}", "phone": owner_phone},
@@ -182,8 +182,8 @@ class World:
     @classmethod
     def build(cls, api: Api) -> "World":
         admin = api.admin()
-        a = _open(api, admin, "Motos Garoua", "690000001", "6770000")
-        b = _open(api, admin, "Motos Ngaoundéré", "690000101", "6771000")
+        a = open_shop(api, admin, "Motos Garoua", "690000001", "6770000")
+        b = open_shop(api, admin, "Motos Ngaoundéré", "690000101", "6771000")
         _seed(a)
         _seed(b)
         u_phone = "677999999"
