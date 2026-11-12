@@ -6,6 +6,7 @@ import { useReceivablesDeps } from "../../core/gateways/httpReceivables";
 import { Button } from "../../shared/ui";
 import { LoadingOrOffline } from "../expenses/LoadingOrOffline";
 import { useLoad } from "../expenses/useLoad";
+import { AttachmentsSection } from "./AttachmentsSection";
 import { GuarantorsSection } from "./GuarantorsSection";
 import { InstallmentReceiptPrint } from "./InstallmentReceiptPrint";
 import { InstallmentsSection } from "./InstallmentsSection";
@@ -15,7 +16,7 @@ import type { ScreenProps } from "./receivablesNav";
 import { RemindersSection } from "./RemindersSection";
 import { StatusBadge } from "./StatusBadge";
 
-/** Fiche d'une créance : faits, versements, rappels, garants, et actions selon le rôle. */
+/** Fiche d'une créance : faits, versements, rappels, garants, pièces, actions selon le rôle. */
 export function ReceivableDetail({ shopId, refs, nav, id }: ScreenProps & { id: string }) {
   const { gateway } = useReceivablesDeps();
   const loaded = useLoad(id, () => gateway.get(shopId, id));
@@ -74,6 +75,7 @@ export function ReceivableDetail({ shopId, refs, nav, id }: ScreenProps & { id: 
       <InstallmentsSection {...section} refs={refs} onPrint={setPrinting} />
       <RemindersSection {...section} />
       <GuarantorsSection {...section} />
+      <AttachmentsSection {...section} />
       {receivable.manageable && <OwnerActions {...section} refs={refs} />}
     </>
   );

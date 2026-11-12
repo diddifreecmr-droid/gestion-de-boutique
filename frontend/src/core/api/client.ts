@@ -83,6 +83,13 @@ export interface ApiClient {
     path: P,
     options?: CallOptions<BodyOf<P, "put">>,
   ): Promise<ResponseOf<P, "put">>;
+  /** Envoi `multipart/form-data` (pièces jointes) : le navigateur pose l'en-tête et la borne. */
+  postForm<P extends PathsWith<"post">>(
+    path: P,
+    options: CallOptions<never> & { form: FormData },
+  ): Promise<ResponseOf<P, "post">>;
+  /** URL navigateur d'un chemin du contrat (ex. lien signé d'une pièce jointe). */
+  href(path: string): string;
 }
 
 export function resolveUrl(base: string, path: string): string {
@@ -110,10 +117,15 @@ async function readJson(response: Response): Promise<unknown> {
 export function createApiClient(options: ApiClientOptions): ApiClient {
   const fetchImpl = options.fetch ?? globalThis.fetch.bind(globalThis);
 
-  async function call(method: Method, path: string, init: CallOptions<unknown>): Promise<unknown> {
+  async function call(
+    method: Method,
+    path: string,
+    init: CallOptions<unknown> & { form?: FormData },
+  ): Promise<unknown> {
     const headers = new Headers({ Accept: "application/json", "X-Device-Id": options.deviceId() });
     if (init.token !== undefined) headers.set("Authorization", `Bearer ${init.token}`);
     if (init.body !== undefined) headers.set("Content-Type", "application/json");
+    const payload = init.form ?? (init.body === undefined ? undefined : JSON.stringify(init.body));
     for (const [name, value] of Object.entries(init.headers ?? {})) {
       if (RESERVED_HEADERS.includes(name.toLowerCase())) {
         throw new Error(`En-tête « ${name} » réservé au client API`);
@@ -129,7 +141,7 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
         headers,
         credentials: "include",
         cache: "no-store",
-        ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
+        ...(payload === undefined ? {} : { body: payload }),
       });
     } catch (cause) {
       if (cause instanceof DOMException && cause.name === "AbortError") throw cause;
@@ -148,5 +160,7 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     post: (path, init = {}) => call("post", path, init) as never,
     patch: (path, init = {}) => call("patch", path, init) as never,
     put: (path, init = {}) => call("put", path, init) as never,
+    postForm: (path, init) => call("post", path, init) as never,
+    href: (path) => resolveUrl(options.base, path),
   };
 }

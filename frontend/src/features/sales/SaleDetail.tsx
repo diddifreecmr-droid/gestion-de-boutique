@@ -94,7 +94,9 @@ export function SaleDetail({ shopId, refs, id, onBack, onReturn, onOpenSale }: S
         >
           Imprimer
         </Button>
-        <ShareButton />
+        <ShareButton
+          load={async () => ({ kind: "sale", receipt: await sales.receipt(shopId, sale.id) })}
+        />
       </div>
       {listing !== null && listing.returns.length > 0 && (
         <SaleReturnsCard returns={listing.returns} refs={refs} onOpenSale={onOpenSale} />

@@ -66,8 +66,15 @@ S3_ACCESS_KEY=boutique-dev
 S3_SECRET_KEY=boutique-dev-secret
 S3_BUCKET=attachments
 S3_REGION=us-east-1
-# Adressage par chemin obligatoire (http://hôte/bucket/clé), pas de sous-domaine
-S3_ADDRESSING_STYLE=path
+# Adressage par chemin (http://hôte/bucket/clé) : imposé par l'adaptateur S3 du backend
+```
+
+Contrat du stockage et parcours HTTP sur ce Silo (bucket de test créé s'il manque) :
+
+```bash
+TEST_S3_ENDPOINT=http://127.0.0.1:9000 TEST_S3_ACCESS_KEY=boutique-dev \
+TEST_S3_SECRET_KEY=boutique-dev-secret TEST_S3_BUCKET=attachments-test \
+uv run pytest tests/contracts/test_file_storage_contract.py tests/http/attachments --storage=s3
 ```
 
 - Utiliser `127.0.0.1` plutôt que `localhost` (évite une résolution IPv6 `::1` non publiée).

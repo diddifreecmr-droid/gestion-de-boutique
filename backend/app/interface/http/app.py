@@ -8,6 +8,8 @@ from fastapi import FastAPI
 from app.interface.http.config import HttpConfig
 from app.interface.http.errors import register_error_handlers
 from app.interface.http.routes import health
+from app.interface.http.routes.attachment_components import AttachmentsComponents
+from app.interface.http.routes.attachments import build_attachments_router
 from app.interface.http.routes.auth import AuthComponents, build_auth_router
 from app.interface.http.routes.catalog import CatalogComponents, build_catalog_router
 from app.interface.http.routes.customers import build_customers_router
@@ -50,6 +52,7 @@ def create_app(
     receivables: ReceivablesComponents | None = None,
     reporting: ReportingComponents | None = None,
     sync: SyncComponents | None = None,
+    attachments: AttachmentsComponents | None = None,
 ) -> FastAPI:
     """`journal`/`shops` absents : leurs routes ne sont pas montées (outils, tests ciblés)."""
     prefix = config.api_prefix
@@ -96,4 +99,6 @@ def create_app(
         app.include_router(build_reporting_router(reporting), prefix=prefix)
     if sync is not None:
         app.include_router(build_sync_router(sync), prefix=prefix)
+    if attachments is not None:
+        app.include_router(build_attachments_router(attachments, prefix), prefix=prefix)
     return app

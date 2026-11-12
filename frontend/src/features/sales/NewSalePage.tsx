@@ -86,6 +86,7 @@ function SaleFlow({ shopId, role, setup }: NewSalePageProps & { setup: SaleSetup
   if (recorded !== null) {
     return (
       <SaleConfirmation
+        shopId={shopId}
         sale={recorded}
         onPrint={() => {
           setPrinting(true);

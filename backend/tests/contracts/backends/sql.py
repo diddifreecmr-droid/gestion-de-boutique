@@ -23,6 +23,7 @@ from app.application.ports.event_handler import EventHandler
 from app.application.shops.ports import ShopCatalog
 from app.domain.shared.ids import ShopId
 from app.infrastructure.persistence.sqlalchemy.alerts import SqlAlertRepository
+from app.infrastructure.persistence.sqlalchemy.attachments import SQL_ATTACHMENT_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.audit_log import SqlAuditLog
 from app.infrastructure.persistence.sqlalchemy.catalog import SQL_CATALOG_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.directories import (
@@ -98,6 +99,7 @@ SQL_REGISTRY: SqlRepositoryRegistry = (
     *SQL_SALES_RETURNS_REPOSITORIES,
     *SQL_REPORTING_ADAPTERS,
     *SQL_SYNC_REPOSITORIES,
+    *SQL_ATTACHMENT_REPOSITORIES,
 )
 
 

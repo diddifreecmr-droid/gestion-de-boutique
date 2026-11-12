@@ -1,18 +1,22 @@
 import { useEffect, useRef } from "react";
 import { CheckCircle2, Eye, Printer } from "lucide-react";
+import { useReceivablesDeps } from "../../core/gateways/httpReceivables";
 import type { InstallmentResult } from "../../core/gateways/receivablesContract";
 import { Button, SummaryCard } from "../../shared/ui";
 import { ShareButton } from "../sales/ShareButton";
 import { StatusBadge } from "./StatusBadge";
 
 export interface InstallmentConfirmationProps {
+  shopId: string;
   result: InstallmentResult;
   onPrint: () => void;
   onOpen: () => void;
 }
 
 /** Confirmation (UC-CRE-03 étape 4) : numéro R-…, reste à jour, « Imprimer le reçu ». */
-export function InstallmentConfirmation({ result, onPrint, onOpen }: InstallmentConfirmationProps) {
+export function InstallmentConfirmation(props: InstallmentConfirmationProps) {
+  const { shopId, result, onPrint, onOpen } = props;
+  const { gateway } = useReceivablesDeps();
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     headingRef.current?.focus();
@@ -44,7 +48,12 @@ export function InstallmentConfirmation({ result, onPrint, onOpen }: Installment
       <Button size="lg" fullWidth icon={Printer} onClick={onPrint}>
         Imprimer le reçu
       </Button>
-      <ShareButton />
+      <ShareButton
+        load={async () => ({
+          kind: "installment",
+          receipt: await gateway.receipt(shopId, installment.id),
+        })}
+      />
       <Button variant="ghost" icon={Eye} fullWidth onClick={onOpen}>
         Voir la créance
       </Button>

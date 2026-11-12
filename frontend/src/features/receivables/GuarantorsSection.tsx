@@ -1,15 +1,14 @@
 import { useId, useState } from "react";
-import { IdCard, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { uuidV7 } from "../../core/api/uuidv7";
 import { useReceivablesDeps } from "../../core/gateways/httpReceivables";
 import type { Receivable } from "../../core/gateways/receivablesContract";
 import { Button, TextField } from "../../shared/ui";
+import { AttachmentUpload } from "../attachments/AttachmentUpload";
+import { AttachmentView } from "../attachments/AttachmentView";
 import { FormMessage } from "../expenses/FormMessage";
 import { normalizePhone, PHONE_HINT } from "../sales/phone";
 import { useAction } from "./useAction";
-
-/** Raison affichée sous « Pièce d'identité » : les pièces jointes arrivent ensuite. */
-export const ATTACHMENTS_PENDING = "Pièces jointes : à venir";
 
 export interface GuarantorsSectionProps {
   shopId: string;
@@ -22,7 +21,10 @@ interface Errors {
   phone?: string;
 }
 
-/** Garants (UC-CRE-07) : nom, téléphone, lien avec le client ; pièce d'identité à venir. */
+/**
+ * Garants (UC-CRE-07) : nom, téléphone, lien avec le client, photo de la pièce d'identité
+ * (rattachée à la créance, visible du propriétaire et du vendeur responsable seulement).
+ */
 export function GuarantorsSection({ shopId, receivable, onChanged }: GuarantorsSectionProps) {
   const { gateway } = useReceivablesDeps();
   const titleId = useId();
@@ -31,6 +33,7 @@ export function GuarantorsSection({ shopId, receivable, onChanged }: GuarantorsS
   const [relation, setRelation] = useState("");
   const [errors, setErrors] = useState<Errors>({});
   const [clientId, setClientId] = useState(uuidV7);
+  const [photoId, setPhotoId] = useState<string | null>(null);
   const action = useAction();
 
   const add = async () => {
@@ -45,6 +48,7 @@ export function GuarantorsSection({ shopId, receivable, onChanged }: GuarantorsS
       name: name.trim(),
       phone: normalized,
       relation: relation.trim() === "" ? null : relation.trim(),
+      id_doc_photo_id: photoId,
     };
     const ok = await action.run(async () => {
       onChanged(await gateway.addGuarantor(shopId, receivable.id, body));
@@ -53,6 +57,7 @@ export function GuarantorsSection({ shopId, receivable, onChanged }: GuarantorsS
       setName("");
       setPhone("");
       setRelation("");
+      setPhotoId(null);
       setClientId(uuidV7());
     }
   };
@@ -73,6 +78,13 @@ export function GuarantorsSection({ shopId, receivable, onChanged }: GuarantorsS
                 {guarantor.phone}
                 {guarantor.relation === null ? "" : ` · ${guarantor.relation}`}
               </span>
+              {typeof guarantor.id_doc_photo_id === "string" && (
+                <AttachmentView
+                  shopId={shopId}
+                  attachmentId={guarantor.id_doc_photo_id}
+                  label={`pièce d'identité de ${guarantor.name}`}
+                />
+              )}
             </li>
           ))}
         </ul>
@@ -108,9 +120,17 @@ export function GuarantorsSection({ shopId, receivable, onChanged }: GuarantorsS
           setRelation(event.target.value);
         }}
       />
-      <Button variant="ghost" icon={IdCard} disabledReason={ATTACHMENTS_PENDING}>
-        Pièce d'identité
-      </Button>
+      <AttachmentUpload
+        key={clientId}
+        shopId={shopId}
+        ownerType="receivable"
+        ownerId={receivable.id}
+        kind="id_document"
+        label="Photo de la pièce d'identité du garant"
+        onUploaded={(attachment) => {
+          setPhotoId(attachment.id);
+        }}
+      />
       {action.message !== null && <FormMessage text={action.message} />}
       <Button variant="secondary" icon={UserPlus} loading={action.busy} onClick={() => void add()}>
         Ajouter le garant

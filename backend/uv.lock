@@ -125,6 +125,15 @@ wheels = [
 ]
 
 [[package]]
+name = "certifi"
+version = "2026.10.23"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/11/b524cbd9bbdaca58608e4cf4053fd463417549e1959fa8d3aa18319f9555/certifi-2026.10.23.tar.gz", hash = "sha256:a9895e6e2758b371e0545e321a3a8fd1fcfd9829ada8824a936dfb16aaaf36cd", size = 136225, upload-time = "2026-10-23T11:36:16.478Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/d1/a3652fe2c19134d0d15922177821d863cbd7e842d53a21bbe7e8e3a1b5ac/certifi-2026.10.23-py3-none-any.whl", hash = "sha256:e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1", size = 135082, upload-time = "2026-10-23T11:36:14.763Z" },
+]
+
+[[package]]
 name = "cffi"
 version = "2.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -215,10 +224,12 @@ dependencies = [
     { name = "alembic" },
     { name = "argon2-cffi" },
     { name = "fastapi" },
+    { name = "minio" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pyjwt" },
+    { name = "python-multipart" },
     { name = "sqlalchemy" },
     { name = "tzdata" },
     { name = "uvicorn", extra = ["standard"] },
@@ -242,10 +253,12 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.20.1" },
     { name = "argon2-cffi", specifier = ">=25.1.0" },
     { name = "fastapi", specifier = ">=0.162.4" },
+    { name = "minio", specifier = ">=7.2" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.8" },
     { name = "pydantic", specifier = ">=2.14.3" },
     { name = "pydantic-settings", specifier = ">=2.16.2" },
     { name = "pyjwt", specifier = ">=2.15.1" },
+    { name = "python-multipart", specifier = ">=0.0.20" },
     { name = "sqlalchemy", specifier = ">=2.1.8" },
     { name = "tzdata", specifier = ">=2026.6" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.54.0" },
@@ -527,6 +540,22 @@ wheels = [
 ]
 
 [[package]]
+name = "minio"
+version = "7.2.20"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "argon2-cffi" },
+    { name = "certifi" },
+    { name = "pycryptodome" },
+    { name = "typing-extensions" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/40/df/6dfc6540f96a74125a11653cce717603fd5b7d0001a8e847b3e54e72d238/minio-7.2.20.tar.gz", hash = "sha256:95898b7a023fbbfde375985aa77e2cd6a0762268db79cf886f002a9ea8e68598", size = 136113, upload-time = "2025-11-27T00:37:15.569Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3e/9a/b697530a882588a84db616580f2ba5d1d515c815e11c30d219145afeec87/minio-7.2.20-py3-none-any.whl", hash = "sha256:eb33dd2fb80e04c3726a76b13241c6be3c4c46f8d81e1d58e757786f6501897e", size = 93751, upload-time = "2025-11-27T00:37:13.993Z" },
+]
+
+[[package]]
 name = "mypy"
 version = "2.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -639,6 +668,27 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/cb/27/eeb9f307bf07060f3d9f9aa0fb8c15b01bdfded0a941e4b2719c7f94cacd/pycparser-3.12.tar.gz", hash = "sha256:f03387877eab82ce01bbdfd0ba7252ee55a90b1c708d5129e2ce915475cf1db6", size = 158785, upload-time = "2026-10-22T13:40:03.56Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b6/ae/315bbeee126a769cbde43cf4908acb4b40408d8bf8bbf334dd7368d8dadf/pycparser-3.12-py3-none-any.whl", hash = "sha256:a076f3f489b39b43ed13563a1dafe42447445bec2e294154ec5c57fcdda4c85e", size = 62600, upload-time = "2026-10-22T13:40:02.021Z" },
+]
+
+[[package]]
+name = "pycryptodome"
+version = "4.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/51/f2/ccbeb91d186b2323fc99986499d2da3caab2151b1c2fb2ef74f7488d8934/pycryptodome-4.4.0.tar.gz", hash = "sha256:eab7620c60c85f3fa251d026ec06e094f036d96187bebb9752e46fbcebabbb55", size = 1825611, upload-time = "2026-11-07T11:05:20.015Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cb/34/5165cc1660fccae5341c3f4d60c4fa1cc28b1a599e88145085a690d4a88b/pycryptodome-4.4.0-cp39-abi3-macosx_10_9_universal2.whl", hash = "sha256:99494a2ab8137a9a6967db30e21f54f6dfa70327d8e72863638dece6d6a16374", size = 1790964, upload-time = "2026-11-07T11:04:37.507Z" },
+    { url = "https://files.pythonhosted.org/packages/9c/72/77f8fbdbc3827e11b458ec77728fd6102a7302c6f22e715fd7d7f8af0efc/pycryptodome-4.4.0-cp39-abi3-macosx_10_9_x86_64.whl", hash = "sha256:d6314c461a4bfcc341926daec45ef7c2b87668bcf9cd8bed81df906f4e8ed083", size = 1543809, upload-time = "2026-11-07T11:04:39.908Z" },
+    { url = "https://files.pythonhosted.org/packages/58/a4/b7855e7f7c234a79543ce4b8367e49a1787fa8ece7ac1f92d47dbd69088c/pycryptodome-4.4.0-cp39-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:33e69ac53f745e5d1c8f06dc9b0d43a8236d2026f6de7a19e1a160aa307d933b", size = 2529505, upload-time = "2026-11-07T11:04:41.793Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/ea/347345577742b4521ba5c43ddd8ee353225802e89fe5fa7b1fb6caba2379/pycryptodome-4.4.0-cp39-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:32c1a3d98c93d92c2f2a45d6cc9c79fb8d7552aca1bd9a764209a3309bf6a7b1", size = 3041717, upload-time = "2026-11-07T11:04:43.859Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/98/588d439b4a28acbba456cee8cdb37527e4e1a09a1e08f2d78394328ef2e8/pycryptodome-4.4.0-cp39-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:b08782bf3133b08181cd720843ce05a73856c4d8fdf42eb3eef766e70bcf75c1", size = 2553311, upload-time = "2026-11-07T11:04:46.095Z" },
+    { url = "https://files.pythonhosted.org/packages/30/10/8b7caf712e967f42226fb73bd43634d9ff8dac81d4cfe5e32b492f3ea9cf/pycryptodome-4.4.0-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:1f14824e99c1aedee8420fd10027ffa0c0fbf2913287c3cf002fd6e19eb5f934", size = 3605320, upload-time = "2026-11-07T11:04:48.852Z" },
+    { url = "https://files.pythonhosted.org/packages/6c/9d/4a87fad295f76a459121ca41705d7ca5a6c53032f2ce6100d5b954fa15ba/pycryptodome-4.4.0-cp39-abi3-win32.whl", hash = "sha256:30ed79eceb765717609f96232a156fc6ea8ae1cb91d1b995d52af75220a2b148", size = 1320002, upload-time = "2026-11-07T11:04:50.739Z" },
+    { url = "https://files.pythonhosted.org/packages/5b/28/1efce23b96b9549e40b7435b96f0ceec427b50abac4ff10c50ad0163408d/pycryptodome-4.4.0-cp39-abi3-win_amd64.whl", hash = "sha256:c5571df4f386ff4cdc0d5d0d040af9c0bdfc59ad587bf224063d873e07acbe61", size = 1689644, upload-time = "2026-11-07T11:04:52.972Z" },
+    { url = "https://files.pythonhosted.org/packages/09/84/5df94591578dcaeb884fc39e2c2dc72646ade1e07c452671b06e37b344ec/pycryptodome-4.4.0-cp39-abi3-win_arm64.whl", hash = "sha256:56618bc56f3ddccfd30997c1b8edfcb3e2841f48af6fe963487255cd413e039e", size = 1377059, upload-time = "2026-11-07T11:04:54.807Z" },
+    { url = "https://files.pythonhosted.org/packages/26/f3/451e4e9bed44c2d66efe66a959e1ca8ec8e90fa717e17977f533814052bf/pycryptodome-4.4.0-pp312-pypy312_pp80-macosx_10_15_x86_64.whl", hash = "sha256:f367ff0d0fd70d42239cf27e495fa0cd5f86ea5b6dd04b0991b4acb9067e6a52", size = 1499557, upload-time = "2026-11-07T11:05:11.605Z" },
+    { url = "https://files.pythonhosted.org/packages/48/91/ae2108585d9ab88e45934ff2dd54bfd818d44db6dba68c0195c890a3db47/pycryptodome-4.4.0-pp312-pypy312_pp80-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:d1acfd5447a4e3ba4ebf20a98e737b5d99b083b395829cbb60fa789bf9ce238d", size = 1325038, upload-time = "2026-11-07T11:05:14.064Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/44/7d8450968180ea6f454f19135e3039be862f52c7c58c547ce88ba52714e6/pycryptodome-4.4.0-pp312-pypy312_pp80-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6992f441f52672d493ea8f52562a5c3582b52a028ecf8e2d8daf93be0c4a16e9", size = 1458093, upload-time = "2026-11-07T11:05:15.922Z" },
+    { url = "https://files.pythonhosted.org/packages/e8/dd/688876067ce5fd6238cac501cb5df6bda5d2c014e0298967a023d9375a27/pycryptodome-4.4.0-pp312-pypy312_pp80-win_amd64.whl", hash = "sha256:d6e2c3a55ffa8abc77880a1ce2c319d72e328785e63c925d6a31f5a80a9a2975", size = 1693237, upload-time = "2026-11-07T11:05:17.854Z" },
 ]
 
 [[package]]
@@ -756,6 +806,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/74/26/2fbeedb218a787a5eea551c7532cac4e009f83d689dd2faa0d0353473f86/python_dotenv-1.2.4.tar.gz", hash = "sha256:f0d53e69935a851c0dcc78f3ab7aaccd8cabef0b92382b576b824212902873c0", size = 60824, upload-time = "2026-10-01T05:36:10Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/60/d1/38f3a3405989a89ac18390803e70c6ad7c7760da4f9b83cbeca0c44a0c72/python_dotenv-1.2.4-py3-none-any.whl", hash = "sha256:42269a8a5b3fd54ffa6f3d84b18abed50064717576b4ecf03dc4a55d8aa04fdc", size = 23266, upload-time = "2026-10-01T05:36:08.633Z" },
+]
+
+[[package]]
+name = "python-multipart"
+version = "0.0.33"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/9f/b7/15b905f6142a9a8a68f66900788da1a32e4d4254452783b37ad1eccb0506/python_multipart-0.0.33.tar.gz", hash = "sha256:b8112424a6abd162ec08d390565dd113ad699f2fe6fef3c987b8bbcbfe9e390d", size = 50499, upload-time = "2026-10-31T14:23:47.461Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/1b/6b1b4164ec734cac911460ab599bfbe46afedd42c5c9627fe4235942c314/python_multipart-0.0.33-py3-none-any.whl", hash = "sha256:8f16c07b36add9da6b2ee87d3efcaf0a45a6de9c3d0a5dd94e9ccf7675a7bc45", size = 32253, upload-time = "2026-10-31T14:23:46.33Z" },
 ]
 
 [[package]]
@@ -904,6 +963,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/7a/29/6a1391d31cd00ff9e927215a224a880e1e84e826b64ba80a499e51c074d8/tzdata-2026.6.tar.gz", hash = "sha256:85d2cd9c09f81f0bb29db27759fc83af4f1e620efb814f8c5bf8b4cc4feece6d", size = 201017, upload-time = "2026-10-28T09:57:09.137Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0a/66/9a06c2227fedfd4919f0eaaa8b94377d9730882a7e4f95823c9a331ab5e1/tzdata-2026.6-py2.py3-none-any.whl", hash = "sha256:0a10eec6e13ef16b627fabed9a5f2ba61a62b1c67f327305f4e7e412a70b4aec", size = 348210, upload-time = "2026-10-28T09:57:07.276Z" },
+]
+
+[[package]]
+name = "urllib3"
+version = "2.8.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e3/05/b17359e1cefb4f909b5e40b1b90a496d987258916dbbf88e842c729f510e/urllib3-2.8.0.tar.gz", hash = "sha256:63bf2ead4c879426ebf22ef2a781eeb4aa3b4ae798a0435506f8687fd5bb9b63", size = 458972, upload-time = "2026-09-15T19:29:36.253Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl", hash = "sha256:0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3", size = 135717, upload-time = "2026-09-15T19:29:34.577Z" },
 ]
 
 [[package]]

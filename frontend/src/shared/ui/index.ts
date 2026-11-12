@@ -1,4 +1,6 @@
 export { Button } from "./Button";
+export { FilePickerButton } from "./FilePickerButton";
+export type { FilePickerButtonProps } from "./FilePickerButton";
 export { LOADING_LABEL } from "./buttonClasses";
 export type { ButtonProps, ButtonSize, ButtonVariant } from "./Button";
 

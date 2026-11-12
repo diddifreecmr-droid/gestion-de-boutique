@@ -9311,6 +9311,231 @@
           }
         }
       }
+    },
+    "/api/v1/shops/{shop_id}/attachments": {
+      "post": {
+        "tags": [
+          "attachments"
+        ],
+        "summary": "Upload",
+        "operationId": "upload_attachment",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_attachment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttachmentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/attachments/{attachment_id}/url": {
+      "get": {
+        "tags": [
+          "attachments"
+        ],
+        "summary": "Issue Link",
+        "operationId": "issue_link_api_v1_shops__shop_id__attachments__attachment_id__url_get",
+        "parameters": [
+          {
+            "name": "attachment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Attachment Id"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttachmentLinkResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shops/{shop_id}/attachments/{attachment_id}/content": {
+      "get": {
+        "tags": [
+          "attachments"
+        ],
+        "summary": "Read Content",
+        "operationId": "read_content_api_v1_shops__shop_id__attachments__attachment_id__content_get",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "attachment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Attachment Id"
+            }
+          },
+          {
+            "name": "expires",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "title": "Expires"
+            }
+          },
+          {
+            "name": "signature",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "title": "Signature"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "image/jpeg": {},
+              "image/png": {},
+              "application/pdf": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -10193,6 +10418,95 @@
         ],
         "title": "ArticleResponse"
       },
+      "AttachmentKind": {
+        "type": "string",
+        "enum": [
+          "id_document",
+          "contract",
+          "debt_acknowledgement",
+          "invoice",
+          "receipt",
+          "photo",
+          "other"
+        ],
+        "title": "AttachmentKind",
+        "description": "Type de pièce jointe (CDC § 20.5)."
+      },
+      "AttachmentLinkResponse": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "mime": {
+            "$ref": "#/components/schemas/FileFormat"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AttachmentKind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "expires_at",
+          "mime",
+          "kind"
+        ],
+        "title": "AttachmentLinkResponse"
+      },
+      "AttachmentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "owner_type": {
+            "$ref": "#/components/schemas/OwnerType"
+          },
+          "owner_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AttachmentKind"
+          },
+          "mime": {
+            "$ref": "#/components/schemas/FileFormat"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Uploaded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "owner_type",
+          "owner_id",
+          "kind",
+          "mime",
+          "size_bytes",
+          "uploaded_at"
+        ],
+        "title": "AttachmentResponse"
+      },
       "AuditAction": {
         "type": "string",
         "enum": [
@@ -10318,6 +10632,52 @@
           "next_cursor"
         ],
         "title": "AuditPageResponse"
+      },
+      "Body_upload_attachment": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "owner_type": {
+            "$ref": "#/components/schemas/OwnerType"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AttachmentKind"
+          },
+          "owner_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Id"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "owner_type",
+          "kind"
+        ],
+        "title": "Body_upload_attachment"
       },
       "CancelSaleRequest": {
         "properties": {
@@ -12442,6 +12802,16 @@
           }
         ]
       },
+      "FileFormat": {
+        "type": "string",
+        "enum": [
+          "image/jpeg",
+          "image/png",
+          "application/pdf"
+        ],
+        "title": "FileFormat",
+        "description": "Format reconnu : valeur = type MIME servi au navigateur."
+      },
       "GuarantorRequest": {
         "properties": {
           "id": {
@@ -14477,6 +14847,19 @@
           "phone"
         ],
         "title": "OwnerRequest"
+      },
+      "OwnerType": {
+        "type": "string",
+        "enum": [
+          "customer",
+          "receivable",
+          "article",
+          "expense",
+          "purchase",
+          "stock_adjustment"
+        ],
+        "title": "OwnerType",
+        "description": "Élément auquel la pièce est rattachée ; il fixe les droits de lecture et d'envoi."
       },
       "PaymentModeCreateRequest": {
         "properties": {

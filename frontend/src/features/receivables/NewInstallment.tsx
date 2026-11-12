@@ -64,6 +64,7 @@ export function NewInstallment({ shopId, refs, nav, id }: ScreenProps & { id: st
   if (result !== null) {
     return (
       <InstallmentConfirmation
+        shopId={shopId}
         result={result}
         onPrint={() => {
           setPrinting(true);
