@@ -1,6 +1,8 @@
 """Composition root (specs § 4.1, règle 5) : seul module qui assemble les adaptateurs concrets.
 
-Point d'entrée ASGI : `uvicorn app.bootstrap.container:build_app --factory`.
+Point d'entrée ASGI : `uvicorn app.bootstrap.container:build_app --factory`. Avec l'adaptateur
+PostgreSQL, la base est vérifiée **avant** de servir (connexion + migrations appliquées) :
+injoignable ou vide, l'API refuse de démarrer (`DatabaseUnavailable`, fail-fast, T25).
 """
 
 import logging
@@ -21,11 +23,13 @@ from app.bootstrap.sales import build_sales, sales_ranking
 from app.bootstrap.shops import build_shops
 from app.bootstrap.stock import build_stock
 from app.bootstrap.sync import build_sync
+from app.infrastructure.persistence.sqlalchemy.startup import verify_database
 from app.infrastructure.system_clock import SystemClock
 from app.interface.http.app import create_app
 from app.interface.http.config import HttpConfig
 
 _LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s %(message)s"
+_logger = logging.getLogger("app.bootstrap")
 
 
 def configure_logging(settings: Settings) -> None:
@@ -47,6 +51,9 @@ def build_app(env_file: Path | None = DEFAULT_ENV_FILE) -> FastAPI:
     configure_logging(settings)
     clock = SystemClock()
     core = build_core(settings, clock)
+    if core.engine is not None:
+        revision = verify_database(core.engine)
+        _logger.info("Base de données joignable, révision Alembic %s", revision)
     identity = build_identity(settings, core=core)
     journal = build_journal(settings, clock=clock, guard=identity.auth.guard, core=core)
     shops = build_shops(identity)
