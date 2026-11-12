@@ -18,6 +18,7 @@ from pathlib import Path
 
 from pydantic import SecretStr
 
+from app.bootstrap.attachments import build_attachments
 from app.bootstrap.catalog import build_catalog
 from app.bootstrap.config import Environment, PersistenceBackend, Settings
 from app.bootstrap.container import http_config_from
@@ -74,6 +75,7 @@ def build_openapi_document() -> str:
         receivables=receivables.http,
         reporting=reporting.http,
         sync=sync.http,
+        attachments=build_attachments(settings, identity).http,
     )
     schema = app.openapi()
     if not schema.get("paths"):

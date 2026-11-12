@@ -14,6 +14,7 @@ from app.application.ports.event_handler import EventHandler
 from app.application.ports.uow import UnitOfWorkFactory
 from app.bootstrap.config import PersistenceBackend, Settings
 from app.infrastructure.persistence.memory.alerts import MemoryAlertRepository
+from app.infrastructure.persistence.memory.attachments import MEMORY_ATTACHMENT_REPOSITORIES
 from app.infrastructure.persistence.memory.audit_log import MemoryAuditLog
 from app.infrastructure.persistence.memory.catalog import MEMORY_CATALOG_REPOSITORIES
 from app.infrastructure.persistence.memory.database import MemoryDatabase
@@ -30,6 +31,7 @@ from app.infrastructure.persistence.memory.stock import MEMORY_STOCK_REPOSITORIE
 from app.infrastructure.persistence.memory.sync import MEMORY_SYNC_REPOSITORIES
 from app.infrastructure.persistence.memory.uow import MemoryUnitOfWorkFactory, RepositoryRegistry
 from app.infrastructure.persistence.sqlalchemy.alerts import SqlAlertRepository
+from app.infrastructure.persistence.sqlalchemy.attachments import SQL_ATTACHMENT_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.audit_log import SqlAuditLog
 from app.infrastructure.persistence.sqlalchemy.catalog import SQL_CATALOG_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.engine import create_sql_engine
@@ -62,6 +64,7 @@ MEMORY_REPOSITORIES: RepositoryRegistry = (
     *MEMORY_SALES_RETURNS_REPOSITORIES,
     *MEMORY_REPORTING_ADAPTERS,
     *MEMORY_SYNC_REPOSITORIES,
+    *MEMORY_ATTACHMENT_REPOSITORIES,
 )
 SQL_REPOSITORIES: SqlRepositoryRegistry = (
     SqlAuditLog,
@@ -76,6 +79,7 @@ SQL_REPOSITORIES: SqlRepositoryRegistry = (
     *SQL_SALES_RETURNS_REPOSITORIES,
     *SQL_REPORTING_ADAPTERS,
     *SQL_SYNC_REPOSITORIES,
+    *SQL_ATTACHMENT_REPOSITORIES,
 )
 
 

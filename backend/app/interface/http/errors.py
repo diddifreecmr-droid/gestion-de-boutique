@@ -16,6 +16,7 @@ from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.application.attachments.ports import LinkExpired, StorageUnavailable
 from app.application.audit.access_denied import ACCESS_DENIALS, AccessDenial
 from app.application.security.errors import RateLimited
 from app.domain.identity.errors import AccountLocked, PinChangeLocked, Unauthenticated
@@ -33,6 +34,8 @@ _STATUS_BY_TYPE: Mapping[type[object], int] = {
     AccountLocked: HTTPStatus.LOCKED,
     PinChangeLocked: HTTPStatus.LOCKED,
     RateLimited: HTTPStatus.TOO_MANY_REQUESTS,
+    LinkExpired: HTTPStatus.GONE,
+    StorageUnavailable: HTTPStatus.SERVICE_UNAVAILABLE,
 }
 # Règle métier violée (STOCK_INSUFFICIENT, PRICE_BELOW_MINIMUM…) : 422.
 _DEFAULT_DOMAIN_STATUS = HTTPStatus.UNPROCESSABLE_ENTITY

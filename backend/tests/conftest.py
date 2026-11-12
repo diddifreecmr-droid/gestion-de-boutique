@@ -22,6 +22,13 @@ from app.interface.http.app import create_app
 from tests.contracts.backends import BACKENDS, DEFAULT_BACKEND, release, require_available
 
 TEST_JWT_SECRET = "secret-de-test-assez-long-pour-hs256-0123456789"
+# Stockage S3 factice (aucune connexion ouverte) : exigé hors ENVIRONMENT=test (dev, prod).
+TEST_S3_VARIABLES = {
+    "S3_ENDPOINT": "http://127.0.0.1:9",
+    "S3_ACCESS_KEY": "test-access",
+    "S3_SECRET_KEY": "test-secret-0123456789",
+    "S3_BUCKET": "attachments-test",
+}
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -43,8 +50,10 @@ def pytest_unconfigure(config: pytest.Config) -> None:
 
 @pytest.fixture(autouse=True)
 def _jwt_secret(monkeypatch: pytest.MonkeyPatch) -> None:
-    """`JWT_SECRET` est obligatoire (T08) : fourni à tous les tests par l'environnement."""
+    """`JWT_SECRET` (T08) et `S3_*` (hors test) : fournis à tous les tests par l'environnement."""
     monkeypatch.setenv("JWT_SECRET", TEST_JWT_SECRET)
+    for name, value in TEST_S3_VARIABLES.items():
+        monkeypatch.setenv(name, value)
 
 
 @pytest.fixture

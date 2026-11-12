@@ -10,6 +10,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
+from app.bootstrap.attachments import build_attachments
 from app.bootstrap.catalog import build_catalog
 from app.bootstrap.config import DEFAULT_ENV_FILE, Environment, Settings, load_settings
 from app.bootstrap.core import build_core
@@ -78,6 +79,7 @@ def build_app(env_file: Path | None = DEFAULT_ENV_FILE) -> FastAPI:
         receivables=receivables.http,
         reporting=reporting.http,
         sync=sync.http,
+        attachments=build_attachments(settings, identity).http,
     )
     # Fabrique des unités de travail de boutique (handlers du journal et des alertes branchés).
     app.state.uow_factory = journal.uow_factory

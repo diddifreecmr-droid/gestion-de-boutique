@@ -15,6 +15,8 @@ from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import ArgumentError
 
+from app.bootstrap.storage_config import StorageBackend, StorageVariables
+
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 DEFAULT_ENV_FILE = Path(".env")
@@ -57,8 +59,8 @@ def check_database_url(value: SecretStr) -> SecretStr:
     return value
 
 
-class Settings(BaseSettings):
-    """Variables reconnues. Voir `backend/.env.example`."""
+class Settings(StorageVariables):
+    """Variables reconnues (stockage : `StorageVariables`). Voir `backend/.env.example`."""
 
     model_config = _SETTINGS_CONFIG
 
@@ -115,6 +117,10 @@ class Settings(BaseSettings):
             return PersistenceBackend.MEMORY
         return PersistenceBackend.POSTGRES
 
+    @property
+    def storage_backend(self) -> StorageBackend:
+        return self.storage_backend_for(self.ENVIRONMENT is Environment.TEST)
+
     @model_validator(mode="after")
     def _require_database(self) -> Self:
         backend = self.persistence_backend
@@ -124,6 +130,12 @@ class Settings(BaseSettings):
         if backend is PersistenceBackend.MEMORY and self.ENVIRONMENT is Environment.PROD:
             msg = "PERSISTENCE_BACKEND=memory interdit en prod (données perdues à l'arrêt)"
             raise ValueError(msg)
+        problem = self.storage_problem(
+            test_environment=self.ENVIRONMENT is Environment.TEST,
+            production=self.ENVIRONMENT is Environment.PROD,
+        )
+        if problem is not None:
+            raise ValueError(problem)
         return self
 
 
