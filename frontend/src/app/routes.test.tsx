@@ -91,8 +91,12 @@ describe("boutique active (UC-SOC-03)", () => {
   });
 
   it("administrateur plateforme → console", async () => {
-    const { router } = renderApp("/", signedIn(meBody({ is_platform_admin: true, shops: [] })));
+    const { router } = renderApp("/", {
+      ...signedIn(meBody({ is_platform_admin: true, shops: [] })),
+      "GET /api/v1/platform/shops": json(200, []),
+    });
     expect(await screen.findByText("Console plateforme")).toBeVisible();
+    expect(await screen.findByText("Aucune boutique pour l'instant.")).toBeVisible();
     expect(router.state.location.pathname).toBe("/plateforme");
   });
 

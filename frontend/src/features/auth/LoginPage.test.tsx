@@ -130,6 +130,7 @@ describe("connexion administrateur plateforme", () => {
       [ROUTES.refresh]: NO_SESSION(),
       [ROUTES.login]: json(200, tokenBody("t1")),
       [ROUTES.me]: json(200, meBody({ is_platform_admin: true, shops: [] })),
+      "GET /api/v1/platform/shops": json(200, []),
     });
     await user.type(await screen.findByLabelText("Numéro de téléphone"), "699000000");
     await user.type(screen.getByLabelText("Mot de passe"), "court");
