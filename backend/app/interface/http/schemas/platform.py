@@ -65,3 +65,19 @@ class OpenedShopResponse(_Strict):
     owner_created: bool
     temporary_pin: str | None
     """Affiché **une seule fois** ; `null` si le propriétaire avait déjà un compte."""
+
+
+class EntitlementStateResponse(_Strict):
+    code: Entitlement
+    enabled: bool
+    """Valeur en vigueur (offre du compte + surcharge)."""
+    override: bool | None
+    """Surcharge de l'administrateur ; `null` si l'offre du compte décide."""
+
+
+class PlatformShopAccessResponse(_Strict):
+    """Droits d'offre et délégation du propriétaire (`null` : aucune en cours)."""
+
+    shop_id: str
+    entitlements: list[EntitlementStateResponse]
+    admin_access_until: datetime | None

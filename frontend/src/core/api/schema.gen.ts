@@ -223,6 +223,23 @@ export interface paths {
     patch: operations["administer_shop_api_v1_platform_shops__shop_id__patch"];
     trace?: never;
   };
+  "/api/v1/platform/shops/{shop_id}/access": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Shop Access */
+    get: operations["shop_access_api_v1_platform_shops__shop_id__access_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/shops/{shop_id}/profile": {
     parameters: {
       query?: never;
@@ -2008,6 +2025,14 @@ export interface components {
      * @enum {string}
      */
     Entitlement: "offline_capture";
+    /** EntitlementStateResponse */
+    EntitlementStateResponse: {
+      code: components["schemas"]["Entitlement"];
+      /** Enabled */
+      enabled: boolean;
+      /** Override */
+      override: boolean | null;
+    };
     /** EntityResponse */
     EntityResponse: {
       /** Type */
@@ -3052,6 +3077,18 @@ export interface components {
       last_day: string;
       /** Days */
       days: number;
+    };
+    /**
+     * PlatformShopAccessResponse
+     * @description Droits d'offre et délégation du propriétaire (`null` : aucune en cours).
+     */
+    PlatformShopAccessResponse: {
+      /** Shop Id */
+      shop_id: string;
+      /** Entitlements */
+      entitlements: components["schemas"]["EntitlementStateResponse"][];
+      /** Admin Access Until */
+      admin_access_until: string | null;
     };
     /** PriceDecisionRequest */
     PriceDecisionRequest: {
@@ -5113,6 +5150,40 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ShopSummaryResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  shop_access_api_v1_platform_shops__shop_id__access_get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PlatformShopAccessResponse"];
         };
       };
       /** @description Validation Error */

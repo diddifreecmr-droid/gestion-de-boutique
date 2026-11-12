@@ -152,6 +152,21 @@ def test_admin_access_routes(api: Api) -> None:
     assert api.call("GET", shop_path(opened, "/profile"), admin).status_code == 404
 
 
+def test_platform_shop_access(api: Api) -> None:
+    admin = api.admin()
+    opened = api.open_motos(admin)
+    owner = owner_of(api, opened)
+    path = f"/platform/shops/{opened['shop']['shop_id']}/access"
+    body = api.call("GET", path, admin).json()
+    assert body["entitlements"] == [{"code": "offline_capture", "enabled": False, "override": None}]
+    assert body["admin_access_until"] is None
+    granted = api.call("POST", shop_path(opened, "/admin-access"), owner).json()
+    assert api.call("GET", path, admin).json()["admin_access_until"] == granted["expires_at"]
+    assert api.call("GET", path, owner).status_code == 403
+    unknown = api.call("GET", "/platform/shops/01890a5d-ac96-774b-bcce-b302099a8099/access", admin)
+    assert unknown.status_code == 404
+
+
 def _body() -> dict[str, Any]:
     return {
         "profile_code": "motos",

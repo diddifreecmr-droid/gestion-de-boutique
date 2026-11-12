@@ -1202,6 +1202,74 @@
         }
       }
     },
+    "/api/v1/platform/shops/{shop_id}/access": {
+      "get": {
+        "tags": [
+          "platform"
+        ],
+        "summary": "Shop Access",
+        "operationId": "shop_access_api_v1_platform_shops__shop_id__access_get",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformShopAccessResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/shops/{shop_id}/profile": {
       "get": {
         "tags": [
@@ -11316,6 +11384,36 @@
         "title": "Entitlement",
         "description": "Code stable d'un droit d'offre (stocké, renvoyé dans `error.details`)."
       },
+      "EntitlementStateResponse": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/Entitlement"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "override": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Override"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "enabled",
+          "override"
+        ],
+        "title": "EntitlementStateResponse"
+      },
       "EntityResponse": {
         "properties": {
           "type": {
@@ -14698,6 +14796,42 @@
           "days"
         ],
         "title": "PeriodOut"
+      },
+      "PlatformShopAccessResponse": {
+        "properties": {
+          "shop_id": {
+            "type": "string",
+            "title": "Shop Id"
+          },
+          "entitlements": {
+            "items": {
+              "$ref": "#/components/schemas/EntitlementStateResponse"
+            },
+            "type": "array",
+            "title": "Entitlements"
+          },
+          "admin_access_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Admin Access Until"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "shop_id",
+          "entitlements",
+          "admin_access_until"
+        ],
+        "title": "PlatformShopAccessResponse",
+        "description": "Droits d'offre et délégation du propriétaire (`null` : aucune en cours)."
       },
       "PriceDecisionRequest": {
         "properties": {
