@@ -79,3 +79,5 @@ flowchart LR
 | T12 | Verrou de rafraîchissement **entre onglets** (sinon deux onglets peuvent faire révoquer la session par détection de réutilisation) | T21 |
 | T12 | Décrire l'enveloppe d'erreur et les codes métier dans OpenAPI (400 `VALIDATION_ERROR` au lieu du 422 FastAPI, `role` en énumération) | T13 |
 | T12 | Numéro de version dans `GET /health` (specs § 7.3) ; accès à « Mon compte » pour les rôles sans Réglages | T22 |
+| Recette (2026-11-12) | **Exigence client** — Délégation, côté propriétaire : bouton « Autoriser l'administrateur pendant 24 h » et « Retirer l'accès » dans les Réglages (`POST /shops/{id}/admin-access` existe ; il manque `DELETE` dans le client HTTP) | Plus tard (décision client) |
+| Recette (2026-11-12) | **Exigence client** — Délégation, côté administrateur : mode « consultation en tant qu'administrateur » pour entrer dans une boutique déléguée (aujourd'hui `ShopShell` exige un rattachement), actions inscrites au journal | Plus tard (décision client) |
