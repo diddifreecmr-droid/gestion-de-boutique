@@ -49,7 +49,7 @@ function Figures({
 }
 
 /**
- * Accueil du propriétaire (UC-TDB-01 à 04, design-system § 7.2) : période en haut, gros
+ * Tableau de bord du propriétaire (UC-TDB-01 à 04, design-system § 7.2) : période en haut, gros
  * chiffres, puis créances, stock, camions et alertes. Hors connexion : « Chiffres disponibles
  * avec internet » à la place des montants (RG-T25).
  */

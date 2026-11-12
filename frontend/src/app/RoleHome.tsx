@@ -1,49 +1,45 @@
 import { lazy, Suspense } from "react";
-import { UserRound } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router";
-import { shopPath } from "../core/profile/shopProfile";
 import { useSignedIn } from "../core/services/servicesContext";
-import { DETAIL_PARAM } from "../features/dashboard/dashboardNav";
-import { Button, Skeleton } from "../shared/ui";
+import { SALE_ROLES } from "../features/sales/saleRoles";
+import { Skeleton } from "../shared/ui";
 import { useActiveShop } from "./shopContext";
 
 export const ACCOUNT_KEY = "compte";
 
-/** Accueils par rôle et tableau de bord (module 14, T22), chargés à la demande. */
+/** Accueils par rôle (module 14, T22), chargés à la demande. */
 const HomeRoute = lazy(() => import("../features/dashboard/HomeRoute"));
 
 /**
- * Accueil de la boutique (UC-TDB-01 à 05) : titre et salutation, puis l'accueil du rôle ; le
- * détail d'un chiffre du propriétaire (`?detail=…`) occupe tout l'écran. « Mon compte » reste
- * accessible depuis l'accueil (design-system § 6.6).
+ * Accueil de la boutique. Propriétaire et vendeur : page minimale (specs § 15.1), sans titre
+ * visible — la barre du haut porte déjà le nom de la boutique ; le titre reste pour les lecteurs
+ * d'écran. Comptable et chauffeur : titre et salutation, puis leur accueil. « Mon compte » est
+ * dans la barre du haut pour tous les rôles (« Compte », design-system § 6.6).
  */
 export function RoleHome() {
   const me = useSignedIn();
   const { shopId, role, profile } = useActiveShop();
-  const navigate = useNavigate();
-  const [params] = useSearchParams();
   const [home] = profile.menu(role);
+  const title = home?.label ?? "Accueil";
   const content = (
     <Suspense fallback={<Skeleton lines={4} label="Ouverture de l'accueil…" />}>
       <HomeRoute shopId={shopId} role={role} />
     </Suspense>
   );
-  if (role === "owner" && params.has(DETAIL_PARAM)) return content;
+  if (SALE_ROLES.includes(role)) {
+    return (
+      <>
+        <h1 className="sr-only">{title}</h1>
+        {content}
+      </>
+    );
+  }
   return (
     <>
-      <h1 className="m-0 text-title font-bold text-text">{home?.label ?? "Accueil"}</h1>
+      <h1 className="m-0 text-title font-bold text-text">{title}</h1>
       <p className="m-0 text-lead text-text">
         Bonjour {me.name} — {profile.roleLabel(role)}
       </p>
       {content}
-      <Button
-        variant="secondary"
-        fullWidth
-        icon={UserRound}
-        onClick={() => void navigate(shopPath(shopId, ACCOUNT_KEY))}
-      >
-        Mon compte
-      </Button>
     </>
   );
 }

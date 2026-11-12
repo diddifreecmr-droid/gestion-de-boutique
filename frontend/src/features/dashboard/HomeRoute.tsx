@@ -1,30 +1,14 @@
-import { useMemo } from "react";
 import type { Role } from "../../core/auth/me";
-import { createHttpReporting } from "../../core/gateways/httpReporting";
-import { useServices } from "../../core/services/servicesContext";
 import { AccountantHome } from "./AccountantHome";
-import { useDashboardNav } from "./dashboardNav";
-import { DetailPage } from "./DetailPage";
 import { DriverHome } from "./DriverHome";
-import { OwnerHome } from "./OwnerHome";
-import { ReportingContext } from "./reportingContext";
-import { SellerHome } from "./SellerHome";
-
-function OwnerRoute({ shopId }: { shopId: string }) {
-  const { metric } = useDashboardNav();
-  return metric === null ? (
-    <OwnerHome shopId={shopId} />
-  ) : (
-    <DetailPage shopId={shopId} metric={metric} />
-  );
-}
+import { ReportingProvider } from "./ReportingProvider";
+import { SalesHome } from "./SalesHome";
 
 function RoleScreen({ shopId, role }: { shopId: string; role: Role }) {
   switch (role) {
     case "owner":
-      return <OwnerRoute shopId={shopId} />;
     case "seller":
-      return <SellerHome shopId={shopId} />;
+      return <SalesHome shopId={shopId} role={role} />;
     case "accountant":
       return <AccountantHome shopId={shopId} />;
     case "driver":
@@ -33,18 +17,14 @@ function RoleScreen({ shopId, role }: { shopId: string; role: Role }) {
 }
 
 /**
- * Entrée de route de l'accueil (chargée à la demande, specs § 4.6) : passerelle réelle
- * branchée sur les services de l'application, horloge de l'appareil ; un accueil par rôle.
+ * Entrée de route de l'accueil (chargée à la demande, specs § 4.6) : page minimale de vente
+ * pour le propriétaire et le vendeur (specs § 15.1), accueil simple du comptable et du
+ * chauffeur. Le tableau de bord complet est un écran à part (`DashboardRoute`).
  */
 export default function HomeRoute({ shopId, role }: { shopId: string; role: Role }) {
-  const services = useServices();
-  const deps = useMemo(
-    () => ({ gateway: createHttpReporting(services), now: () => new Date() }),
-    [services],
-  );
   return (
-    <ReportingContext.Provider value={deps}>
+    <ReportingProvider>
       <RoleScreen shopId={shopId} role={role} />
-    </ReportingContext.Provider>
+    </ReportingProvider>
   );
 }
