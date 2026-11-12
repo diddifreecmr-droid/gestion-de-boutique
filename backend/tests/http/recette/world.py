@@ -90,12 +90,9 @@ def _seed(side: Side) -> None:
     settings = side.ok("GET", "/settings", owner)
     side.ok("PATCH", "/settings", owner,
             json={"version": settings["version"], "min_price_enabled": True})  # fmt: skip
-    side.ok(
-        "PUT",
-        f"/articles/{article['id']}/prices",
-        owner,
-        json={"version": side.version(f"/articles/{article['id']}"), "min_price": 720_000},
-    )
+    prices = {"base_price": 780_000, "min_price": 720_000}  # PUT : les prix ensemble
+    version = side.version(f"/articles/{article['id']}")
+    side.ok("PUT", f"/articles/{article['id']}/prices", owner, json={"version": version, **prices})
     modes = side.ok("GET", "/payment-modes", owner)
     side.ids["cash"] = next(m["id"] for m in modes if m["name"] == "Espèces")
     categories = side.ok("GET", "/expense-categories", owner)
