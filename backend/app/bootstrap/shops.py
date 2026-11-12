@@ -19,9 +19,14 @@ from app.application.shops.use_cases.manage_locations import ManageLocations
 from app.application.shops.use_cases.manage_members import ManageMembers
 from app.application.shops.use_cases.manage_payment_modes import ManagePaymentModes
 from app.application.shops.use_cases.open_shop import OpenShop
+from app.application.shops.use_cases.platform_access import (
+    PlatformAccessPorts,
+    PlatformShopAccess,
+)
 from app.application.shops.use_cases.platform_shops import PlatformShops
 from app.application.shops.use_cases.shop_settings import ShopSettingsUseCase
 from app.application.stock.probes import LedgerLocationStock
+from app.bootstrap.core import Core
 from app.bootstrap.identity import IdentityModule
 from app.bootstrap.journal import shop_entitlements
 from app.infrastructure.auth.opaque_tokens import RandomPinGenerator
@@ -31,6 +36,16 @@ from app.interface.http.routes.shop_components import ShopsComponents
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ShopsModule:
     http: ShopsComponents
+
+
+def platform_ports(core: Core) -> PlatformAccessPorts:
+    """Lectures de la console plateforme : catalogue, droits d'offre, délégations."""
+    return PlatformAccessPorts(
+        catalog=core.catalog,
+        entitlements=shop_entitlements(core),
+        overrides=core.overrides,
+        delegations=core.delegations,
+    )
 
 
 def build_shops(
@@ -57,6 +72,7 @@ def build_shops(
         unlock=UnlockUser(platform_uows, access, clock),
         grant_admin=GrantAdminAccess(shop_uows, policy, clock),
         revoke_admin=RevokeAdminAccess(shop_uows, policy, clock),
+        platform_access=PlatformShopAccess(platform_ports(core), policy, clock),
         guard=identity.auth.guard,
     )
     return ShopsModule(http=http)

@@ -33,9 +33,15 @@ const PurchasingRoute = lazy(() => import("../features/purchasing/PurchasingRout
 const ReceivablesRoute = lazy(() => import("../features/receivables/ReceivablesRoute"));
 const PriceRequestsRoute = lazy(() => import("../features/sales/priceRequests/PriceRequestsRoute"));
 const ShopSettingsRoute = lazy(() => import("../features/shopSettings/ShopSettingsRoute"));
+const AlertsRoute = lazy(() => import("../features/alerts/AlertsRoute"));
+const JournalRoute = lazy(() => import("../features/journal/JournalRoute"));
+const CustomersRoute = lazy(() => import("../features/customers/CustomersRoute"));
 
 /** Écrans communs à tous les rôles, hors barre du bas. */
 const ALERTS_KEY = "alertes";
+/** Entrées « Plus » du propriétaire (profil Motos). */
+const JOURNAL_KEY = "journal";
+const CUSTOMERS_KEY = "clients";
 
 /**
  * `/s/{shopId}/{section}` : une section absente du menu du rôle n'existe pas pour lui
@@ -45,7 +51,14 @@ export function SectionPage() {
   const { section = "" } = useParams();
   const { shopId, role, profile } = useActiveShop();
   if (section === ACCOUNT_KEY) return <AccountPage title="Mon compte" />;
-  if (section === ALERTS_KEY) return <ComingSoon title="Alertes" />;
+  // Cloche : chacun ses alertes, quel que soit le rôle (UC-SOC-09).
+  if (section === ALERTS_KEY) {
+    return (
+      <Suspense fallback={<Skeleton lines={4} label="Ouverture des alertes…" />}>
+        <AlertsRoute shopId={shopId} role={role} />
+      </Suspense>
+    );
+  }
   // « Nouvelle vente » : entrée du menu vendeur ; le propriétaire y vient depuis « Ventes ».
   if (section === NEW_SALE_KEY && SALE_ROLES.includes(role)) {
     return (
@@ -115,6 +128,21 @@ export function SectionPage() {
     return (
       <Suspense fallback={<Skeleton lines={4} label="Ouverture du stock…" />}>
         <StockRoute shopId={shopId} role={role} />
+      </Suspense>
+    );
+  }
+  // « Journal » et « Clients » : « Plus » du propriétaire seul (UC-JRN-01, UC-VEN-11).
+  if (entry.key === JOURNAL_KEY && role === "owner") {
+    return (
+      <Suspense fallback={<Skeleton lines={4} label="Ouverture du journal…" />}>
+        <JournalRoute shopId={shopId} profile={profile} />
+      </Suspense>
+    );
+  }
+  if (entry.key === CUSTOMERS_KEY && role === "owner") {
+    return (
+      <Suspense fallback={<Skeleton lines={4} label="Ouverture des clients…" />}>
+        <CustomersRoute shopId={shopId} />
       </Suspense>
     );
   }

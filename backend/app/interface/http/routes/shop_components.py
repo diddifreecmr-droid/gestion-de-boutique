@@ -11,6 +11,7 @@ from app.application.shops.use_cases.manage_locations import ManageLocations
 from app.application.shops.use_cases.manage_members import ManageMembers
 from app.application.shops.use_cases.manage_payment_modes import ManagePaymentModes
 from app.application.shops.use_cases.open_shop import OpenShop
+from app.application.shops.use_cases.platform_access import PlatformShopAccess
 from app.application.shops.use_cases.platform_shops import PlatformShops
 from app.application.shops.use_cases.shop_settings import ShopSettingsUseCase
 from app.interface.http.security import AuthGuard
@@ -30,4 +31,5 @@ class ShopsComponents:
     unlock: UnlockUser
     grant_admin: GrantAdminAccess
     revoke_admin: RevokeAdminAccess
+    platform_access: PlatformShopAccess
     guard: AuthGuard

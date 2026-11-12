@@ -16,6 +16,11 @@ function openAs(role: string, path = `/s/${SHOP_A}`) {
       meBody({ shops: [{ shop_id: SHOP_A, shop_name: "Motos Garoua", role }] }),
     ),
     [ROUTES.logout]: new Response(null, { status: 204 }),
+    [`GET /api/v1/shops/${SHOP_A}/alerts?unread_only=true`]: json(200, {
+      items: [],
+      next_cursor: null,
+      unread_count: 0,
+    }),
   });
 }
 
@@ -70,10 +75,11 @@ describe("coquille — menus par rôle (CDC § 17.4)", () => {
     expect(reloadLatestVersion).toHaveBeenCalledOnce();
   });
 
-  it("la cloche ouvre les alertes (provisoire)", async () => {
+  it("la cloche ouvre les alertes de l'utilisateur", async () => {
     const { user } = openAs("seller");
     await user.click(await screen.findByRole("button", { name: "Alertes, aucune nouvelle" }));
-    expect(screen.getByRole("heading", { name: "Alertes" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Alertes" })).toBeVisible();
+    expect(await screen.findByText("Aucune alerte à traiter.")).toBeVisible();
   });
 });
 

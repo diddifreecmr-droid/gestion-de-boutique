@@ -1,13 +1,16 @@
-import { TopBar, useToast } from "../shared/ui";
+import { lazy, Suspense } from "react";
+import { Skeleton, TopBar, useToast } from "../shared/ui";
 import { AccountPage } from "../features/settings/AccountPage";
 import { useSignedIn } from "../core/services/servicesContext";
 import { NotFoundPage } from "./NotFoundPage";
 import { AppBanners } from "./AppBanners";
-import { ComingSoon } from "./ComingSoon";
+
+/** Écrans de la console, chargés à la demande (seul l'administrateur les ouvre). */
+const PlatformConsole = lazy(() => import("../features/platform/PlatformConsole"));
 
 /**
- * PROVISOIRE (T12) — console de l'administrateur plateforme. L'API `/platform/*` (T10)
- * n'existe pas encore : seuls le compte et la version sont proposés.
+ * Console de l'administrateur plateforme (TR-23) : boutiques, ouverture d'une boutique et de
+ * son propriétaire, statut, droits d'offre, délégation ; puis « Mon compte ».
  */
 export function PlatformHome() {
   const me = useSignedIn();
@@ -27,7 +30,9 @@ export function PlatformHome() {
       />
       <AppBanners />
       <main className="mx-auto flex w-full max-w-150 flex-col gap-4 p-4">
-        <ComingSoon title="Boutiques" />
+        <Suspense fallback={<Skeleton lines={4} label="Ouverture de la console…" />}>
+          <PlatformConsole />
+        </Suspense>
         <AccountPage title="Mon compte" />
       </main>
     </div>
