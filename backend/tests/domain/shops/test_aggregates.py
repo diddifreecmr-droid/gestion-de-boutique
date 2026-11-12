@@ -9,7 +9,7 @@ import pytest
 
 from app.domain.audit.values import AuditAction, EntityRef, FieldChange, Performer
 from app.domain.identity.phone import PhoneNumber
-from app.domain.profiles.modules import Module
+from app.domain.profiles.modules import MANDATORY_MODULES, Module
 from app.domain.profiles.motos import MOTOS
 from app.domain.shared.errors import Duplicate, InvalidStateTransition, ValidationFailed
 from app.domain.shared.ids import ShopId, UserId
@@ -57,7 +57,8 @@ def test_shop_administration_and_header() -> None:
         modules=None, status=None, available=MOTOS.available_modules, performer=WHO, now=NOW
     )
     assert shop.administer(
-        modules=[Module.SALES], status=ShopStatus.CLOSED, available=MOTOS.available_modules,
+        modules=[*MANDATORY_MODULES, Module.EXPENSES], status=ShopStatus.CLOSED,
+        available=MOTOS.available_modules,
         performer=WHO, now=NOW,
     )  # fmt: skip
     assert Module.CORE in shop.enabled_modules

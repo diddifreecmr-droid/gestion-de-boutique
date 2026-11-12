@@ -501,7 +501,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "audit"
       }
     },
     "/api/v1/shops/{shop_id}/audit/entities/{entity_type}/{entity_id}": {
@@ -623,7 +624,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "audit"
       }
     },
     "/api/v1/shops/{shop_id}/audit/users/{user_id}": {
@@ -735,7 +737,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "audit"
       }
     },
     "/api/v1/shops/{shop_id}/alerts": {
@@ -848,7 +851,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/alerts/{alert_id}/read": {
@@ -925,7 +929,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/platform/shops": {
@@ -1335,7 +1340,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/settings": {
@@ -1403,7 +1409,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       },
       "patch": {
         "tags": [
@@ -1479,7 +1486,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/locations": {
@@ -1547,7 +1555,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       },
       "post": {
         "tags": [
@@ -1623,7 +1632,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/locations/{location_id}": {
@@ -1710,7 +1720,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/payment-modes": {
@@ -1782,7 +1793,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       },
       "post": {
         "tags": [
@@ -1858,7 +1870,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/payment-modes/{mode_id}": {
@@ -1945,7 +1958,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/members": {
@@ -2017,7 +2031,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       },
       "post": {
         "tags": [
@@ -2093,7 +2108,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/members/{user_id}": {
@@ -2180,7 +2196,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/members/{user_id}/reset-pin": {
@@ -2257,7 +2274,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/members/{user_id}/revoke-devices": {
@@ -2334,7 +2352,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/members/{user_id}/unlock": {
@@ -2404,7 +2423,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/admin-access": {
@@ -2472,7 +2492,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       },
       "post": {
         "tags": [
@@ -2538,7 +2559,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       },
       "delete": {
         "tags": [
@@ -2597,7 +2619,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/articles": {
@@ -2735,7 +2758,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       },
       "post": {
         "tags": [
@@ -2811,7 +2835,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/articles/{article_id}": {
@@ -2888,7 +2913,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       },
       "patch": {
         "tags": [
@@ -2973,7 +2999,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/articles/{article_id}/prices": {
@@ -3060,7 +3087,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/articles/{article_id}/archive": {
@@ -3137,7 +3165,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/articles/{article_id}/reactivate": {
@@ -3214,7 +3243,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/expenses": {
@@ -3436,7 +3466,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "expenses"
       },
       "post": {
         "tags": [
@@ -3529,7 +3560,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "expenses"
       }
     },
     "/api/v1/shops/{shop_id}/expenses/{expense_id}": {
@@ -3606,7 +3638,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "expenses"
       },
       "patch": {
         "tags": [
@@ -3691,7 +3724,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "expenses"
       }
     },
     "/api/v1/shops/{shop_id}/expenses/{expense_id}/cancel": {
@@ -3778,7 +3812,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "expenses"
       }
     },
     "/api/v1/shops/{shop_id}/expenses/{expense_id}/repeat": {
@@ -3855,7 +3890,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "expenses"
       }
     },
     "/api/v1/shops/{shop_id}/expense-categories": {
@@ -3927,7 +3963,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "expenses"
       },
       "post": {
         "tags": [
@@ -4003,7 +4040,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "expenses"
       }
     },
     "/api/v1/shops/{shop_id}/expense-categories/{category_id}": {
@@ -4090,7 +4128,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "expenses"
       }
     },
     "/api/v1/shops/{shop_id}/tags": {
@@ -4179,7 +4218,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "expenses"
       }
     },
     "/api/v1/shops/{shop_id}/tags/merge": {
@@ -4257,7 +4297,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "expenses"
       }
     },
     "/api/v1/shops/{shop_id}/stock": {
@@ -4368,7 +4409,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/stock/value": {
@@ -4436,7 +4478,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/stock/damaged": {
@@ -4504,7 +4547,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/articles/{article_id}/movements": {
@@ -4614,7 +4658,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/adjustments": {
@@ -4692,7 +4737,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/inventories": {
@@ -4770,7 +4816,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/inventories/{inventory_id}": {
@@ -4847,7 +4894,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/inventories/{inventory_id}/counts": {
@@ -4934,7 +4982,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/inventories/{inventory_id}/validate": {
@@ -5021,7 +5070,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/inventories/{inventory_id}/abandon": {
@@ -5108,7 +5158,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "catalog"
       }
     },
     "/api/v1/shops/{shop_id}/suppliers": {
@@ -5176,7 +5227,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "purchases"
       },
       "post": {
         "tags": [
@@ -5252,7 +5304,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "purchases"
       }
     },
     "/api/v1/shops/{shop_id}/suppliers/{supplier_id}": {
@@ -5363,7 +5416,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "purchases"
       },
       "patch": {
         "tags": [
@@ -5448,7 +5502,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "purchases"
       }
     },
     "/api/v1/shops/{shop_id}/purchases": {
@@ -5636,7 +5691,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "purchases"
       },
       "post": {
         "tags": [
@@ -5729,7 +5785,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "purchases"
       }
     },
     "/api/v1/shops/{shop_id}/purchases/{purchase_id}": {
@@ -5806,7 +5863,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "purchases"
       },
       "patch": {
         "tags": [
@@ -5891,7 +5949,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "purchases"
       }
     },
     "/api/v1/shops/{shop_id}/purchases/{purchase_id}/cancel": {
@@ -5978,7 +6037,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "purchases"
       }
     },
     "/api/v1/shops/{shop_id}/purchases/{purchase_id}/payments": {
@@ -6065,7 +6125,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "purchases"
       }
     },
     "/api/v1/shops/{shop_id}/sales": {
@@ -6286,7 +6347,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       },
       "post": {
         "tags": [
@@ -6379,7 +6441,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       }
     },
     "/api/v1/shops/{shop_id}/sales/{sale_id}": {
@@ -6456,7 +6519,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       },
       "patch": {
         "tags": [
@@ -6541,7 +6605,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       }
     },
     "/api/v1/shops/{shop_id}/sales/{sale_id}/cancel": {
@@ -6628,7 +6693,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       }
     },
     "/api/v1/shops/{shop_id}/sales/{sale_id}/error-reports": {
@@ -6715,7 +6781,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       }
     },
     "/api/v1/shops/{shop_id}/error-reports/{report_id}/reply": {
@@ -6802,7 +6869,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       }
     },
     "/api/v1/shops/{shop_id}/sales/{sale_id}/receipt": {
@@ -6879,7 +6947,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       }
     },
     "/api/v1/shops/{shop_id}/customers": {
@@ -6964,7 +7033,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       },
       "post": {
         "tags": [
@@ -7040,7 +7110,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       }
     },
     "/api/v1/shops/{shop_id}/customers/{customer_id}": {
@@ -7117,7 +7188,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       },
       "patch": {
         "tags": [
@@ -7202,7 +7274,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       }
     },
     "/api/v1/shops/{shop_id}/price-requests": {
@@ -7280,7 +7353,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       },
       "get": {
         "tags": [
@@ -7350,7 +7424,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       }
     },
     "/api/v1/shops/{shop_id}/price-requests/{request_id}": {
@@ -7427,7 +7502,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       }
     },
     "/api/v1/shops/{shop_id}/price-requests/{request_id}/decision": {
@@ -7514,7 +7590,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       }
     },
     "/api/v1/shops/{shop_id}/sales/{sale_id}/returns": {
@@ -7601,7 +7678,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       },
       "get": {
         "tags": [
@@ -7676,7 +7754,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "sales"
       }
     },
     "/api/v1/shops/{shop_id}/receivables": {
@@ -7813,7 +7892,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       },
       "post": {
         "tags": [
@@ -7889,7 +7969,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       }
     },
     "/api/v1/shops/{shop_id}/receivables/{receivable_id}": {
@@ -7966,7 +8047,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       },
       "patch": {
         "tags": [
@@ -8051,7 +8133,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       }
     },
     "/api/v1/shops/{shop_id}/receivables/{receivable_id}/write-off": {
@@ -8138,7 +8221,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       }
     },
     "/api/v1/shops/{shop_id}/receivables/{receivable_id}/reminders": {
@@ -8225,7 +8309,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       }
     },
     "/api/v1/shops/{shop_id}/reminders/{reminder_id}": {
@@ -8312,7 +8397,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       }
     },
     "/api/v1/shops/{shop_id}/receivables/{receivable_id}/guarantors": {
@@ -8399,7 +8485,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       }
     },
     "/api/v1/shops/{shop_id}/receivables/{receivable_id}/installments": {
@@ -8503,7 +8590,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       }
     },
     "/api/v1/shops/{shop_id}/customers/{customer_id}/installments": {
@@ -8607,7 +8695,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       }
     },
     "/api/v1/shops/{shop_id}/installments/{installment_id}/cancel": {
@@ -8694,7 +8783,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       }
     },
     "/api/v1/shops/{shop_id}/installments/{installment_id}/receipt": {
@@ -8771,7 +8861,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       }
     },
     "/api/v1/shops/{shop_id}/customers/{customer_id}/statement": {
@@ -8848,7 +8939,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "receivables"
       }
     },
     "/api/v1/shops/{shop_id}/dashboard": {
@@ -8959,7 +9051,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "dashboard"
       }
     },
     "/api/v1/shops/{shop_id}/dashboard/details/{metric}": {
@@ -9078,7 +9171,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "dashboard"
       }
     },
     "/api/v1/shops/{shop_id}/home": {
@@ -9146,7 +9240,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/sync": {
@@ -9224,7 +9319,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/offline-snapshot": {
@@ -9309,7 +9405,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/attachments": {
@@ -9387,7 +9484,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/attachments/{attachment_id}/url": {
@@ -9464,7 +9562,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     },
     "/api/v1/shops/{shop_id}/attachments/{attachment_id}/content": {
@@ -9513,6 +9612,32 @@
               "maxLength": 128,
               "title": "Signature"
             }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
           }
         ],
         "responses": {
@@ -9534,7 +9659,8 @@
               }
             }
           }
-        }
+        },
+        "x-module": "core"
       }
     }
   },

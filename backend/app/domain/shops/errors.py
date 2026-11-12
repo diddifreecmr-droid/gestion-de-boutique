@@ -9,10 +9,13 @@
 | `NotPointOfSale` | `LOCATION_NOT_POINT_OF_SALE` | lieu habituel hors point de vente (MEM-01) |
 | `RoleNotOffered` | `ROLE_NOT_IN_PROFILE` | rôle absent du profil (Chauffeur hors Motos) |
 | `ModuleNotAvailable` | `MODULE_NOT_AVAILABLE` | module absent du profil de la boutique |
+| `ModuleMandatory` | `MODULE_MANDATORY` | désactiver un module toujours actif (§ 15.1) |
+| `ModuleDependency` | `MODULE_DEPENDENCY` | `transport` sans `transfers` (§ 15.1) |
+| `ModuleDisabled` | `MODULE_DISABLED` | **403** : fonction d'un module désactivé de la boutique |
 | `UnknownProfile` | `UNKNOWN_PROFILE` | 400 : code de profil inconnu |
 """
 
-from app.domain.shared.errors import DomainError, ValidationFailed
+from app.domain.shared.errors import DomainError, Forbidden, ValidationFailed
 
 
 class LastActiveOwner(DomainError):
@@ -75,6 +78,37 @@ class ModuleNotAvailable(DomainError):
         super().__init__(
             "Module indisponible pour ce type de boutique",
             details={"module": module, "profile": profile},
+        )
+
+
+class ModuleMandatory(DomainError):
+    code = "MODULE_MANDATORY"
+
+    def __init__(self, module: str) -> None:
+        super().__init__(
+            "Ce module est toujours actif : il ne se désactive pas", details={"module": module}
+        )
+
+
+class ModuleDependency(DomainError):
+    code = "MODULE_DEPENDENCY"
+
+    def __init__(self, module: str, requires: str) -> None:
+        super().__init__(
+            "Ce module exige un autre module actif",
+            details={"module": module, "requires": requires},
+        )
+
+
+class ModuleDisabled(Forbidden):
+    """403 : la boutique n'a pas ce module (ses routes, ou l'effet d'un autre module : vente à
+    crédit sans `receivables`…). Contrôlé après l'appartenance : un non-membre garde 404."""
+
+    code = "MODULE_DISABLED"
+
+    def __init__(self, module: str) -> None:
+        super().__init__(
+            "Cette fonction n'est pas activée pour la boutique", details={"module": module}
         )
 
 

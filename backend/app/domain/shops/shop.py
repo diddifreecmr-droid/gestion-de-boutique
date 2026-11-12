@@ -2,8 +2,10 @@
 
 - Son identifiant **est** la boutique (`shop_id == id`) : il vit dans les tables de boutique.
 - Le type (`profile_code`) ne change plus après la création : aucun mutateur ne le touche.
-- Les modules actifs sont fixés par le profil et modifiables par l'administrateur, dans les
-  limites du profil, socle et journal toujours compris (`administer`).
+- Les modules actifs sont fixés par le profil et modifiables par l'administrateur seul, dans
+  les limites du profil (`checked_modules`) : obligatoires toujours compris, dépendances
+  respectées (`transport` ⇒ `transfers`), à l'ouverture comme au réglage (`administer`).
+- `require_module` : 403 `MODULE_DISABLED` si la boutique n'a pas le module.
 - Le nom est unique dans le compte commerçant : c'est le `MerchantAccount` qui le garantit.
 """
 
@@ -19,7 +21,8 @@ from app.domain.shared.business_day import require_aware
 from app.domain.shared.errors import ValidationFailed
 from app.domain.shared.events import EventCollector
 from app.domain.shared.ids import ShopId
-from app.domain.shops.errors import ModuleNotAvailable
+from app.domain.shops.errors import ModuleDisabled
+from app.domain.shops.modules import checked_modules
 from app.domain.shops.events import SettingsChanged, ShopAdministered, ShopOpened, diff
 from app.domain.shops.ids import MerchantAccountId
 from app.domain.shops.values import ShopStatus, clean_optional, clean_text
@@ -67,7 +70,7 @@ class Shop:
         self.created_at = require_aware(self.created_at)
         self.profile_code = ProfileCode(self.profile_code)
         if not self.enabled_modules >= MANDATORY_MODULES:
-            msg = "Socle et journal sont toujours actifs"
+            msg = "Socle, journal, catalogue et ventes sont toujours actifs"
             raise ValueError(msg)
 
     @property
@@ -77,6 +80,14 @@ class Shop:
     @property
     def name(self) -> str:
         return self.identity.name
+
+    def has_module(self, module: Module) -> bool:
+        return Module(module) in self.enabled_modules
+
+    def require_module(self, module: Module) -> None:
+        """Lève `ModuleDisabled` (403 `MODULE_DISABLED`) si le module n'est pas actif."""
+        if not self.has_module(module):
+            raise ModuleDisabled(Module(module).value)
 
     @property
     def entity(self) -> EntityRef:
@@ -99,7 +110,7 @@ class Shop:
             account_id=account_id,
             profile_code=profile_code,
             identity=identity,
-            enabled_modules=frozenset(modules),
+            enabled_modules=checked_modules(modules, profile=profile_code),
             status=ShopStatus.ACTIVE,
             created_at=now,
         )
@@ -126,11 +137,9 @@ class Shop:
         """Modules et statut (console plateforme) ; renvoie `False` si rien ne change."""
         before = self._snapshot()
         if modules is not None:
-            wanted = frozenset(Module(m) for m in modules) | MANDATORY_MODULES
-            unavailable = sorted(wanted - available)
-            if unavailable:
-                raise ModuleNotAvailable(unavailable[0].value, self.profile_code.value)
-            self.enabled_modules = wanted
+            self.enabled_modules = checked_modules(
+                modules, available=available, profile=self.profile_code
+            )
         if status is not None:
             self.status = ShopStatus(status)
         changes = diff(before, self._snapshot())
