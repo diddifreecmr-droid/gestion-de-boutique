@@ -54,7 +54,7 @@ describe("coquille — menus par rôle (CDC § 17.4)", () => {
     );
   });
 
-  it("« Plus » du propriétaire, puis Réglages : version et « Recharger la dernière version »", async () => {
+  it("« Plus » du propriétaire, puis Réglages → Mon compte : version et « Recharger la dernière version »", async () => {
     const { user } = openAs("owner");
     await user.click(await screen.findByRole("link", { name: "Plus" }));
     const tiles = screen.getAllByRole("button").map((b) => b.textContent);
@@ -62,9 +62,10 @@ describe("coquille — menus par rôle (CDC § 17.4)", () => {
       expect.arrayContaining(["Créances", "Paie", "Journal", "Réglages", "Mon compte"]),
     );
     await user.click(screen.getByRole("button", { name: "Réglages" }));
-    expect(screen.getByRole("heading", { name: "Réglages" })).toBeVisible();
-    expect(screen.getByText("0.0.0-test")).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Réglages" })).toBeVisible();
     expect(nav().getByRole("link", { name: "Plus" })).toHaveAttribute("aria-current", "page");
+    await user.click(within(screen.getByRole("list", { name: "Mon compte" })).getByRole("button"));
+    expect(await screen.findByText("0.0.0-test")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Recharger la dernière version" }));
     expect(reloadLatestVersion).toHaveBeenCalledOnce();
   });
