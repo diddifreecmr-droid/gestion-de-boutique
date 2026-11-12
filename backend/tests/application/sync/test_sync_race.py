@@ -10,6 +10,7 @@ from app.application.expenses.references import ExpenseInput
 from app.application.plans.ports import Entitlements
 from app.application.sales.inputs import SaleInput
 from app.application.security.actor import Actor
+from app.application.security.policy import Policy
 from app.application.security.roles import Role
 from app.application.shops.context import actor_shop
 from app.application.sync.inputs import (
@@ -70,7 +71,8 @@ def setup(*, write: bool) -> tuple[SyncOperations, Actor, OperationInput]:
     uows = MemoryUnitOfWorkFactory(MemoryDatabase(), MEMORY_REPOSITORIES, ())
     actor = Actor(user_id=UserId.new(), device_id=DeviceId.new(), shop_id=ShopId.new(),
                   role=Role.SELLER)  # fmt: skip
-    use_case = SyncOperations(uows, Open(), Racing(uows, write=write), FixedClock(T))
+    clock = FixedClock(T)
+    use_case = SyncOperations(uows, Open(), Racing(uows, write=write), clock, Policy(clock.now))
     operation = OperationInput(op_id=SyncOperationId.new(), type="sale.create", captured_at=T)
     return use_case, actor, operation
 

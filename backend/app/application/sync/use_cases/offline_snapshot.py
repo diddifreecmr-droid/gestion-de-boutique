@@ -94,8 +94,8 @@ class ReadOfflineSnapshot:
 
     def execute(self, actor: Actor, since: datetime | None = None) -> OfflineSnapshot:
         shop_id = actor_shop(actor)
+        self._policy.require(actor, Permission.HOME_READ)  # 404 hors boutique (specs § 8.3)
         require_entitlement(self._entitlements, shop_id, Entitlement.OFFLINE_CAPTURE)
-        self._policy.require(actor, Permission.HOME_READ)
         sells = self._can(actor, Permission.SALE_CREATE)
         spends = self._can(actor, Permission.EXPENSE_CREATE)
         snapshot = OfflineSnapshot(

@@ -1,7 +1,9 @@
 """UC-VEN-10 (et dépense hors connexion) — `POST /sync` : rejouer la file de l'appareil (§ 6.5).
 
-1. Droit `offline_capture` exigé (`require_entitlement` → 403 `FEATURE_DISABLED`, TR-26) :
-   en V1, faux pour toute boutique ; seule une surcharge de l'administrateur l'ouvre.
+1. Accès à la boutique d'abord (`Policy`, specs § 8.3) : l'administrateur sans délégation
+   reçoit 404 comme un non-membre, jamais l'état des droits d'offre de la boutique (T24).
+   Puis droit `offline_capture` exigé (`require_entitlement` → 403 `FEATURE_DISABLED`,
+   TR-26) : en V1, faux pour toute boutique ; seule une surcharge de l'administrateur l'ouvre.
 2. `device_id` du lot = appareil de la session (sinon 400) ; au plus `MAX_OPERATIONS`.
 3. Opérations traitées **dans l'ordre**, chacune dans sa propre transaction (RG-T23) :
    - `op_id` déjà connu → résultat gardé : `duplicate` (+ numéro définitif) ou de nouveau
@@ -20,6 +22,8 @@ from app.application.plans.ports import Entitlements
 from app.application.ports.clock import Clock
 from app.application.ports.uow import UnitOfWorkFactory
 from app.application.security.actor import Actor
+from app.application.security.permissions import Permission
+from app.application.security.policy import Policy
 from app.application.shops.context import actor_shop, performer_of
 from app.application.sync.inputs import (
     MAX_OPERATIONS,
@@ -64,7 +68,9 @@ class SyncOperations:
         entitlements: Entitlements,
         runner: OperationRunner,
         clock: Clock,
+        policy: Policy,
     ) -> None:
+        self._policy = policy
         self._uow_factory = uow_factory
         self._entitlements = entitlements
         self._runner = runner
@@ -73,6 +79,7 @@ class SyncOperations:
     def execute(
         self, actor: Actor, batch: SyncBatch, decoder: OperationDecoder
     ) -> list[OperationResult]:
+        self._policy.require(actor, Permission.HOME_READ)  # 404 hors boutique, avant tout
         require_entitlement(self._entitlements, actor_shop(actor), Entitlement.OFFLINE_CAPTURE)
         if batch.device_id != actor.device_id:
             msg = "device_id du lot différent de l'appareil de la session"
