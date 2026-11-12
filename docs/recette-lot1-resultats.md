@@ -47,6 +47,10 @@ La recette annonçait « 139 cas fonctionnels » : le décompte inclut 5 renvois
 2. `POST /customers/{id}/installments` avec le client d'une autre boutique (ou inconnu) : `400 VALIDATION_ERROR`
    au lieu de `404`.
 
+**Mise à jour « pièces jointes et partage PDF »** (branche `wip/pieces-jointes`, après T24) : les écarts
+E1 et E2 sont levés. Cas passés à **couvert** : ATT-01, SEC-N06, SEC-I14, GUA-01, SAL-08, CUS-03, RCP-05,
+PERF-03 (détail dans les lignes ci-dessous ; les totaux du tableau restent ceux de T24).
+
 ## 2. Critères d'acceptation A1 à A10
 
 | # | Critère | Tests | Statut |
@@ -66,8 +70,8 @@ La recette annonçait « 139 cas fonctionnels » : le décompte inclut 5 renvois
 
 | # | Écart | Cas touchés | Proposition |
 | --- | --- | --- | --- |
-| E1 | **Pièces jointes non livrées** : `POST /attachments` et `GET /attachments/{id}/url` (specs § 6.3, Lot 1 ; TR-17) n'existent pas ; les champs `*_photo_id` / `attachment_ids` sont acceptés sans route d'envoi | ATT-01, SEC-N06, SEC-I14, GUA-01, SAL-08, CUS-03 | tâche dédiée (port `FileStorage` + MinIO/Silo) avant la mise en service, ou report au Lot 2 acté dans specs |
-| E2 | **« Partager » (PDF) non livré** : bouton désactivé « Partage PDF : à venir » | RCP-05, PERF-03 | livrer le module PDF chargé à la demande, ou le reporter explicitement |
+| E1 | ~~Pièces jointes non livrées~~ **levé** : port `FileStorage` (mémoire, S3/Silo), `POST /attachments`, `GET /attachments/{id}/url` (lien signé 60 s), contenu relayé par l'API (`docs/deploiement.md` § 10) ; l'existence des pièces citées par `*_photo_id` / `attachment_ids` n'est pas vérifiée à l'écriture (un identifiant inconnu donne 404 à la lecture) | ATT-01, SEC-N06, SEC-I14, GUA-01, SAL-08, CUS-03 | — |
+| E2 | ~~« Partager » (PDF) non livré~~ **levé** : PDF produit sur l'appareil par un module chargé au premier appui (`sharePdf-*.js`, 3 ko gzip), Web Share niveau 2, repli téléchargement annoncé | RCP-05, PERF-03 | — |
 | E3 | **Écrans non livrés** (page « à venir ») : Alertes (cloche), Journal, Clients, Réglages de la boutique (membres, lieux, modes, réglages), console plateforme « Boutiques » ; l'API correspondante est livrée et testée | ALR-02, AUD-01 (affichage), PLT-05, SET-03 (affichage), UC-SOC-04/05/06 côté écran | planifier ces écrans avant la mise en service (le propriétaire ne peut sinon ni ajouter un vendeur ni régler la boutique depuis l'application) |
 | E4 | M16 : la recette attend `422 PRICE_BELOW_MINIMUM` pour le vendeur ; la décision § 15.1 l'accepte avec un avertissement | SEC-M16, ERR-PRM-01 | aucune : les tests suivent § 15.1 ; mettre à jour la recette |
 | E5 | AUD-08 : aucune protection du journal **dans PostgreSQL** (pas de `REVOKE UPDATE, DELETE` ni de déclencheur sur `audit_entry`) ; seule l'API l'interdit | AUD-08, RG-J01 | rôle de base séparé pour l'API au déploiement (T25) + test de refus de permission |
@@ -169,12 +173,12 @@ La recette annonçait « 139 cas fonctionnels » : le décompte inclut 5 renvois
 | SAL-05 | `test_record_sale.py::test_multi_payment_overpayment_and_incomplete_cash` | couvert | couvert | |
 | SAL-06 | `test_stock_location_idempotence.py::test_idempotent_replay_and_rights` ; `bt/http/sales/test_sales_http.py::test_rights_idempotence_and_cross_seller_404` | couvert | couvert | |
 | SAL-07 | `test_record_sale.py::test_credit_customer_required_and_credit_limit` ; `test_sales_http.py::test_error_shapes_for_the_sale_screen` | couvert | couvert | |
-| SAL-08 | `bt/application/receivables/test_legacy_write_off.py::test_change_responsible_terms_attachments_and_guarantor` | partiel | partiel | pièces jointes : identifiants seulement, aucune route d'envoi (E1) |
+| SAL-08 | `bt/application/receivables/test_legacy_write_off.py::test_change_responsible_terms_attachments_and_guarantor` ; `bt/http/attachments/test_attachments_rights_http.py` ; `fs/features/receivables/ReceivableAttachments.test.tsx` | partiel | couvert | pièces de la créance envoyées puis rattachées (E1 levé) |
 | RCP-01 | `bt/application/sales/test_reads_reports.py::test_receipt_duplicate_and_cancelled_mentions` ; `fs/features/sales/Receipt.test.tsx` | couvert | couvert | |
 | RCP-02 | `test_sales_http.py::test_section_64_contract_and_no_cost_leak` ; `R/test_no_leak_http.py::test_owner_receipt_never_carries_a_cost` | couvert | couvert | |
 | RCP-03 | `test_reads_reports.py::test_receipt_duplicate_and_cancelled_mentions` ; `Receipt.test.tsx` | couvert | couvert | |
 | RCP-04 | `Receipt.test.tsx` « profils : 58 mm, 80 mm, A5 / A4 » | partiel | partiel | absence de débordement à l'impression : navigateur, hors CI |
-| RCP-05 | — | manquant | manquant | « Partager » non livré (E2) |
+| RCP-05 | `fs/features/sales/ShareButton.test.tsx` ; `fs/features/sales/share/receiptPdf.test.ts` | manquant | couvert | Web Share puis repli téléchargement (E2 levé) ; feuille de partage réelle hors CI |
 | RCP-06 | — | hors CI | hors CI | terrain |
 | SAL-09 | `test_reads_reports.py::test_own_scope_listing_search_and_rights` ; `fs/features/sales/SaleList.test.tsx` | couvert | couvert | |
 | SAL-10 | `test_reads_reports.py::test_own_scope_listing_search_and_rights` ; `R/test_rights_matrix_http.py` (M13) | couvert | couvert | |
@@ -188,7 +192,7 @@ La recette annonçait « 139 cas fonctionnels » : le décompte inclut 5 renvois
 | EXC-02 | `bt/application/sales/test_returns.py::test_scn05_partial_then_total_return` | couvert | couvert | code `RETURN_QUANTITY_EXCEEDED` |
 | CUS-01 | `test_reads_reports.py::test_customers_scope_duplicates_and_sheet` | couvert | couvert | |
 | CUS-02 | idem ; `R/test_isolation_http.py::test_uniqueness_and_numbering_are_per_shop` | couvert | couvert | |
-| CUS-03 | `test_reads_reports.py::test_customers_scope_duplicates_and_sheet` ; `R/test_rights_matrix_http.py` (M22) | partiel | partiel | photo de pièce d'identité : E1 |
+| CUS-03 | `test_reads_reports.py::test_customers_scope_duplicates_and_sheet` ; `R/test_rights_matrix_http.py` (M22) ; `bt/http/attachments/test_attachments_http.py` ; `bt/http/attachments/test_attachments_rights_http.py::test_upload_rights_follow_the_linked_element` | partiel | couvert | photo de pièce d'identité du client (E1 levé) |
 | REC-01 | `test_sale_link.py::test_scn01_credit_sale_opens_receivable_of_480000` | couvert | couvert | |
 | REC-02 | `test_legacy_write_off.py::test_scn08_legacy_write_off_and_recovery` | couvert | couvert | |
 | REC-03 | `bt/application/receivables/test_installments.py::test_rec03_default_to_oldest_receivable_and_explicit_choice` | couvert | couvert | |
@@ -197,7 +201,7 @@ La recette annonçait « 139 cas fonctionnels » : le décompte inclut 5 renvois
 | REC-06 | `test_reminders_reads.py::test_rec06_statement_running_balance` | couvert | couvert | |
 | REM-01 | `test_reminders_reads.py::test_rem01_due_reminder_alerts_once_then_postpone` | couvert | couvert | |
 | REM-02 | idem | couvert | couvert | |
-| GUA-01 | `bt/http/receivables/test_receivables_http.py::test_legacy_write_off_follow_up_and_guarantor` | partiel | partiel | URL signée 60 s : E1 |
+| GUA-01 | `bt/http/receivables/test_receivables_http.py::test_legacy_write_off_follow_up_and_guarantor` ; `bt/http/attachments/test_attachments_rights_http.py` ; `fs/features/receivables/FollowUp.test.tsx` | partiel | couvert | URL signée 60 s (E1 levé) |
 | EXP-01 | `bt/application/expenses/test_record_expense.py::test_fuel_expense_gets_first_number_and_cash_by_default` | couvert | couvert | |
 | EXP-02 | `fs/features/expenses/NewExpense.test.tsx` « hors connexion : saisie conservée » | couvert | couvert | |
 | EXP-03 | `bt/application/expenses/test_tags_categories.py::test_categories_base_locked_added_deactivable_owner_only` | couvert | couvert | |
@@ -220,7 +224,7 @@ La recette annonçait « 139 cas fonctionnels » : le décompte inclut 5 renvois
 | AUD-07 | `test_record_expense.py`, `test_expenses_http.py` ; `bt/http/auth/test_login_http.py::test_device_header_is_mandatory_and_must_be_a_uuid7` | couvert | couvert | |
 | MNY-01 | `bt/domain/test_money.py` ; `fs/shared/format/money.test.ts` | couvert | couvert | |
 | CTR-STK-01 | `bt/application/stock/test_ledger.py::test_projection_equals_sum_of_movements` ; `bt/contracts/test_stock_ledger_contract.py` | couvert | couvert | mémoire + PostgreSQL |
-| ATT-01 | — | manquant | manquant | E1 |
+| ATT-01 | `bt/http/attachments/test_attachments_http.py` (GIF, HTML, vide → 400 ; 5 Mo + 1 → 400 ; 5 Mo → 201 ; stockage absent → 503) ; `bt/domain/attachments/test_attachment.py` ; `fs/features/attachments/prepareFile.test.ts` (réduction 1600 px) | manquant | couvert | réduction réelle (canvas) hors CI |
 | AUD-08 | `bt/contracts/test_audit_contract.py::test_port_exposes_no_way_to_modify_or_delete` | partiel | partiel | refus des droits PostgreSQL : E5 |
 
 ### 5.2 Scénarios chiffrés (recette § 2)
@@ -263,7 +267,7 @@ refusé »**. Les colonnes NM et ADM (404 partout) sont balayées par `R/test_is
 | SEC-N03 | `R/…[driver]` ; `test_reporting_rights_http.py::test_homes_by_role_never_leak` | partiel | couvert | 780 000, 543 210, 777 777 absents |
 | SEC-N04 | `test_sales_http.py::test_section_64_contract_and_no_cost_leak` ; `R/…::test_owner_receipt_never_carries_a_cost` | couvert | couvert | |
 | SEC-N05 | `fs/features/catalog/articleView.test.ts`, `fs/features/stock/stockView.test.ts`, `StockMatrix.test.tsx`, `SaleDetail.test.tsx`, `RoleHomes.test.tsx` (« vendeur : aucun coût… même si le serveur en envoyait ») | couvert | couvert | DOM jsdom ; navigateur réel hors CI |
-| SEC-N06 | — | manquant | manquant | E1 |
+| SEC-N06 | `bt/http/attachments/test_attachments_rights_http.py` (O et vendeur responsable : 200 ; V2 : 404 ; C, chauffeur, admin délégué : 403 ; + 61 s : 410) | manquant | couvert | |
 
 ### 5.5 Isolation SEC-I (critère A5)
 
@@ -282,7 +286,7 @@ refusé »**. Les colonnes NM et ADM (404 partout) sont balayées par `R/test_is
 | SEC-I11 | `test_shops_http.py::test_admin_access_routes` ; `bt/application/security/test_admin_access.py` | couvert | couvert | |
 | SEC-I12 | `bt/contracts/test_repository_contract.py::test_shop_b_never_reads_shop_a` et suivants (mémoire + PostgreSQL) | couvert | couvert | |
 | SEC-I13 | **`bt/contracts/test_port_signatures.py`** | manquant | couvert | tous les ports et adaptateurs `ShopBoundPort` |
-| SEC-I14 | — | manquant | manquant | E1 |
+| SEC-I14 | `bt/http/attachments/test_attachments_rights_http.py::test_another_shop_never_reaches_an_attachment` ; `bt/contracts/test_attachments_contract.py` | manquant | couvert | |
 
 ### 5.6 Blocage, révocation, désactivation (SEC-L, SEC-R, SEC-X)
 
@@ -393,7 +397,7 @@ refusé »**. Les colonnes NM et ADM (404 partout) sont balayées par `R/test_is
 | A11Y-07 | `fs/shared/ui/Feedback.test.tsx` (pastille sans mot refusée) | partiel | partiel | contrastes : navigateur |
 | PERF-01 | `npm run size` (size-limit, job CI `frontend`) | couvert | couvert | |
 | PERF-02 | idem (JS initial mesuré sur le fichier d'entrée) | couvert | couvert | |
-| PERF-03 | — | manquant | manquant | module PDF non livré (E2) |
+| PERF-03 | `npm run build` : chunk `sharePdf-*.js` séparé, absent de `index-*.js` (budgets `.size-limit.json` respectés) ; `ShareButton.test.tsx` (chargé à l'appui) | manquant | couvert | analyse du bundle |
 | PERF-04 | — | hors CI | hors CI | Lighthouse |
 | PERF-05 | `NewSalePage.cash.test.tsx` « recherche dès la première lettre » | hors CI | hors CI | chronométrage navigateur |
 | PERF-06 | `bt/infrastructure/postgres/test_reporting_indexes.py::test_every_dashboard_aggregate_uses_an_index` | partiel | partiel | plan d'exécution indexé ; p95 < 300 ms non mesuré |

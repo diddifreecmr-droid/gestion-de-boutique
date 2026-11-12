@@ -182,6 +182,7 @@ Chaque composant vit dans `frontend/src/shared/ui/` (un fichier par composant, 2
 - **ChoiceChips** (mode de paiement, type de dépense, taille) : boutons de 56 px de haut, 2 par ligne sur téléphone. Le choix actif est en `primary-soft` avec une bordure 2 px `primary` et une icône `Check`. Le dernier mode utilisé est présélectionné.
 - **Disclosure « Plus de détails »** : bouton `ghost` en pleine largeur avec un chevron ; une fois ouvert, les champs facultatifs apparaissent dans le même flux, sans fenêtre modale.
 - **SearchField** : icône loupe, effaçable, résultats dès la première lettre ; les articles les plus vendus sont proposés quand le champ est vide.
+- **FilePickerButton** (photo, pièce jointe) : un `Button` `secondary` (icône `IdCard` ou `Camera`) qui ouvre le sélecteur du téléphone (appareil photo, galerie, fichiers) ; le champ natif reste masqué mais porte le même nom accessible. Pendant l'envoi : état `loading` du bouton ; en cas d'échec : message `danger-text` et bouton `ghost` « Réessayer l'envoi » (le fichier est gardé) ; succès : « Pièce enregistrée. » en `success-text` avec `CheckCircle2`. Une pièce s'ouvre par un bouton `ghost` « Voir : … » (icône `Eye`) ; une photo s'affiche dans le flux, coins `--radius-lg`, bordure `border`.
 
 ### 6.3 Card
 
