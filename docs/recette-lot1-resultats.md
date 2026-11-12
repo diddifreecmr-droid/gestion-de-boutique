@@ -106,7 +106,7 @@ La recette annonçait « 139 cas fonctionnels » : le décompte inclut 5 renvois
 | LOC-03 | `test_locations_and_modes.py::test_withdrawal_rules` (`LastPointOfSale`) | couvert | couvert | |
 | SET-01 | `bt/application/shops/test_settings_profile_access.py::test_settings_changes_are_journaled_and_bounded` ; `test_locations_and_modes.py::test_payment_modes` | couvert | couvert | |
 | SET-02 | idem ; `test_shops_http.py::test_profile_settings_and_places` | couvert | couvert | |
-| SET-03 | `test_locations_and_modes.py::test_payment_modes` ; `test_shops_http.py` (« Wave ») | couvert | couvert | écran Réglages non livré (E3) |
+| SET-03 | `test_locations_and_modes.py::test_payment_modes` ; `test_shops_http.py` (« Wave ») | couvert | couvert | écran Réglages livré : `fs/features/shopSettings/places/Places.test.tsx` (« Wave »), `shop/ShopSettings.test.tsx`, `members/*.test.tsx` |
 | PIN-01 | `bt/application/identity/test_change_pin.py::test_simple_codes_are_refused`, `test_first_login_change_clears_must_change_pin` | couvert | couvert | |
 | PIN-02 | `bt/application/identity/test_change_pin_lockout.py` (6 tests) ; `bt/http/auth/test_change_pin_lock_http.py` | couvert | couvert | valeur selon § 15.1 : `422`, compteur séparé (et non `401`) |
 | PIN-03 | `fs/features/auth/ChangePinPage.test.tsx` « refuse deux saisies différentes » | couvert | couvert | |

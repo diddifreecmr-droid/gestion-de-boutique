@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { useParams } from "react-router";
-import { findSection } from "../core/profile/shopProfile";
+import { findSection, shopPath } from "../core/profile/shopProfile";
 import { MORE_KEY } from "../core/profile/types";
 import {
   MY_SALES_KEY,
@@ -11,6 +11,8 @@ import {
 import { SALE_ROLES } from "../features/sales/saleRoles";
 import { AccountPage } from "../features/settings/AccountPage";
 import { EXPENSES_KEY } from "../features/expenses/expenseNav";
+import { SETTINGS_KEY } from "../features/shopSettings/settingsNav";
+import { SETTINGS_ROLES } from "../features/shopSettings/settingsRights";
 import { STOCK_KEY } from "../features/catalog/catalogRights";
 import { STOCK_ROLES } from "../features/stock/stockRoles";
 import { PURCHASE_ROLES, PURCHASES_KEY } from "../features/purchasing/purchasingNav";
@@ -30,9 +32,9 @@ const StockRoute = lazy(() => import("../features/stock/StockRoute"));
 const PurchasingRoute = lazy(() => import("../features/purchasing/PurchasingRoute"));
 const ReceivablesRoute = lazy(() => import("../features/receivables/ReceivablesRoute"));
 const PriceRequestsRoute = lazy(() => import("../features/sales/priceRequests/PriceRequestsRoute"));
+const ShopSettingsRoute = lazy(() => import("../features/shopSettings/ShopSettingsRoute"));
 
 /** Écrans communs à tous les rôles, hors barre du bas. */
-const SETTINGS_KEY = "reglages";
 const ALERTS_KEY = "alertes";
 
 /**
@@ -63,7 +65,19 @@ export function SectionPage() {
   const entry = findSection(profile, role, section);
   if (entry === null) return <NotFoundPage />;
   if (entry.key === MORE_KEY) return <MorePage />;
-  if (entry.key === SETTINGS_KEY) return <AccountPage title={entry.label} />;
+  // « Plus → Réglages » du propriétaire : membres, lieux, modes de paiement, réglages (T22).
+  if (entry.key === SETTINGS_KEY && SETTINGS_ROLES.includes(role)) {
+    return (
+      <Suspense fallback={<Skeleton lines={4} label="Ouverture des réglages…" />}>
+        <ShopSettingsRoute
+          shopId={shopId}
+          role={role}
+          title={entry.label}
+          accountPath={shopPath(shopId, ACCOUNT_KEY)}
+        />
+      </Suspense>
+    );
+  }
   // « Ventes » du propriétaire, « Mes ventes » du vendeur (UC-VEN-05).
   if ((entry.key === SALES_KEY || entry.key === MY_SALES_KEY) && SALE_ROLES.includes(role)) {
     return (

@@ -1,0 +1,58 @@
+import { useNavigate } from "react-router";
+import { ListCard, ListCardRow } from "../../shared/ui";
+import { VIEW, type SettingsView } from "./settingsNav";
+
+export interface SettingsHubProps {
+  title: string;
+  /** Adresse de « Mon compte » (version, code, déconnexion), commune à tous les rôles. */
+  accountPath: string;
+  onOpen: (view: SettingsView) => void;
+}
+
+const ENTRIES: readonly { view: SettingsView; title: string; subtitle: string }[] = [
+  {
+    view: VIEW.members,
+    title: "Membres",
+    subtitle: "Ajouter un vendeur, un comptable, un chauffeur ; rôle, code, accès",
+  },
+  { view: VIEW.locations, title: "Lieux", subtitle: "Boutiques et entrepôts, points de vente" },
+  {
+    view: VIEW.paymentModes,
+    title: "Modes de paiement",
+    subtitle: "Espèces, Orange Money, MTN MoMo… et la référence demandée",
+  },
+  {
+    view: VIEW.shop,
+    title: "Réglages de la boutique",
+    subtitle: "Prix minimum, seuil de stock, reçu et en-tête",
+  },
+];
+
+/** Sommaire des Réglages (propriétaire) : une entrée par écran, puis « Mon compte ». */
+export function SettingsHub({ title, accountPath, onOpen }: SettingsHubProps) {
+  const navigate = useNavigate();
+  return (
+    <div className="flex flex-col gap-5">
+      <h1 className="m-0 text-title font-bold text-text">{title}</h1>
+      <ListCard label="Réglages de la boutique">
+        {ENTRIES.map((entry) => (
+          <ListCardRow
+            key={entry.view}
+            title={entry.title}
+            subtitle={entry.subtitle}
+            onOpen={() => {
+              onOpen(entry.view);
+            }}
+          />
+        ))}
+      </ListCard>
+      <ListCard label="Mon compte">
+        <ListCardRow
+          title="Mon compte"
+          subtitle="Version de l'application, changer mon code, se déconnecter"
+          onOpen={() => void navigate(accountPath)}
+        />
+      </ListCard>
+    </div>
+  );
+}
