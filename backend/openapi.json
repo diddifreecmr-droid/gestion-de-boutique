@@ -2711,6 +2711,16 @@
             }
           },
           {
+            "name": "with_thumbnails",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "With Thumbnails"
+            }
+          },
+          {
             "name": "authorization",
             "in": "header",
             "required": false,
@@ -10510,6 +10520,16 @@
               }
             ],
             "title": "Price History"
+          },
+          "thumbnail": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThumbnailResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -20216,6 +20236,27 @@
           "temporary_pin"
         ],
         "title": "TemporaryPinResponse"
+      },
+      "ThumbnailResponse": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "url",
+          "expires_at"
+        ],
+        "title": "ThumbnailResponse",
+        "description": "Lien signé court vers la photo de l'article (même forme que `GET /attachments/…/url`)."
       },
       "TokenResponse": {
         "properties": {

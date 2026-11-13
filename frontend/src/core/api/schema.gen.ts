@@ -1741,6 +1741,7 @@ export interface components {
       wac?: number | null;
       /** Price History */
       price_history?: components["schemas"]["PriceHistoryResponse"][] | null;
+      thumbnail?: components["schemas"]["ThumbnailResponse"] | null;
     };
     /**
      * AttachmentKind
@@ -4657,6 +4658,19 @@ export interface components {
       temporary_pin: string;
     };
     /**
+     * ThumbnailResponse
+     * @description Lien signé court vers la photo de l'article (même forme que `GET /attachments/…/url`).
+     */
+    ThumbnailResponse: {
+      /** Url */
+      url: string;
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
+    };
+    /**
      * TokenResponse
      * @description Jeton d'accès (gardé en mémoire par le client, § 7.2) ; le refresh part en cookie.
      */
@@ -5966,6 +5980,7 @@ export interface operations {
         sort?: components["schemas"]["ArticleOrder"];
         cursor?: string | null;
         limit?: number | null;
+        with_thumbnails?: boolean;
       };
       header: {
         authorization?: string | null;
