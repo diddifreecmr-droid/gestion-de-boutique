@@ -73,7 +73,9 @@ export function ReceiptDocument({ receipt }: { receipt: Receipt }) {
       <p>
         Le {formatDate(receipt.sold_at)} à {formatTime(receipt.sold_at)}
       </p>
-      <p>Vendeur : {receipt.seller_name}</p>
+      <p>
+        {receipt.seller_role_label} : {receipt.seller_name}
+      </p>
       {receipt.customer !== null && (
         <p>
           Client : {receipt.customer.name} — {receipt.customer.phone}

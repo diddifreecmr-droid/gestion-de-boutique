@@ -59,6 +59,13 @@ describe("mise en page des reçus", () => {
     expect(model.lines.find((line) => line.text.includes("Total"))?.bold).toBe(true);
   });
 
+  it("reçu de vente : libellé du rôle du vendeur donné par le reçu", () => {
+    const model = saleReceiptModel(saleReceipt({ seller_role_label: "Employé" }));
+    const all = model.lines.map((line) => line.text.trim()).join("\n");
+    expect(all).toContain("Employé : Issa Vendeur");
+    expect(all).not.toContain("Vendeur : ");
+  });
+
   it("A4 et reçu de versement « Soldé »", () => {
     const office = saleReceiptModel(
       saleReceipt({ printing: { ...saleReceipt().printing, receipt_format: "a4" } }),

@@ -174,6 +174,13 @@ describe("structure du reçu et profils d'impression", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("libellé du rôle du vendeur donné par le reçu (profil « Employé »)", () => {
+    render(<ReceiptDocument receipt={{ ...RECEIPT, seller_role_label: "Employé" }} />);
+    const text = plain(screen.getByRole("article", { name: "Reçu" }).textContent);
+    expect(text).toContain("Employé : Issa Vendeur");
+    expect(text).not.toContain("Vendeur : ");
+  });
+
   it("profils : 58 mm, 80 mm, A5 / A4 ; format inconnu refusé", () => {
     expect(printProfileOf("58mm")).toBe("thermal-58");
     expect(printProfileOf("80mm")).toBe("thermal-80");

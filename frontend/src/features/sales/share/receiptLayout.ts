@@ -111,7 +111,7 @@ export function saleReceiptModel(receipt: Receipt): ReceiptPdfModel {
   const provisional = receipt.provisional_number;
   out.text(`N° ${receipt.number}${provisional === null ? "" : ` (provisoire ${provisional})`}`);
   out.text(`Le ${formatDate(receipt.sold_at)} à ${formatTime(receipt.sold_at)}`);
-  out.text(`Vendeur : ${receipt.seller_name}`);
+  out.text(`${receipt.seller_role_label} : ${receipt.seller_name}`);
   if (receipt.customer !== null) {
     out.text(`Client : ${receipt.customer.name} — ${receipt.customer.phone}`);
   }

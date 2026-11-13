@@ -3,8 +3,9 @@ import type { Role } from "../../core/auth/me";
 import { createHttpImports, ImportsContext } from "../../core/gateways/httpImports";
 import { useModules } from "../../core/profile/modulesContext";
 import { useServices } from "../../core/services/servicesContext";
+import { businessDate } from "../expenses/businessDay";
 import { modelsFor } from "./importModels";
-import { ImportsPage } from "./ImportsPage";
+import { ImportsScreen } from "./ImportsScreen";
 import { saveInBrowser } from "./saveFile";
 
 /**
@@ -18,7 +19,13 @@ export default function ImportsRoute({ shopId, role }: { shopId: string; role: R
   const models = useMemo(() => modelsFor(role, modules), [role, modules]);
   return (
     <ImportsContext.Provider value={gateway}>
-      <ImportsPage shopId={shopId} models={models} save={saveInBrowser} />
+      <ImportsScreen
+        shopId={shopId}
+        role={role}
+        models={models}
+        save={saveInBrowser}
+        today={businessDate(new Date())}
+      />
     </ImportsContext.Provider>
   );
 }
