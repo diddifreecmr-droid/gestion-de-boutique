@@ -125,6 +125,8 @@ export function shortcutLabel(shortcut: SaleShortcut, article: CatalogArticle): 
   if (shortcut.basis === "length") return shortcut.label;
   const resolved = resolveShortcut(shortcut, article);
   const length =
-    resolved.mode === "piece" ? lengthText(article.piece?.length_m ?? "0") : metersText(resolved.tenths);
+    resolved.mode === "piece"
+      ? lengthText(article.piece?.length_m ?? "0")
+      : metersText(resolved.tenths);
   return `${shortcut.label} (${length})`;
 }

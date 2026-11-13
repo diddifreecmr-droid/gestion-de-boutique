@@ -26,7 +26,6 @@ export interface SaleBasketProps {
   shortcuts?: readonly SaleShortcut[];
 }
 
-
 /**
  * Lignes de la vente et recherche d'article. Panier à la ligne (Prêt-à-porter, § 7.4) : un
  * article peut revenir (autre taille, autre couleur) tant qu'il en reste ; seule la dernière

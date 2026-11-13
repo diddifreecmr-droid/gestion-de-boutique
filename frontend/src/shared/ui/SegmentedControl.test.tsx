@@ -53,7 +53,12 @@ describe("SegmentedControl (design-system § 7.5)", () => {
     expectRenderError(
       () =>
         render(
-          <SegmentedControl label="Vente" options={OPTIONS} value={"yard" as Mode} onChange={noop} />,
+          <SegmentedControl
+            label="Vente"
+            options={OPTIONS}
+            value={"yard" as Mode}
+            onChange={noop}
+          />,
         ),
       "n'est pas un segment",
     );

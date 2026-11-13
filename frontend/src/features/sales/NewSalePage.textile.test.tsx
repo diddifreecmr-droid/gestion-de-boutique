@@ -32,8 +32,7 @@ function renderTextile(articles: TextileArticle[] = [WX, BAZIN]) {
 }
 
 /** Nom exact, l'espace insécable de « 2,7 m » comprise. */
-const nb = (text: string) =>
-  new RegExp(`^${text.replace(/[()]/g, "\\$&").replace(/ /g, "\\s")}$`);
+const nb = (text: string) => new RegExp(`^${text.replace(/[()]/g, "\\$&").replace(/ /g, "\\s")}$`);
 const card = (name: string) => within(screen.getByRole("region", { name }));
 const lengthField = () => priceField("Longueur");
 const lineText = (name: string) =>
@@ -43,12 +42,12 @@ describe("vente Textile au mètre / à la pièce (T41, design-system § 7.5, SCN
   it("TEX-01, TEX-04 : stock en mètres, raccourcis, 2,5 m à 2 500 = 6 250, prix modifiable ; axe", async () => {
     const { user, container, recordSale } = renderTextile();
     const list = await screen.findByRole("list", { name: /Les plus vendus|Articles trouvés/ });
-    expect(plain(within(list).getByRole("button", { name: /Wax/ }).textContent ?? "")).toContain(
+    expect(plain(within(list).getByRole("button", { name: /Wax/ }).textContent)).toContain(
       "Stock à Boutique : 54,9 m",
     );
     await user.click(await articleButton("Wax Fleur de mariage"));
     const wax = card("Wax Fleur de mariage");
-    expect(plain(wax.getByText(/Stock disponible/).textContent ?? "")).toBe(
+    expect(plain(wax.getByText(/Stock disponible/).textContent)).toBe(
       "Stock disponible à Boutique : 54,9 m (≈ 10 pièces)",
     );
     expect(wax.getByRole("radio", { name: "Au mètre" })).toHaveAttribute("aria-checked", "true");
@@ -56,7 +55,7 @@ describe("vente Textile au mètre / à la pièce (T41, design-system § 7.5, SCN
     expect(
       within(shortcuts)
         .getAllByRole("radio")
-        .map((chip) => plain(chip.textContent ?? "")),
+        .map((chip) => plain(chip.textContent)),
     ).toEqual(["Pièce complète (5,49 m)", "Demi-pièce (2,7 m)", "1 m", "2 m", "3 m"]);
     expect(plain(priceField("Prix au mètre").value)).toBe("2 500");
 
@@ -82,7 +81,7 @@ describe("vente Textile au mètre / à la pièce (T41, design-system § 7.5, SCN
         unit_price: 2400,
       }),
     ]);
-    expect(plain(screen.getByText(/× 2\s400/).textContent ?? "")).toContain("2,5 m × 2 400");
+    expect(plain(screen.getByText(/× 2\s400/).textContent)).toContain("2,5 m × 2 400");
   });
 
   it("TEX-03 : « À la pièce » pré-remplit 13 000, 1 pièce = 5,5 m ; reçu « 1 pièce (5,49 m) »", async () => {
@@ -91,12 +90,12 @@ describe("vente Textile au mètre / à la pièce (T41, design-system § 7.5, SCN
     const wax = card("Wax Fleur de mariage");
     await user.click(wax.getByRole("radio", { name: "À la pièce" }));
     expect(plain(priceField("Prix de la pièce").value)).toBe("13 000");
-    expect(plain(wax.getByText(/retirés du stock/).textContent ?? "")).toBe(
+    expect(plain(wax.getByText(/retirés du stock/).textContent)).toBe(
       "1 pièce = 5,5 m retirés du stock",
     );
     expect(wax.queryByRole("radiogroup", { name: "Raccourcis" })).toBeNull();
     await user.click(wax.getByRole("button", { name: /plus un/ }));
-    expect(plain(wax.getByText(/retirés du stock/).textContent ?? "")).toBe(
+    expect(plain(wax.getByText(/retirés du stock/).textContent)).toBe(
       "2 pièces = 11 m retirés du stock",
     );
     expect(lineText("Wax Fleur de mariage")).toBe(`Ligne${money(26_000)}`);
@@ -116,7 +115,7 @@ describe("vente Textile au mètre / à la pièce (T41, design-system § 7.5, SCN
       unit_price: 13_000,
     });
     await user.click(screen.getByRole("button", { name: "Imprimer" }));
-    expect(plain((await screen.findByText(/1 pièce \(5,49 m\)/)).textContent ?? "")).toBe(
+    expect(plain((await screen.findByText(/1 pièce \(5,49 m\)/)).textContent)).toBe(
       "1 pièce (5,49 m) × 13 000 FCFA",
     );
   });
@@ -125,7 +124,7 @@ describe("vente Textile au mètre / à la pièce (T41, design-system § 7.5, SCN
     const { user, recordSale } = renderTextile([{ ...WX, stock: "2.9" }]);
     await user.click(await articleButton("Wax Fleur de mariage"));
     const wax = card("Wax Fleur de mariage");
-    expect(plain(wax.getByText(/Stock disponible/).textContent ?? "")).toBe(
+    expect(plain(wax.getByText(/Stock disponible/).textContent)).toBe(
       "Stock disponible à Boutique : 2,9 m (≈ 0 pièce)",
     );
     await user.click(wax.getByRole("radio", { name: "3 m" }));
@@ -146,7 +145,7 @@ describe("vente Textile au mètre / à la pièce (T41, design-system § 7.5, SCN
     await user.click(await articleButton("Wax Fleur de mariage"));
     await user.click(card("Wax Fleur de mariage").getByRole("radio", { name: "3 m" }));
     await user.click(validateButton());
-    expect(plain((await saleAlert()).textContent ?? "")).toContain(
+    expect(plain((await saleAlert()).textContent)).toContain(
       "Stock insuffisant pour Wax Fleur de mariage : 2,9 m disponible à Boutique.",
     );
   });
@@ -156,7 +155,7 @@ describe("vente Textile au mètre / à la pièce (T41, design-system § 7.5, SCN
     await user.click(await articleButton("Bazin riche"));
     const bazin = card("Bazin riche");
     expect(bazin.queryByRole("radio", { name: "À la pièce" })).toBeNull();
-    expect(plain(bazin.getByText(/Stock disponible/).textContent ?? "")).toBe(
+    expect(plain(bazin.getByText(/Stock disponible/).textContent)).toBe(
       "Stock disponible à Boutique : 12 m",
     );
     await user.click(bazin.getByRole("radio", { name: nb("Pièce complète (5,5 m)") }));

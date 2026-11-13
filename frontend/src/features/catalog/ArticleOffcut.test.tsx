@@ -2,7 +2,13 @@ import { configure, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { attachment, pdfFile, UPLOAD } from "../../testing/attachments";
 import { axeViolations } from "../../testing/axe";
-import { accountantArticle, API, catalogRoutes, HAOJUE_ID, ownerArticle } from "../../testing/catalog";
+import {
+  accountantArticle,
+  API,
+  catalogRoutes,
+  HAOJUE_ID,
+  ownerArticle,
+} from "../../testing/catalog";
 import { apiError, json, SHOP_A, type Reply } from "../../testing/fakeApi";
 import { renderApp } from "../../testing/renderApp";
 import { replaceText } from "../../testing/renderSale";
@@ -113,7 +119,9 @@ describe("« Déclarer une chute » sur la fiche Textile (T41, RG-X06, UC-TEX-03
     await user.type(lengthField(), "0,4");
     await user.click(screen.getByRole("button", { name: "Enregistrer la chute" }));
     await user.click(await screen.findByRole("button", { name: "Déclarer la chute" }));
-    expect(await screen.findByText("Vous n'avez pas le droit de faire cette action.")).toBeVisible();
+    expect(
+      await screen.findByText("Vous n'avez pas le droit de faire cette action."),
+    ).toBeVisible();
     expect(screen.queryByText(/prix de base|coût/i)).toBeNull();
   });
 

@@ -4,11 +4,7 @@
  */
 import { uuidV7 } from "../../core/api/uuidv7";
 import type { CatalogArticle } from "../../core/gateways/catalogContract";
-import type {
-  CustomerKind,
-  CustomerSummary,
-  SaleMode,
-} from "../../core/gateways/salesContract";
+import type { CustomerKind, CustomerSummary, SaleMode } from "../../core/gateways/salesContract";
 import { toTenths } from "./textile";
 
 /** Choix « À crédit » parmi les modes de paiement (ce n'est pas un mode de la boutique). */

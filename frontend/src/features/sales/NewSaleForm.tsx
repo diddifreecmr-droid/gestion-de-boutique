@@ -1,10 +1,6 @@
 import { useState, type ReactNode } from "react";
 import type { Role } from "../../core/auth/me";
-import type {
-  PaymentMode,
-  SaleLocation,
-  SaleShortcut,
-} from "../../core/gateways/catalogContract";
+import type { PaymentMode, SaleLocation, SaleShortcut } from "../../core/gateways/catalogContract";
 import type { SaleResult } from "../../core/gateways/salesContract";
 import { FormAlert } from "../auth/FormAlert";
 import { CreditSection } from "./CreditSection";

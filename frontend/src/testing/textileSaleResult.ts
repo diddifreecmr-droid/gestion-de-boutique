@@ -70,7 +70,7 @@ export function saleResult(
     number: `V-${String(rank).padStart(6, "0")}`,
     provisional_number: null,
     status: "valid",
-    kind: body.kind ?? "cash",
+    kind: body.kind,
     sold_on: body.sold_on ?? "2026-11-13",
     sold_at: at,
     location_id: body.location_id ?? "loc-boutique",
