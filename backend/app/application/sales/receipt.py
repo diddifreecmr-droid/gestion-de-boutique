@@ -3,18 +3,18 @@
 Contenu : en-tête de la boutique (nom, ville, téléphone, adresse, NIU et RCCM s'ils sont
 renseignés, logo affiché ou non), « Reçu de vente », numéro (et numéro provisoire), date et
 heure, vendeur, client (nom, téléphone), lignes (article, détails couleur / châssis / moteur /
-taille, quantité et son libellé « 2,5 m » / « 1 pièce (5,49 m) », prix unitaire, total), totaux (total, payé **par mode**, reste à payer),
-mentions (« Vente à crédit », « Annulé », « Duplicata »), message de pied et réglages
-d'impression. **Aucun** coût, CMP ni marge, même pour le propriétaire (RG-D02, SEC-N04) : le
-DTO ne les porte pas, il n'y a donc rien à filtrer.
+taille, quantité et son libellé « 2,5 m » / « 1 pièce (5,49 m) », prix unitaire, total),
+totaux (total, payé **par mode**, reste à payer), mentions (« Vente à crédit », « Annulé »,
+« Duplicata »), message de pied et réglages d'impression. **Aucun** coût, CMP ni marge, même
+pour le propriétaire (RG-D02, SEC-N04) : le DTO ne les porte pas, il n'y a rien à filtrer.
 """
 
 from collections.abc import Mapping
-from types import MappingProxyType
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
+from types import MappingProxyType
 
 from app.domain.catalog.ids import ArticleId
 from app.domain.sales.customer import Customer

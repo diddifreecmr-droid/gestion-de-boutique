@@ -4,7 +4,8 @@
   refusée), état Vendable ou Abîmé.
 - Motif dans la liste du CDC ; « Autre » exige une note (ADJ-02). Photo : identifiant de pièce
   jointe facultatif (TR-17). « Chute » (RG-X06, UC-TEX-03) : sortie seulement, mouvement
-  « Chute » ; la longueur est la quantité (au dixième de mètre pour un tissu). Le CDC ne prévoit **pas de numéro** d'ajustement.
+  « Chute » ; la longueur est la quantité (au dixième de mètre pour un tissu). Le CDC ne
+  prévoit **pas de numéro** d'ajustement.
 - Un écart d'inventaire crée aussi un ajustement (`inventory_id` renseigné, motif
   `INVENTORY_GAP`, note = motif saisi pour l'écart) ; ce motif n'est pas proposé à la saisie.
 - L'ajustement est figé dès sa création (il ne se corrige que par un nouvel ajustement) ;

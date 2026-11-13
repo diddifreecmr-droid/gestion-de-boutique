@@ -25,6 +25,7 @@ export function saleReceipt(overrides: Partial<Receipt> = {}): Receipt {
         article_name: "Haojue HJ125-8 édition spéciale « Sahel » très longue désignation",
         sale_mode: "unit",
         quantity: "1",
+        quantity_label: "1",
         unit_price: 780_000,
         line_total: 780_000,
         details: [{ color: "Rouge", chassis_number: "LBX123", engine_number: null, size: null }],

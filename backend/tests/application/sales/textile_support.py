@@ -36,9 +36,7 @@ class TextileWorld(SalesWorld):
         self.employee = self.member(self.x_owner, "677200002", Role.SELLER, STORE)
         self.accountant = self.member(self.x_owner, "677200003", Role.ACCOUNTANT)
 
-    def textile(
-        self, fields: dict[str, object], prices: ArticlePrices | None = None
-    ) -> Article:
+    def textile(self, fields: dict[str, object], prices: ArticlePrices | None = None) -> Article:
         command = CreateArticleCommand(data=ArticleInput(fields=fields), prices=prices)
         article, created = self.catalog.create.execute(self.x_owner, command)
         assert created

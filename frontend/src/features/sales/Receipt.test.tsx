@@ -109,6 +109,7 @@ const RECEIPT: Receipt = {
       article_name: "Haojue HJ125-8",
       sale_mode: "unit",
       quantity: "2",
+      quantity_label: "2",
       unit_price: 750_000,
       line_total: 1_500_000,
       details: [

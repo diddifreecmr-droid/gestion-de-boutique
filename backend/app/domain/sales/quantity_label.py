@@ -1,4 +1,4 @@
-"""Quantité d'une ligne telle qu'imprimée sur le reçu (TEX-06, T31) : « 2,5 m », « 1 pièce (5,49 m) ».
+"""Quantité d'une ligne imprimée sur le reçu (TEX-06, T31) : « 2,5 m », « 1 pièce (5,49 m) ».
 
 - À l'unité : le nombre (« 2 ») ;
 - au mètre : la longueur à virgule, sans zéro inutile (« 2,5 m », « 3 m ») ;

@@ -106,7 +106,11 @@ def test_return_of_a_line_sold_by_the_piece() -> None:
 
     first = give_back("1")
     [line] = first.lines
-    assert (str(line.quantity), str(line.stock_quantity), line.amount) == ("1", "5.5", Money(13_000))
+    assert (str(line.quantity), str(line.stock_quantity), line.amount) == (
+        "1",
+        "5.5",
+        Money(13_000),
+    )
     assert line.margin == Money(1_978)
     assert world.matrix_total(world.x_owner, wax) == "49.4"
     with pytest.raises(InvalidQuantity):

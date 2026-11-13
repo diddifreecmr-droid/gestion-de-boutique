@@ -10,7 +10,6 @@ Lignes « à la pièce » : la longueur de la pièce est relue sur l'article (`q
 from decimal import Decimal
 
 from app.application.catalog.ports import ArticleRepository
-
 from app.application.identity.uow import IdentityUnitOfWorkFactory
 from app.application.ports.clock import Clock
 from app.application.ports.repository import not_found
@@ -30,8 +29,8 @@ from app.application.shops.ports import (
 from app.domain.catalog.ids import ArticleId
 from app.domain.sales.ids import SaleId
 from app.domain.sales.lines import SaleMode
-from app.domain.sales.sale import Sale
 from app.domain.sales.receipt_print import ReceiptPrint
+from app.domain.sales.sale import Sale
 from app.domain.shared.ids import UserId
 
 
