@@ -15,6 +15,7 @@ import {
   stockRoutes,
   stockRow,
 } from "../../testing/stock";
+import { openStockItem, stockList } from "../../testing/stockList";
 
 configure({ asyncUtilTimeout: 5000 });
 
@@ -22,17 +23,14 @@ beforeEach(() => {
   window.localStorage.clear();
 });
 
-const cards = () => screen.findByRole("list", { name: "Stock par article" });
-const card = async (name: RegExp) =>
-  within(await cards())
-    .getAllByRole("listitem")
-    .find((item) => name.test(item.textContent));
+const cards = stockList;
+const opened = openStockItem;
 
 describe("matrice de stock — vendeur", () => {
-  it("quantités par lieu, En route, Total, prix de base et pastilles ; aucun coût", async () => {
-    const { container } = renderApp(STOCK_PAGE, stockRoutes("seller"));
-    const haojue = await card(/Haojue/);
-    if (haojue === undefined) throw new Error("carte Haojue absente");
+  it("détail : quantités par lieu, En route, Total, prix de base et pastilles ; aucun coût", async () => {
+    const { container, user } = renderApp(STOCK_PAGE, stockRoutes("seller"));
+    const haojue = await opened(user, /Haojue/);
+    await opened(user, /Yamaha/);
     const lines = within(haojue)
       .getAllByRole("term")
       .map((term) => term.textContent);
@@ -50,19 +48,20 @@ describe("matrice de stock — vendeur", () => {
 
   it("non-fuite : un coût envoyé par erreur au vendeur n'est jamais affiché", async () => {
     const leaked = { ...stockRow("owner"), wac: 123456, last_cost: 654321, wac_value: 999999 };
-    const { container } = renderApp(
+    const { container, user } = renderApp(
       STOCK_PAGE,
       stockRoutes("seller", { [matrixUrl()]: json(200, { locations: COLUMNS, items: [leaked] }) }),
     );
-    await cards();
+    await opened(user, /Haojue/);
     expect(container).not.toHaveTextContent(money(123456));
     expect(container).not.toHaveTextContent(money(654321));
     expect(container).not.toHaveTextContent(money(999999));
   });
 
-  it("360 px : des cartes (pas de table), aucun conteneur qui élargit la page", async () => {
-    const { container } = renderApp(STOCK_PAGE, stockRoutes("seller"));
+  it("360 px : des lignes (pas de table), aucun conteneur qui élargit la page", async () => {
+    const { container, user } = renderApp(STOCK_PAGE, stockRoutes("seller"));
     const list = await cards();
+    await opened(user, /Haojue/);
     expect(container.querySelector("table")).toBeNull();
     expect(container.innerHTML).not.toMatch(/overflow-x|w-max|min-w-max|w-screen/);
     for (const term of within(list).getAllByRole("term")) {
@@ -73,22 +72,33 @@ describe("matrice de stock — vendeur", () => {
 });
 
 describe("matrice de stock — propriétaire et comptable", () => {
-  it("propriétaire : onglets, actions, prix de base et coûts ; onglet Articles = catalogue", async () => {
+  it("propriétaire : onglets, outils repliés, prix de base et coûts ; onglet Articles = catalogue", async () => {
     const { container, user, router } = renderApp(
       STOCK_PAGE,
       stockRoutes("owner", { [listUrl()]: json(200, { items: [], next_cursor: null }) }),
     );
-    const haojue = await card(/Haojue/);
+    const list = await cards();
+    // Liste compacte : aucun prix ni coût (ni « non calculable ») sur les lignes fermées.
+    expect(list).not.toHaveTextContent(/coût|CMP|Valeur|Prix|non calculable/i);
+    const haojue = await opened(user, /Haojue/);
     expect(haojue).toHaveTextContent(`Dernier coût${money(650000)}`);
     expect(haojue).toHaveTextContent(`Coût moyen (CMP)${money(640000)}`);
     expect(haojue).toHaveTextContent(`Valeur au CMP${money(640000)}`);
-    expect(await card(/Yamaha/)).toHaveTextContent("Coût moyen (CMP)non calculable");
+    expect(await opened(user, /Yamaha/)).toHaveTextContent("Coût moyen (CMP)non calculable");
     const tabs = screen.getByRole("navigation", { name: "Section Stock" });
     expect(within(tabs).getByRole("link", { name: "Stock" })).toHaveAttribute(
       "aria-current",
       "page",
     );
-    expect(screen.getByRole("button", { name: "Valeur du stock" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Valeur du stock" })).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Outils du stock" }));
+    const tools = within(screen.getByRole("navigation", { name: "Outils du stock" }));
+    expect(tools.getAllByRole("button").map((button) => button.textContent)).toEqual([
+      "Ajustement",
+      "Inventaire",
+      "Valeur du stock",
+      "Stock abîmé",
+    ]);
     expect(await axeViolations(container)).toEqual([]);
     await user.click(within(tabs).getByRole("link", { name: "Articles" }));
     expect(router.state.location.search).toBe("?vue=articles");
@@ -97,8 +107,7 @@ describe("matrice de stock — propriétaire et comptable", () => {
 
   it("comptable : coûts sans prix de base ; « Historique » ouvre la fiche stock", async () => {
     const { user, router } = renderApp(STOCK_PAGE, stockRoutes("accountant"));
-    const haojue = await card(/Haojue/);
-    if (haojue === undefined) throw new Error("carte Haojue absente");
+    const haojue = await opened(user, /Haojue/);
     expect(haojue).not.toHaveTextContent("Prix de base");
     expect(haojue).toHaveTextContent(`Coût moyen (CMP)${money(640000)}`);
     await user.click(within(haojue).getByRole("button", { name: /Historique/ }));

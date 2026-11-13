@@ -18,6 +18,7 @@ import {
   preloadDashboard,
   PROFILE,
 } from "../../testing/dashboard";
+import { unfoldSections } from "../../testing/dashboardFold";
 import { setClock } from "../../testing/expensesApi";
 import { json } from "../../testing/fakeApi";
 import { MINIMAL, without } from "../../testing/modules";
@@ -53,7 +54,11 @@ function open(body: Dashboard, modules: readonly ModuleCode[] = ALL_MODULES) {
   );
 }
 
-const ready = () => screen.findByRole("list", { name: "Stock" });
+/** Chiffres lus, sections dépliées : chaque bloc présent est à l'écran. */
+async function ready(user: Parameters<typeof unfoldSections>[0]) {
+  await unfoldSections(user);
+  return screen.findByRole("list", { name: "Stock" });
+}
 const expensesCard = () => screen.queryByRole("button", { name: /^Dépenses du jour/ });
 const result = () => screen.queryByText(/^Résultat simple du jour/);
 const list = (name: string) => screen.queryByRole("list", { name });
@@ -69,16 +74,19 @@ const visible: Record<Block, () => boolean> = {
 
 describe("tableau de bord — blocs des modules facultatifs", () => {
   it.each(blocks)("« %s » à null : son bloc seul disparaît, les autres restent", async (module) => {
-    open(dashboardBody(nulled[module]));
-    await ready();
+    const { user } = open(dashboardBody(nulled[module]));
+    await ready(user);
     expect(visible[module]()).toBe(false);
     for (const other of blocks.filter((m) => m !== module)) expect(visible[other]()).toBe(true);
   });
 
   it.each(blocks)("« %s » reçu, module éteint pour la coquille : caché aussi", async (module) => {
     // Transport dépend de Transferts : éteindre Transferts éteint aussi Transport.
-    open(dashboardBody(), module === "transfers" ? without(module, "transport") : without(module));
-    await ready();
+    const { user } = open(
+      dashboardBody(),
+      module === "transfers" ? without(module, "transport") : without(module),
+    );
+    await ready(user);
     expect(visible[module]()).toBe(false);
   });
 
@@ -87,8 +95,8 @@ describe("tableau de bord — blocs des modules facultatifs", () => {
       (merged, part) => ({ ...merged, ...part }),
       {},
     );
-    const { container } = open(dashboardBody(all), MINIMAL);
-    await ready();
+    const { container, user } = open(dashboardBody(all), MINIMAL);
+    await ready(user);
     for (const module of blocks) expect(visible[module]()).toBe(false);
     expect(screen.getByRole("button", { name: /^Marge du jour/ })).toBeVisible();
     expect(screen.getByRole("button", { name: /Valeur du stock/ })).toHaveTextContent(
@@ -99,8 +107,8 @@ describe("tableau de bord — blocs des modules facultatifs", () => {
   });
 
   it("tous les modules : chaque bloc est là, « hors stock abîmé et en route »", async () => {
-    open(dashboardBody());
-    await ready();
+    const { user } = open(dashboardBody());
+    await ready(user);
     for (const module of blocks) expect(visible[module]()).toBe(true);
     expect(screen.getByRole("button", { name: /Valeur du stock/ })).toHaveTextContent(
       "hors stock abîmé et en route",

@@ -193,6 +193,10 @@ Chaque composant vit dans `frontend/src/shared/ui/` (un fichier par composant, 2
 | `ListCard` | une ligne d'élément : titre `--text-lead`, sous-ligne `text-muted`, montant à droite, pastille de statut | hauteur ≥ 64 px, séparateur `border` entre les lignes |
 | `ActionTile` | grosse tuile d'accueil par rôle : icône `--icon-lg` + mot | 2 par ligne, hauteur 96 px, `surface`, bordure `border` |
 | `SummaryCard` | « Total : 800 000 — Versé : 200 000 — Reste à payer : 600 000 » | lignes alignées à droite, le reste à payer en `credit-text` + `--text-amount` |
+| `ListCardDetailRow` (13/11/2026) | ligne de `ListCard` qui se déplie sur place : titre `--text-lead`, chiffre à droite (`--text-lead` gras, libellé `text-muted` facultatif : « En stock 4 »), pastille dessous, chevron `primary` ; le détail (lieux, prix, actions) s'ouvre sous la ligne d'un appui | même ligne ≥ 64 px que `ListCard` ; détail en padding `--space-4` ; motif ARIA « disclosure » (`aria-expanded`), détail monté seulement ouvert. Usage : liste du stock |
+| `CollapsibleSection` (13/11/2026) | section repliable : titre `--text-title-sm` (+ résumé d'une ligne `text-muted` facultatif), chevron `primary` à droite ; contenu dans le même flux une fois ouvert | en-tête carte (`surface`, `--radius-lg`, `--shadow-card`) de 56 px au moins, bouton dans le titre (`h2`/`h3`, motif « accordéon ») ; contenu monté seulement ouvert. Usage : « le reste à un appui » du tableau de bord |
+
+**Règle « l'essentiel au premier coup d'œil »** (audit UX du 13/11/2026, téléphone 360 × 800) : sur un écran de liste ou de chiffres, ce qui sert chaque jour est visible sans défiler ; le reste est à **un appui** (`Disclosure`, `ListCardDetailRow`, `CollapsibleSection`), jamais en grosses tuiles avant la liste.
 
 ### 6.4 Badge (pastille de statut)
 
@@ -273,7 +277,9 @@ Les 4 gestes du CDC sont : choisir l'article, ajuster le prix, choisir le paieme
 ┌──────────────────────────────────┐
 │ Motos Garoua ▾           🔔 3    │
 ├──────────────────────────────────┤
-│ Aujourd'hui ▾                    │
+│ Période                          │
+│ [✓ Aujourd'hui ] [ Hier        ] │  ChoiceChips
+│ [ Ce mois      ] [Autre période] │  → semaine, mois dernier, libre
 │ ┌──────────────────────────────┐ │
 │ │ Ventes du jour               │ │
 │ │ 2 340 000 FCFA               │ │  --text-kpi
@@ -286,13 +292,19 @@ Les 4 gestes du CDC sont : choisir l'article, ajuster le prix, choisir le paieme
 │ ┌──────────────────────────────┐ │
 │ │ Marge du jour                │ │
 │ │ 610 000 FCFA                 │ │
-│ │ Voir aussi au CMP ›          │ │
 │ └──────────────────────────────┘ │
-│ Créances · Stock · Camions …     │  ListCards
+│      ⌄ Voir aussi au CMP         │
+│ ┌ Dépenses et résultat       ⌄ ┐ │  CollapsibleSection (repliée)
+│ ┌ Créances                   ⌄ ┐ │
+│ ┌ Stock                      ⌄ ┐ │
+│ ┌ Camions                    ⌄ ┐ │
+│ ┌ Alertes en attente         ⌃ ┐ │  ouverte : rien ne s'y cache
 ├──────────────────────────────────┤
 │ Accueil Ventes Stock Camions Plus│  barre du bas 64 px
 └──────────────────────────────────┘
 ```
+
+Audit UX du 13/11/2026 : en haut, **trois chiffres seulement** (ventes, argent encaissé, marge) ; « Jour par jour » (périodes de plusieurs jours), dépenses et résultat, créances, stock et camions sont repliés derrière leur titre, un appui les ouvre. Le bloc d'un module éteint reste absent (titre compris).
 
 ### 7.3 Page d'accueil minimale (propriétaire et vendeur)
 

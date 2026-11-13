@@ -63,7 +63,10 @@ export function DayBars({ series }: { series: Series }) {
   if (points.length < 2) throw new Error(`Série jour par jour de ${String(points.length)} jour`);
   const max = Math.max(0, ...points.flatMap((point) => [point.sales, point.margin]));
   return (
-    <Section title="Jour par jour">
+    <Section
+      title="Jour par jour"
+      summary={`Ventes ${formatMoney(series.total_sales)} · Marge ${formatMoney(series.total_margin)}`}
+    >
       <Totals series={series} />
       <ul
         aria-label="Ventes et marge par jour"

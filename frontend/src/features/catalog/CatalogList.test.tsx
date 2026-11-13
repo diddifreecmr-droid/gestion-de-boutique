@@ -73,6 +73,9 @@ describe("liste des articles — propriétaire", () => {
       }),
     );
     await list();
+    // Le filtre est replié sous « Filtrer » : la liste reste au premier écran.
+    expect(screen.queryByRole("radio", { name: "Archivés" })).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Filtrer" }));
     await user.click(screen.getByRole("radio", { name: "Archivés" }));
     const row = within(await list()).getByRole("button", { name: /Yamaha Crypton/ });
     expect(within(row).getByText("Archivé")).toBeVisible();

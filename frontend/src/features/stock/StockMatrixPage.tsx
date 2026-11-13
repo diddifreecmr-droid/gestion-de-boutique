@@ -1,11 +1,11 @@
 import { useState } from "react";
 import type { MatrixOrder, StockColumn } from "../../core/gateways/stockContract";
 import { useStockGateway } from "../../core/gateways/httpStock";
-import { EmptyState, SearchField } from "../../shared/ui";
-import { ManagerTiles } from "./ManagerTiles";
+import { EmptyState, ListCard, SearchField } from "../../shared/ui";
 import { LoadPending, ScreenTitle } from "./Notice";
-import { StockCard } from "./StockCard";
+import { StockItem } from "./StockItem";
 import { ALL_LOCATIONS, StockFilters } from "./StockFilters";
+import { StockTools } from "./StockTools";
 import { useStockNav } from "./stockNav";
 import { isManager, type StockRole } from "./stockRoles";
 import { stockLine } from "./stockView";
@@ -17,9 +17,10 @@ export interface StockMatrixPageProps {
 }
 
 /**
- * Matrice de stock (UC-STK-05) : un article par carte, un lieu par ligne dans l'ordre des
- * lieux, « En route », « Total » ; recherche dès la 1re lettre (`?q=`), filtre par lieu, tri
- * par quantité. Écran d'arrivée de la section « Stock » des trois rôles concernés.
+ * Matrice de stock (UC-STK-05) : une ligne compacte par article (nom, total, pastille), le
+ * détail par lieu, les prix et les coûts à un appui ; recherche dès la 1re lettre (`?q=`),
+ * filtre par lieu, tri par quantité ; outils du gestionnaire repliés. Écran d'arrivée de la
+ * section « Stock » des trois rôles concernés (audit UX du 13/11/2026 : la liste au 1er écran).
  */
 export function StockMatrixPage({ shopId, role }: StockMatrixPageProps) {
   const gateway = useStockGateway();
@@ -41,7 +42,6 @@ export function StockMatrixPage({ shopId, role }: StockMatrixPageProps) {
   return (
     <>
       <ScreenTitle>Stock</ScreenTitle>
-      {manager && <ManagerTiles nav={nav} />}
       <SearchField
         label="Rechercher un article"
         hint="Nom, marque, modèle ou référence"
@@ -55,6 +55,7 @@ export function StockMatrixPage({ shopId, role }: StockMatrixPageProps) {
         sort={sort}
         onSort={setSort}
       />
+      {manager && <StockTools nav={nav} />}
       {load.status !== "ready" && (
         <LoadPending load={load} label="Chargement du stock…" onRetry={retry} />
       )}
@@ -68,11 +69,11 @@ export function StockMatrixPage({ shopId, role }: StockMatrixPageProps) {
         />
       )}
       {load.status === "ready" && load.value.items.length > 0 && (
-        <ul aria-label="Stock par article" className="m-0 flex list-none flex-col gap-4 p-0">
+        <ListCard label="Stock par article">
           {load.value.items.map((raw) => {
             const line = stockLine(role, raw, load.value.locations);
             return (
-              <StockCard
+              <StockItem
                 key={line.articleId}
                 line={line}
                 {...(manager
@@ -85,7 +86,7 @@ export function StockMatrixPage({ shopId, role }: StockMatrixPageProps) {
               />
             );
           })}
-        </ul>
+        </ListCard>
       )}
     </>
   );
