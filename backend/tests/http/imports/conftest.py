@@ -13,6 +13,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
+from app.application.imports.models import ImportModel
 from app.bootstrap.attachments import build_attachments
 from app.bootstrap.catalog import build_catalog
 from app.bootstrap.config import Settings
@@ -46,9 +47,18 @@ class Bench:
         files = {"file": ("articles.csv", content, "text/csv")}
         return shop.call("POST", "/imports/preview", who, files=files, data={"kind": kind})
 
+    def confirm(self, shop: Shop, who: Session, preview_id: str) -> Any:
+        return shop.call("POST", "/imports", who, json={"preview_id": preview_id})
+
 
 @pytest.fixture
-def bench(settings: Settings) -> Iterator[Bench]:
+def bench_models() -> tuple[ImportModel, ...] | None:
+    """Modèles branchés : les témoins ; un module de test le redéfinit à `None` (registre réel)."""
+    return WITNESSES
+
+
+@pytest.fixture
+def bench(settings: Settings, bench_models: tuple[ImportModel, ...] | None) -> Iterator[Bench]:
     clock = FixedClock(T0)
     hasher = FakeHasher()
     core = build_core(settings, clock)
@@ -63,7 +73,7 @@ def bench(settings: Settings) -> Iterator[Bench]:
         build_shops(identity, pins=FixedPins()).http,
         catalog=build_catalog(identity, ranking=sales_ranking(clock)).http,
         attachments=attachments.http,
-        imports=build_imports(identity, attachments.storage, WITNESSES).http,
+        imports=build_imports(identity, attachments.storage, bench_models).http,
     )
     admin = User.register(
         phone=PhoneNumber.parse(ADMIN_PHONE),

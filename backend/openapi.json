@@ -9879,6 +9879,85 @@
         },
         "x-module": "import"
       }
+    },
+    "/api/v1/shops/{shop_id}/imports": {
+      "post": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Confirm",
+        "operationId": "confirm_import",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportConfirmRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-module": "import"
+      }
     }
   },
   "components": {
@@ -13495,6 +13574,94 @@
         ],
         "title": "IdDocumentType"
       },
+      "ImportBatchResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "number": {
+            "type": "string",
+            "title": "Number"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ImportKind"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ImportStatus"
+          },
+          "rows_read": {
+            "type": "integer",
+            "title": "Rows Read"
+          },
+          "rows_imported": {
+            "type": "integer",
+            "title": "Rows Imported"
+          },
+          "rows_ignored": {
+            "type": "integer",
+            "title": "Rows Ignored"
+          },
+          "created": {
+            "items": {
+              "$ref": "#/components/schemas/ImportCreatedCount"
+            },
+            "type": "array",
+            "title": "Created"
+          },
+          "imported_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Imported At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "kind",
+          "status",
+          "rows_read",
+          "rows_imported",
+          "rows_ignored",
+          "created",
+          "imported_at"
+        ],
+        "title": "ImportBatchResponse"
+      },
+      "ImportConfirmRequest": {
+        "properties": {
+          "preview_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Preview Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "preview_id"
+        ],
+        "title": "ImportConfirmRequest"
+      },
+      "ImportCreatedCount": {
+        "properties": {
+          "entity": {
+            "$ref": "#/components/schemas/ImportedEntity"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entity",
+          "count"
+        ],
+        "title": "ImportCreatedCount"
+      },
       "ImportKind": {
         "type": "string",
         "enum": [
@@ -13600,6 +13767,27 @@
           "text"
         ],
         "title": "ImportProblemResponse"
+      },
+      "ImportStatus": {
+        "type": "string",
+        "enum": [
+          "imported",
+          "cancelled"
+        ],
+        "title": "ImportStatus",
+        "description": "Cycle de vie d'un lot (specs § 7) : `Importé → Annulé`."
+      },
+      "ImportedEntity": {
+        "type": "string",
+        "enum": [
+          "article",
+          "stock_movement",
+          "customer",
+          "receivable",
+          "supplier"
+        ],
+        "title": "ImportedEntity",
+        "description": "Type d'élément créé par un lot (tracé pour l'annulation, QC-6)."
       },
       "InstallmentReceiptResponse": {
         "properties": {

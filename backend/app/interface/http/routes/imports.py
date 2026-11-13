@@ -8,17 +8,30 @@ Module `import` (`x-module`) : **à venir** jusqu'à T46, donc éteint pour tout
 - `POST /imports/preview` (multipart : `kind`, `file`) : aperçu sans écriture (200), fichier
   gardé 30 minutes sous `preview_id` ; 400 `IMPORT_FILE_INVALID`, 422 `IMPORT_TOO_MANY_ROWS`,
   503 si le stockage ne répond pas.
+- `POST /imports` (`preview_id`) : écrit les lignes valides en une transaction, 201 et le lot
+  `IMP-…` ; même aperçu confirmé à nouveau → 200 et le même lot ; aperçu inconnu ou d'un autre
+  → 404 ; plus de 30 minutes → 410 `IMPORT_PREVIEW_EXPIRED` ; aucune ligne valide → 422.
 """
 
+from collections import Counter
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, Response, UploadFile
+from fastapi import APIRouter, Depends, Form, Response, UploadFile, status
 
+from app.application.imports.use_cases.confirm_import import ConfirmCommand
 from app.application.imports.use_cases.preview_import import ImportPreview, PreviewCommand
 from app.application.security.actor import Actor
+from app.domain.imports.batch import ImportBatch
+from app.domain.imports.ids import ImportPreviewId
 from app.domain.imports.values import MAX_FILE_BYTES, SpreadsheetFormat
 from app.interface.http.routes.import_components import ImportsComponents
-from app.interface.http.schemas.imports import ImportPreviewResponse, ImportProblemResponse
+from app.interface.http.schemas.imports import (
+    ImportBatchResponse,
+    ImportConfirmRequest,
+    ImportCreatedCount,
+    ImportPreviewResponse,
+    ImportProblemResponse,
+)
 
 XLSX = SpreadsheetFormat.XLSX.value
 
@@ -37,6 +50,21 @@ def preview_response(preview: ImportPreview) -> ImportPreviewResponse:
         ],
         problems_total=preview.problems_total,
         notes=list(preview.notes),
+    )
+
+
+def batch_response(batch: ImportBatch) -> ImportBatchResponse:
+    created = Counter(item.entity for item in batch.items)
+    return ImportBatchResponse(
+        id=str(batch.id),
+        number=str(batch.number),
+        kind=batch.kind,
+        status=batch.status,
+        rows_read=batch.counts.rows_read,
+        rows_imported=batch.counts.rows_imported,
+        rows_ignored=batch.counts.rows_ignored,
+        created=[ImportCreatedCount(entity=e, count=n) for e, n in sorted(created.items())],
+        imported_at=batch.imported_at,
     )
 
 
@@ -69,5 +97,19 @@ def build_imports_router(c: ImportsComponents) -> APIRouter:
         command = PreviewCommand(kind=kind, content=content, file_name=file.filename)
         response.headers["Cache-Control"] = "no-store"
         return preview_response(c.preview.execute(actor, command))
+
+    @router.post(
+        "/shops/{shop_id}/imports",
+        operation_id="confirm_import",
+        status_code=status.HTTP_201_CREATED,
+    )
+    def confirm(
+        actor: Member, body: ImportConfirmRequest, response: Response
+    ) -> ImportBatchResponse:
+        command = ConfirmCommand(preview_id=ImportPreviewId.parse(body.preview_id))
+        batch, created = c.confirm.execute(actor, command)
+        if not created:
+            response.status_code = status.HTTP_200_OK
+        return batch_response(batch)
 
     return router

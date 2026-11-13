@@ -12,7 +12,7 @@ from tests.http.catalog.test_catalog_http import Shop
 from tests.http.imports.conftest import Bench
 
 PREFIX = "/api/v1/shops/{shop_id}"
-ROUTES = ("GET /imports/templates/{kind}", "POST /imports/preview")
+ROUTES = ("GET /imports/templates/{kind}", "POST /imports/preview", "POST /imports")
 CSV = b"Nom;Prix\nChemise;9 000\nPantalon;\nRobe;1 250 000 FCFA\n"
 
 

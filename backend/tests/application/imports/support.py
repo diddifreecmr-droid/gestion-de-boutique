@@ -9,12 +9,13 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 
-from app.application.imports.models import ImportModel, ModelCheck
+from app.application.imports.models import ImportModel, ImportRun, ModelCheck
 from app.application.ports.uow import UnitOfWork
 from app.application.security.actor import Actor
 from app.application.security.permissions import Permission
 from app.application.shops.ports import LocationRepository
 from app.bootstrap.imports import ImportsModule, build_imports
+from app.domain.imports.batch import ImportedItem
 from app.domain.imports.columns import ChoiceSource, ColumnKind, ColumnSpec
 from app.domain.imports.problems import RowError
 from app.domain.imports.sheet import ParsedRow
@@ -65,6 +66,11 @@ class WitnessArticles(ImportModel):
         notes = (f"{len(accepted)} articles nouveaux seront créés",)
         return ModelCheck(accepted=tuple(accepted), refused=tuple(refused), notes=notes)
 
+    def apply(
+        self, uow: UnitOfWork, actor: Actor, rows: Sequence[ParsedRow], run: ImportRun
+    ) -> tuple[ImportedItem, ...]:
+        return ()  # témoin : n'écrit rien (les vrais modèles : T33, T34)
+
 
 class WitnessReceivables(ImportModel):
     kind = ImportKind.RECEIVABLES
@@ -76,6 +82,11 @@ class WitnessReceivables(ImportModel):
 
     def check(self, uow: UnitOfWork, actor: Actor, rows: Sequence[ParsedRow]) -> ModelCheck:
         return ModelCheck(accepted=tuple(row.line for row in rows))
+
+    def apply(
+        self, uow: UnitOfWork, actor: Actor, rows: Sequence[ParsedRow], run: ImportRun
+    ) -> tuple[ImportedItem, ...]:
+        return ()
 
 
 WITNESSES: tuple[ImportModel, ...] = (WitnessArticles(), WitnessReceivables())

@@ -1541,6 +1541,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/shops/{shop_id}/imports": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Confirm */
+    post: operations["confirm_import"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2594,6 +2611,39 @@ export interface components {
      * @enum {string}
      */
     IdDocumentType: "national_id" | "passport" | "driving_license" | "residence_permit" | "other";
+    /** ImportBatchResponse */
+    ImportBatchResponse: {
+      /** Id */
+      id: string;
+      /** Number */
+      number: string;
+      kind: components["schemas"]["ImportKind"];
+      status: components["schemas"]["ImportStatus"];
+      /** Rows Read */
+      rows_read: number;
+      /** Rows Imported */
+      rows_imported: number;
+      /** Rows Ignored */
+      rows_ignored: number;
+      /** Created */
+      created: components["schemas"]["ImportCreatedCount"][];
+      /**
+       * Imported At
+       * Format: date-time
+       */
+      imported_at: string;
+    };
+    /** ImportConfirmRequest */
+    ImportConfirmRequest: {
+      /** Preview Id */
+      preview_id: string;
+    };
+    /** ImportCreatedCount */
+    ImportCreatedCount: {
+      entity: components["schemas"]["ImportedEntity"];
+      /** Count */
+      count: number;
+    };
     /**
      * ImportKind
      * @description Modèle d'import (code stable de l'API : `GET /imports/templates/{kind}`).
@@ -2634,6 +2684,18 @@ export interface components {
       /** Text */
       text: string;
     };
+    /**
+     * ImportStatus
+     * @description Cycle de vie d'un lot (specs § 7) : `Importé → Annulé`.
+     * @enum {string}
+     */
+    ImportStatus: "imported" | "cancelled";
+    /**
+     * ImportedEntity
+     * @description Type d'élément créé par un lot (tracé pour l'annulation, QC-6).
+     * @enum {string}
+     */
+    ImportedEntity: "article" | "stock_movement" | "customer" | "receivable" | "supplier";
     /** InstallmentReceiptResponse */
     InstallmentReceiptResponse: {
       /** Shop Name */
@@ -9117,6 +9179,44 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ImportPreviewResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  confirm_import: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ImportConfirmRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ImportBatchResponse"];
         };
       };
       /** @description Validation Error */
