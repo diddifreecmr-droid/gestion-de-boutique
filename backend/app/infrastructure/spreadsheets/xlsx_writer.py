@@ -63,7 +63,7 @@ def _validations(ws: Worksheet, workbook: TemplateWorkbook, ranges: dict[str, st
         strict = workbook.lists[column.choices].strict
         validation = DataValidation(
             type="list",
-            formula1=f"={ranges[column.choices.value]}",
+            formula1=ranges[column.choices.value],  # sans « = » : forme stockée par Excel
             allow_blank=True,
             showErrorMessage=True,
             errorStyle="stop" if strict else "warning",
@@ -112,7 +112,8 @@ class OpenpyxlWriter(SpreadsheetWriter):
         _header(data, [column.title for column in workbook.spec.columns])
         _instructions(wb, workbook)
         if workbook.lists:
-            ordered = [workbook.lists[source] for source in sorted(workbook.lists)]
+            sources = [c.choices for c in workbook.spec.columns if c.choices is not None]
+            ordered = [workbook.lists[source] for source in dict.fromkeys(sources)]  # ordre des colonnes
             _validations(data, workbook, _lists_sheet(wb, ordered))
         return _saved(wb)
 

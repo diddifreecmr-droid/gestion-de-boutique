@@ -9637,6 +9637,159 @@
         "x-signed-link": true,
         "x-module": "core"
       }
+    },
+    "/api/v1/shops/{shop_id}/imports/templates/{kind}": {
+      "get": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Download Template",
+        "operationId": "download_template_api_v1_shops__shop_id__imports_templates__kind__get",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-module": "import"
+      }
+    },
+    "/api/v1/shops/{shop_id}/imports/preview": {
+      "post": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Preview",
+        "operationId": "preview_import",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_preview_import"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportPreviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-module": "import"
+      }
     }
   },
   "components": {
@@ -10748,6 +10901,26 @@
           "next_cursor"
         ],
         "title": "AuditPageResponse"
+      },
+      "Body_preview_import": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "kind": {
+            "type": "string",
+            "maxLength": 32,
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "kind"
+        ],
+        "title": "Body_preview_import"
       },
       "Body_upload_attachment": {
         "properties": {
@@ -13201,6 +13374,112 @@
           "other"
         ],
         "title": "IdDocumentType"
+      },
+      "ImportKind": {
+        "type": "string",
+        "enum": [
+          "articles",
+          "opening_stock",
+          "customers",
+          "receivables",
+          "suppliers"
+        ],
+        "title": "ImportKind",
+        "description": "Modèle d'import (code stable de l'API : `GET /imports/templates/{kind}`)."
+      },
+      "ImportPreviewResponse": {
+        "properties": {
+          "preview_id": {
+            "type": "string",
+            "title": "Preview Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ImportKind"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "rows_read": {
+            "type": "integer",
+            "title": "Rows Read"
+          },
+          "rows_valid": {
+            "type": "integer",
+            "title": "Rows Valid"
+          },
+          "rows_ignored": {
+            "type": "integer",
+            "title": "Rows Ignored"
+          },
+          "problems": {
+            "items": {
+              "$ref": "#/components/schemas/ImportProblemResponse"
+            },
+            "type": "array",
+            "title": "Problems"
+          },
+          "problems_total": {
+            "type": "integer",
+            "title": "Problems Total"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "preview_id",
+          "kind",
+          "expires_at",
+          "rows_read",
+          "rows_valid",
+          "rows_ignored",
+          "problems",
+          "problems_total",
+          "notes"
+        ],
+        "title": "ImportPreviewResponse"
+      },
+      "ImportProblemResponse": {
+        "properties": {
+          "line": {
+            "type": "integer",
+            "title": "Line"
+          },
+          "column": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Column"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "line",
+          "column",
+          "message",
+          "text"
+        ],
+        "title": "ImportProblemResponse"
       },
       "InstallmentReceiptResponse": {
         "properties": {

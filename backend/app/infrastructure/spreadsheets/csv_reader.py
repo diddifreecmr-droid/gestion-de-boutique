@@ -5,6 +5,7 @@
   octet indéfini en Windows-1252 → `IMPORT_FILE_INVALID`.
 - Séparateur : celui des deux qui revient le plus sur la première ligne non vide
   (point-virgule à égalité : les montants « 1 250,5 » n'y sont pas confondus).
+- Lecture stricte : guillemet non refermé → `IMPORT_FILE_INVALID` (jamais de ligne devinée).
 """
 
 import csv
@@ -45,7 +46,8 @@ def _delimiter(text: str) -> str:
 def read_csv(content: bytes) -> Sheet:
     text = _decode(content)
     try:
-        rows = list(csv.reader(io.StringIO(text, newline=""), delimiter=_delimiter(text)))
+        reader = csv.reader(io.StringIO(text, newline=""), delimiter=_delimiter(text), strict=True)
+        rows = list(reader)
     except csv.Error as exc:
         reason = f"fichier CSV mal formé ({exc})"
         raise ImportFileInvalid(reason) from exc
