@@ -39,3 +39,6 @@ Thumbs.db
 
 # Documents confidentiels (gardés en local uniquement)
 Cahier des charges*.md
+
+# Graphify (graphe local du code)
+graphify-out/
