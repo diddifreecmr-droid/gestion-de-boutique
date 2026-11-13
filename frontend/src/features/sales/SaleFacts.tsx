@@ -1,5 +1,6 @@
 import { useId } from "react";
 import type { SaleResult } from "../../core/gateways/salesContract";
+import { useActiveProfile } from "../../core/profile/activeProfile";
 import { formatDate, formatMoney, formatTime } from "../../shared/format";
 import { SummaryCard } from "../../shared/ui";
 import { locationName, modeName, sellerName, type SaleRefs } from "./saleRefs";
@@ -16,12 +17,15 @@ function Fact({ label, value }: { label: string; value: string }) {
 /** Faits de la vente (date, lieu, vendeur, conditions de crédit, note) puis paiements et totaux. */
 export function SaleFacts({ sale, refs }: { sale: SaleResult; refs: SaleRefs }) {
   const paymentsId = useId();
+  const profile = useActiveProfile();
   return (
     <>
       <dl className="m-0 grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg bg-surface p-4 text-body shadow-card">
         <Fact label="Date" value={`${formatDate(sale.sold_on)} à ${formatTime(sale.sold_at)}`} />
         <Fact label="Lieu de vente" value={locationName(refs, sale.location_id)} />
-        {refs.role === "owner" && <Fact label="Vendeur" value={sellerName(refs, sale.seller_id)} />}
+        {refs.role === "owner" && (
+          <Fact label={profile.roleLabel("seller")} value={sellerName(refs, sale.seller_id)} />
+        )}
         {sale.credit?.reminder_on != null && (
           <Fact label="Date de rappel" value={formatDate(sale.credit.reminder_on)} />
         )}

@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router";
+import { useActiveProfile } from "../../core/profile/activeProfile";
 import { shopPath } from "../../core/profile/shopProfile";
+import { roleWord } from "../../core/profile/vocabulary";
 import { Badge, ListCard, ListCardRow } from "../../shared/ui";
 import PriceRequestsHomeCard from "../sales/priceRequests/PriceRequestsHomeCard";
 import { SALES_KEY } from "../sales/salesNav";
@@ -21,6 +23,7 @@ export function AlertsSection({
   errorReports: number | string;
 }) {
   const navigate = useNavigate();
+  const profile = useActiveProfile();
   const subtitle =
     typeof errorReports === "string"
       ? errorReports
@@ -29,7 +32,7 @@ export function AlertsSection({
     <Section title="Alertes en attente" defaultOpen>
       <ListCard label="Erreurs signalées">
         <ListCardRow
-          title="Erreurs signalées par les vendeurs"
+          title={`Erreurs signalées par les ${roleWord(profile.roleLabel, "seller", true)}`}
           subtitle={subtitle}
           {...(typeof errorReports === "number" && errorReports > 0
             ? { badge: <Badge status="warning">À traiter</Badge> }

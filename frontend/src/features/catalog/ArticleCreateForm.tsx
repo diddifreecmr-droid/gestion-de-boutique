@@ -65,7 +65,7 @@ export function ArticleCreateForm(props: ArticleCreateFormProps) {
     <>
       <AmountField
         label="Prix de base (facultatif)"
-        hint="Vide : le vendeur tapera le prix à chaque vente"
+        hint="Vide : le prix sera tapé à chaque vente"
         value={base}
         onChange={setBase}
       />

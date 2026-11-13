@@ -88,7 +88,12 @@ export function OpenShopForm({
         Retour aux boutiques
       </Button>
       <h1 className="m-0 text-title font-bold text-text">Ouvrir une boutique</h1>
-      <ChoiceChips label="Type de boutique" options={PROFILES} value={profile} onChange={setProfile} />
+      <ChoiceChips
+        label="Type de boutique"
+        options={PROFILES}
+        value={profile}
+        onChange={setProfile}
+      />
       {checked && profile === null && <FormMessage text="Type de boutique : à choisir" />}
       {REQUIRED.map(({ key, label, tel }) => (
         <TextField

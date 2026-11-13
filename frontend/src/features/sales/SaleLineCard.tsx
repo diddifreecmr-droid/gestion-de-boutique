@@ -1,5 +1,6 @@
 import { useId } from "react";
 import { AlertTriangle, Trash2 } from "lucide-react";
+import { useActiveProfile } from "../../core/profile/activeProfile";
 import { formatMoney, formatQuantity } from "../../shared/format";
 import { AmountField, Button, Disclosure, QuantityStepper, TextField } from "../../shared/ui";
 import { articleTitle } from "./articleTitle";
@@ -30,6 +31,7 @@ export function SaleLineCard({
   const unit = line.article.unit_label;
   const priceError = showErrors ? issues?.price : undefined;
   const title = articleTitle(line.article.name);
+  const asked = askedFields(useActiveProfile().saleFields);
   return (
     <section
       aria-labelledby={titleId}
@@ -70,19 +72,22 @@ export function SaleLineCard({
           </span>
         </p>
       )}
-      <Disclosure label="Détails de l'article">
-        {line.units.map((detail, index) => (
-          <UnitFields
-            key={index}
-            title={`${unit} ${String(index + 1)}`}
-            detail={detail}
-            chassisError={showErrors ? issues?.chassis[index] : undefined}
-            onChange={(next) => {
-              onChange({ ...line, units: line.units.map((u, i) => (i === index ? next : u)) });
-            }}
-          />
-        ))}
-      </Disclosure>
+      {asked.size > 0 && (
+        <Disclosure label="Détails de l'article">
+          {line.units.map((detail, index) => (
+            <UnitFields
+              key={index}
+              title={`${unit} ${String(index + 1)}`}
+              asked={asked}
+              detail={detail}
+              chassisError={showErrors ? issues?.chassis[index] : undefined}
+              onChange={(next) => {
+                onChange({ ...line, units: line.units.map((u, i) => (i === index ? next : u)) });
+              }}
+            />
+          ))}
+        </Disclosure>
+      )}
       {onRemove !== undefined && (
         <Button variant="ghost" icon={Trash2} onClick={onRemove}>
           Retirer {title}
@@ -92,13 +97,25 @@ export function SaleLineCard({
   );
 }
 
+/** Détails par unité que l'écran sait saisir, par code de champ de vente du profil. */
+const UNIT_FIELDS = ["color", "chassis_number", "engine_number"] as const;
+type UnitField = (typeof UNIT_FIELDS)[number];
+
+/** Les détails par unité **demandés par le profil** (couleur, châssis, moteur : Motos). */
+function askedFields(saleFields: readonly { code: string }[]): ReadonlySet<UnitField> {
+  const codes = new Set(saleFields.map((field) => field.code));
+  return new Set(UNIT_FIELDS.filter((code) => codes.has(code)));
+}
+
 function UnitFields({
   title,
+  asked,
   detail,
   chassisError,
   onChange,
 }: {
   title: string;
+  asked: ReadonlySet<UnitField>;
   detail: UnitDetail;
   chassisError: string | undefined;
   onChange: (detail: UnitDetail) => void;
@@ -106,30 +123,36 @@ function UnitFields({
   return (
     <fieldset className="m-0 flex flex-col gap-4 border-0 p-0">
       <legend className="mb-2 p-0 text-label font-semibold text-text-muted">{title}</legend>
-      <TextField
-        label={`Couleur — ${title}`}
-        value={detail.color}
-        onChange={(event) => {
-          onChange({ ...detail, color: event.target.value });
-        }}
-      />
-      <TextField
-        label={`N° de châssis — ${title}`}
-        value={detail.chassis}
-        error={chassisError}
-        autoCapitalize="characters"
-        onChange={(event) => {
-          onChange({ ...detail, chassis: event.target.value });
-        }}
-      />
-      <TextField
-        label={`N° de moteur — ${title}`}
-        value={detail.engine}
-        autoCapitalize="characters"
-        onChange={(event) => {
-          onChange({ ...detail, engine: event.target.value });
-        }}
-      />
+      {asked.has("color") && (
+        <TextField
+          label={`Couleur — ${title}`}
+          value={detail.color}
+          onChange={(event) => {
+            onChange({ ...detail, color: event.target.value });
+          }}
+        />
+      )}
+      {asked.has("chassis_number") && (
+        <TextField
+          label={`N° de châssis — ${title}`}
+          value={detail.chassis}
+          error={chassisError}
+          autoCapitalize="characters"
+          onChange={(event) => {
+            onChange({ ...detail, chassis: event.target.value });
+          }}
+        />
+      )}
+      {asked.has("engine_number") && (
+        <TextField
+          label={`N° de moteur — ${title}`}
+          value={detail.engine}
+          autoCapitalize="characters"
+          onChange={(event) => {
+            onChange({ ...detail, engine: event.target.value });
+          }}
+        />
+      )}
     </fieldset>
   );
 }

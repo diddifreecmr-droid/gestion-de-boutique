@@ -14,6 +14,8 @@ import { ArticleRows } from "./ArticleRows";
 import { loadFailureMessage } from "./catalogErrors";
 import { articlePath, newArticlePath } from "./catalogPaths";
 import { catalogRights, type CatalogRole } from "./catalogRights";
+import { useActiveProfile } from "../../core/profile/activeProfile";
+import { listSearchHint } from "../../core/profile/vocabulary";
 import { InlineMessage } from "./InlineMessage";
 import { useArticlePages } from "./useArticlePages";
 
@@ -34,6 +36,7 @@ export function CatalogListPage({ shopId, role }: CatalogListPageProps) {
   const [text, setText] = useState("");
   const [status, setStatus] = useState<ArticleStatusFilter>("active");
   const pages = useArticlePages(shopId, text, status);
+  const profile = useActiveProfile();
   const { first } = pages;
 
   return (
@@ -51,7 +54,7 @@ export function CatalogListPage({ shopId, role }: CatalogListPageProps) {
       )}
       <SearchField
         label="Rechercher un article"
-        hint="Nom, marque, modèle ou référence"
+        hint={listSearchHint(profile.articleFields)}
         value={text}
         onChange={setText}
       />

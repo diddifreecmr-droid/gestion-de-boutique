@@ -52,7 +52,7 @@ export function PricesForm(props: PricesFormProps) {
       <h2 className="m-0 text-title-sm font-semibold text-text">Modifier les prix</h2>
       <AmountField
         label="Prix de base"
-        hint="Pré-rempli à chaque vente ; vide : le vendeur tape le prix"
+        hint="Pré-rempli à chaque vente ; vide : le prix est tapé à chaque vente"
         value={base}
         onChange={setBase}
       />
