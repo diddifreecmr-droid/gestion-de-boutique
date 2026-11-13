@@ -9,16 +9,18 @@ export function FiguresPending({
   status,
   onRetry,
   label = "Lecture des chiffres…",
+  offlineMessage = FIGURES_OFFLINE,
 }: {
   status: "loading" | "offline";
   onRetry: () => void;
   label?: string;
+  offlineMessage?: string;
 }) {
   if (status === "loading") return <Skeleton lines={4} label={label} />;
   return (
     <EmptyState
       icon={WifiOff}
-      message={FIGURES_OFFLINE}
+      message={offlineMessage}
       action={
         <Button variant="secondary" icon={RotateCw} onClick={onRetry}>
           Réessayer

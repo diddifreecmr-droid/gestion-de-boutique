@@ -4,6 +4,7 @@ import { axeViolations } from "../../../testing/axe";
 import { SHOP_A } from "../../../testing/fakeApi";
 import { seedPriceRequest } from "../../../testing/priceRequests";
 import { money, plain, preloadSales, renderSale } from "../../../testing/renderSale";
+import { modulesProfile, PROFILE } from "../../../testing/dashboard";
 import { API } from "../../../testing/salesServer";
 import { PRICE_REQUESTS_KEY } from "../salesNav";
 
@@ -22,7 +23,7 @@ afterEach(() => {
 const PAGE = `/s/${SHOP_A}/${PRICE_REQUESTS_KEY}`;
 
 function openPage(path = PAGE) {
-  const view = renderSale("owner", { path });
+  const view = renderSale("owner", { path, extra: { [PROFILE]: modulesProfile() } });
   const request = seedPriceRequest(view.server);
   return { ...view, request };
 }
@@ -35,8 +36,8 @@ async function row(name = "Haojue HJ125-8"): Promise<HTMLElement> {
 }
 
 describe("demandes de prix, côté propriétaire (UC-VEN-03, UC-TDB-01 point 6)", () => {
-  it("accueil : carte « Alertes en attente » avec le nombre, un appui ouvre la liste", async () => {
-    const { user, container } = openPage(`/s/${SHOP_A}`);
+  it("tableau de bord : carte « Alertes en attente » avec le nombre, un appui ouvre la liste", async () => {
+    const { user, container } = openPage(`/s/${SHOP_A}/tableau-de-bord`);
     const card = await screen.findByRole("list", { name: "Alertes en attente" });
     expect(await within(card).findByText("1 en attente de votre réponse")).toBeVisible();
     expect(within(card).getByText("À valider")).toBeVisible();

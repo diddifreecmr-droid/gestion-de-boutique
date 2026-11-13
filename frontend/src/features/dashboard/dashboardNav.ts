@@ -1,11 +1,14 @@
 /**
- * Accueil du propriétaire : la période et le détail ouvert sont dans l'adresse
- * (`/s/{id}?periode=week`, `?periode=custom&du=…&au=…`, `&detail=sales`), si bien que le
- * bouton retour du téléphone revient de la liste au tableau de bord (UC-TDB-02, UC-TDB-04).
- * Module léger : l'accueil (`app/RoleHome`) l'importe sans charger l'écran.
+ * Tableau de bord du propriétaire (`/s/{id}/tableau-de-bord`) : la période et le détail ouvert
+ * sont dans l'adresse (`?periode=week`, `?periode=custom&du=…&au=…`, `&detail=sales`), si bien
+ * que le bouton retour du téléphone revient de la liste au tableau de bord (UC-TDB-02, 04).
+ * Module léger : l'application l'importe sans charger l'écran.
  */
 import { useSearchParams } from "react-router";
 import type { DetailMetric, PeriodKind } from "../../core/gateways/reportingContract";
+
+/** Segment d'URL du tableau de bord complet (« Plus → Tableau de bord », specs § 15.1). */
+export const DASHBOARD_KEY = "tableau-de-bord";
 
 export const PERIOD_PARAM = "periode";
 export const FROM_PARAM = "du";

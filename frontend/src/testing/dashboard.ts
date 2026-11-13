@@ -11,15 +11,26 @@ import type {
   PeriodOut,
   Valuation,
 } from "../core/gateways/reportingContract";
+import { profileBody } from "./catalog";
 import { json, meBody, ROUTES, SHOP_A, tokenBody, type Reply } from "./fakeApi";
 
 export const TODAY = "2026-11-11";
 export const NOW = "2026-11-11T10:00:00Z";
 export const HOME_PATH = `/s/${SHOP_A}`;
+/** Tableau de bord complet du propriétaire, écran à part (specs § 15.1). */
+export const DASHBOARD_PATH = `${HOME_PATH}/tableau-de-bord`;
 export const API = `/api/v1/shops/${SHOP_A}`;
 export const DASHBOARD_TODAY = `GET ${API}/dashboard?period=today`;
 export const HOME = `GET ${API}/home`;
 export const PRICE_REQUESTS = `GET ${API}/price-requests`;
+export const PROFILE = `GET ${API}/profile`;
+
+/** `GET /profile` avec les modules actifs donnés (le module `dashboard` par défaut). */
+export function modulesProfile(
+  modules: string[] = ["core", "audit", "catalog", "sales", "dashboard"],
+) {
+  return json(200, { ...profileBody("owner"), enabled_modules: modules });
+}
 
 export const detailRoute = (metric: string, query = "period=today") =>
   `GET ${API}/dashboard/details/${metric}?${query}`;
@@ -140,14 +151,21 @@ export function signedInAs(role: string): Record<string, Reply> {
   };
 }
 
-/** Accueil d'un rôle : session, `GET /home` (ou le tableau du jour) et demandes de prix. */
+/**
+ * Écrans d'un rôle : session, `GET /home` ; propriétaire : tableau du jour, demandes de prix et
+ * profil avec le module `dashboard` actif.
+ */
 export function homeRoutes(
   role: "owner" | "seller" | "accountant" | "driver",
   extra: Record<string, Reply | Reply[]> = {},
 ): Record<string, Reply | Reply[]> {
   const home =
     role === "owner"
-      ? { [DASHBOARD_TODAY]: json(200, dashboardBody()), [PRICE_REQUESTS]: json(200, []) }
+      ? {
+          [DASHBOARD_TODAY]: json(200, dashboardBody()),
+          [PRICE_REQUESTS]: json(200, []),
+          [PROFILE]: modulesProfile(),
+        }
       : { [HOME]: json(200, homeBody(role)) };
   return { ...signedInAs(role), ...home, ...extra };
 }
@@ -156,6 +174,7 @@ export function homeRoutes(
 export async function preloadDashboard(): Promise<void> {
   await Promise.all([
     import("../features/dashboard/HomeRoute"),
+    import("../features/dashboard/DashboardRoute"),
     import("../features/sales/priceRequests/PriceRequestsHomeCard"),
   ]);
 }

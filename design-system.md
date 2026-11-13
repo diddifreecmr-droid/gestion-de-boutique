@@ -220,7 +220,7 @@ Un élément annulé (RG-T03) garde sa ligne : le texte passe en `text-muted` et
 ### 6.6 Navigation
 
 - **Barre du haut** (56 px) : nom de la boutique, qui s'ouvre en liste quand il y en a plusieurs (UC-SOC-03) ; cloche avec compteur (pastille `danger`, `--radius-full`) ; flèche de retour sur les écrans de détail.
-- **Accès « Mon compte »** (décision du 11/11/2026) : bouton icône `CircleUser` + mot « Compte » dans la barre du haut, à droite de la cloche, **pour tous les rôles**. Il ouvre « Mon compte » : version de l'application, « Recharger la dernière version », changer mon code, se déconnecter. Un bouton équivalent reste sur la page d'accueil. Il ne compte pas dans les 5 entrées de la barre du bas.
+- **Accès « Mon compte »** (décision du 11/11/2026) : bouton icône `CircleUser` + mot « Compte » dans la barre du haut, à droite de la cloche, **pour tous les rôles**. Il ouvre « Mon compte » : version de l'application, « Recharger la dernière version », changer mon code, se déconnecter. Depuis la page d'accueil minimale (12/11/2026, § 7.3), la page d'accueil n'a plus de bouton « Mon compte » : la barre du haut suffit (et la tuile « Mon compte » de « Plus » pour le propriétaire). Il ne compte pas dans les 5 entrées de la barre du bas.
 - **Barre du bas** (téléphone) : au plus 5 entrées (CDC § 17.4), icône + mot, 64 px de haut. Entrée active en `primary` avec un trait de 3 px au-dessus. Les droits manquants ne s'affichent pas du tout.
 - **Navigation latérale** (ordinateur ≥ 1024 px) : mêmes entrées, plus le contenu de « Plus » déplié.
 
@@ -264,7 +264,9 @@ Un élément annulé (RG-T03) garde sa ligne : le texte passe en `text-muted` et
 
 Les 4 gestes du CDC sont : choisir l'article, ajuster le prix, choisir le paiement, valider.
 
-### 7.2 Accueil du propriétaire
+### 7.2 Tableau de bord du propriétaire
+
+Écran à part depuis le 12/11/2026 (`/s/{id}/tableau-de-bord`, specs § 15.1) : ouvert par l'appui sur « Ventes du jour » de l'accueil (§ 7.3) et par la tuile « Plus → Tableau de bord », **seulement si le module `dashboard` de la boutique est actif** ; sinon aucune entrée, et l'adresse est introuvable.
 
 ```
 ┌──────────────────────────────────┐
@@ -290,6 +292,35 @@ Les 4 gestes du CDC sont : choisir l'article, ajuster le prix, choisir le paieme
 │ Accueil Ventes Stock Camions Plus│  barre du bas 64 px
 └──────────────────────────────────┘
 ```
+
+### 7.3 Page d'accueil minimale (propriétaire et vendeur)
+
+Décision client du 12/11/2026 (specs § 15.1) : rien d'autre que ceci.
+
+```
+┌──────────────────────────────────┐
+│ Motos Garoua ▾           🔔 2    │
+├──────────────────────────────────┤
+│ ┌──────────────────────────────┐ │
+│ │      ＋ Nouvelle vente        │ │  Button primary lg, pleine largeur
+│ └──────────────────────────────┘ │
+│ ┌──────────────────────────────┐ │
+│ │ Ventes du jour               │ │  KpiCard : appui → tableau de bord (§ 7.2)
+│ │ 2 340 000 FCFA               │ │  si module actif, sinon « Ventes » / « Mes ventes »
+│ │ 3 ventes                     │ │
+│ └──────────────────────────────┘ │
+│ 5 dernières ventes               │  titre de section
+│ V-000124        1 540 000 FCFA   │  ListCard : numéro, client ou « Comptant »,
+│ Moussa Abdou · 10 h 42  Crédit   │  heure, montant ; appui → fiche de la vente
+├──────────────────────────────────┤
+│ Accueil Ventes Stock Camions Plus│
+└──────────────────────────────────┘
+```
+
+- Vendeur : **son** total et **ses** 5 dernières ventes (filtrées par le serveur), jamais de coût ni de marge.
+- États : chargement `Skeleton` ; hors connexion « Connexion nécessaire pour afficher les ventes du jour. » + « Réessayer » (aucun chiffre) ; aucune vente : « Aucune vente aujourd'hui ».
+- Titre de page « Accueil » gardé pour les lecteurs d'écran seulement (le nom de la boutique est dans la barre du haut).
+- Comptable et chauffeur : leur accueil simple (titre, salutation, leurs tuiles et chiffres), sans bouton de vente.
 
 ## 8. Accessibilité (critères bloquants)
 

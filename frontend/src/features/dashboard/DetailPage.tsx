@@ -62,7 +62,7 @@ function Lines({
   );
 }
 
-/** UC-TDB-04 : la liste qui explique un chiffre, sur la période choisie ; retour à l'accueil. */
+/** UC-TDB-04 : la liste qui explique un chiffre, sur la période choisie ; retour au tableau de bord. */
 export function DetailPage({ shopId, metric }: { shopId: string; metric: DetailMetric }) {
   const { now } = useReporting();
   const nav = useDashboardNav();
@@ -70,7 +70,7 @@ export function DetailPage({ shopId, metric }: { shopId: string; metric: DetailM
   return (
     <>
       <Button variant="ghost" icon={ArrowLeft} onClick={nav.close}>
-        Retour à l'accueil
+        Retour au tableau de bord
       </Button>
       <h1 className="m-0 text-title font-bold text-text">{DETAIL_TITLES[metric]}</h1>
       {"query" in resolved ? (

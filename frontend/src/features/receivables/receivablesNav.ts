@@ -27,7 +27,7 @@ export const VIEW = {
   statement: "releve",
 } as const;
 
-/** Adresse relative de « Enregistrer un versement » (bouton « Versement » de l'accueil). */
+/** Adresse relative de « Enregistrer un versement » (recherche du client, UC-CRE-03). */
 export const PAY_SEARCH = `?vue=${VIEW.pay}`;
 
 export interface ReceivableNav {
