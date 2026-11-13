@@ -1,15 +1,15 @@
 /** Ordre des articles proposés à la vente (audit UX du 13/11/2026). */
 import type { CatalogArticle } from "../../core/gateways/catalogContract";
-import { unitStock } from "./draft";
+import { inStock } from "./draft";
 
-/** Vendable ici : vente à l'unité et au moins une unité au lieu de vente. */
+/** Vendable ici : au moins une unité (ou 0,1 m pour un article au mètre) au lieu de vente. */
 export function sellable(article: CatalogArticle): boolean {
-  return article.sale_mode === "unit" && unitStock(article) >= 1;
+  return inStock(article);
 }
 
 /**
- * Les articles vendables d'abord, dans l'ordre du serveur (plus vendus) ; les ruptures et
- * articles non vendables ensuite, toujours visibles et marqués (« Rupture »).
+ * Les articles vendables d'abord, dans l'ordre du serveur (plus vendus) ; les ruptures ensuite,
+ * toujours visibles et marquées (« Rupture »).
  */
 export function sellableFirst(items: readonly CatalogArticle[]): CatalogArticle[] {
   return [...items.filter(sellable), ...items.filter((article) => !sellable(article))];

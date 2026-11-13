@@ -20,6 +20,7 @@ const setup = (overrides: Partial<SaleSetup> = {}): SaleSetup => ({
   payment_modes: [],
   article_fields: [],
   sale_fields: [],
+  sale_shortcuts: [],
   ...overrides,
 });
 

@@ -5,10 +5,13 @@
 import type { Role } from "../../core/auth/me";
 import { formatMoney } from "../../shared/format";
 import { CREDIT_CHOICE, minimumOf, type LineDraft, type SaleDraft } from "./draft";
+import { lineTotal, quantityIssue } from "./lineQuantity";
 import { normalizePhone } from "./phone";
 
 export interface LineIssues {
   price?: string;
+  /** Longueur ou nombre de pièces impossible (Textile : format, stock du lieu). */
+  quantity?: string;
   /** Prix sous le minimum (vu par un vendeur) : le minimum, pour l'avertissement. */
   belowMinimum?: number;
   /** Vrai si la boutique exige l'accord du propriétaire pour ce prix (sinon simple avertissement). */
@@ -38,8 +41,16 @@ export interface SaleChecks {
   blocking: boolean;
 }
 
-export function lineTotal(line: LineDraft): number {
-  return line.quantity * (line.unitPrice ?? 0);
+export { lineTotal } from "./lineQuantity";
+
+/** Une erreur de la ligne bloque l'envoi (prix, quantité, châssis). */
+export function lineBlocking(issues: LineIssues | undefined): boolean {
+  if (issues === undefined) return false;
+  return (
+    issues.price !== undefined ||
+    issues.quantity !== undefined ||
+    issues.chassis.some((error) => error !== undefined)
+  );
 }
 
 export function splitSum(split: Record<string, number | null>): number {
@@ -55,6 +66,8 @@ function checkLines(
   const seen = new Set<string>();
   draft.lines.forEach((line) => {
     const issues: LineIssues = { chassis: [] };
+    const quantity = quantityIssue(line);
+    if (quantity !== undefined) issues.quantity = quantity;
     const minimum = minimumOf(draft, line);
     if (line.unitPrice === null) issues.price = "Le prix est vide";
     else if (line.unitPrice < 1) issues.price = "Le prix doit être supérieur à 0";
@@ -145,12 +158,9 @@ export function checkSale(draft: SaleDraft, role: Role, requiresApproval: boolea
     checkOptionalCustomer(draft, checks);
   }
   checks.remaining = checks.total - checks.paid;
-  const lineBlocking = Object.values(checks.lines).some(
-    (issues) => issues.price !== undefined || issues.chassis.some((error) => error !== undefined),
-  );
   checks.blocking =
     draft.lines.length === 0 ||
-    lineBlocking ||
+    Object.values(checks.lines).some(lineBlocking) ||
     [
       checks.payment,
       checks.split,

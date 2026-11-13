@@ -14,12 +14,14 @@ export const OFFLINE_MESSAGE =
 
 function stockMessage(error: ApiError, lines: readonly LineDraft[], locationName: string): string {
   const details = stockInsufficient(error);
-  const name =
-    lines.find((line) => line.article.id === details.article_id)?.article.name ?? "cet article";
-  const here = `Stock insuffisant pour ${name} : ${formatQuantity(details.available)} disponible à ${locationName}.`;
+  const article = lines.find((line) => line.article.id === details.article_id)?.article;
+  const name = article?.name ?? "cet article";
+  // Tissu : le serveur répond en mètres (`available` « 2.9 ») : « 2,9 m ».
+  const unit = article?.sale_mode === "meter" ? "m" : undefined;
+  const here = `Stock insuffisant pour ${name} : ${formatQuantity(details.available, unit)} disponible à ${locationName}.`;
   if (details.other_locations.length === 0) return `${here} Aucun stock dans les autres lieux.`;
   const others = details.other_locations
-    .map((other) => `${other.location_name} : ${formatQuantity(other.available)}`)
+    .map((other) => `${other.location_name} : ${formatQuantity(other.available, unit)}`)
     .join(", ");
   return `${here} Autres lieux — ${others}.`;
 }

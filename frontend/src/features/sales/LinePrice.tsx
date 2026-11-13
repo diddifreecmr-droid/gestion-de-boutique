@@ -1,7 +1,7 @@
 import { AlertTriangle } from "lucide-react";
 import { formatMoney } from "../../shared/format";
 import { AmountField } from "../../shared/ui";
-import type { LineDraft } from "./draft";
+import { pricesOf, type LineDraft } from "./draft";
 import { lineTotal, type LineIssues } from "./saleChecks";
 import { belowMinimumText } from "./warningText";
 
@@ -16,7 +16,7 @@ export interface LinePriceProps {
 }
 
 function priceHint(line: LineDraft): string | undefined {
-  const { base_price: base, min_price: minimum } = line.article;
+  const { base, minimum } = pricesOf(line);
   const parts = [
     base === null ? null : `Base ${formatMoney(base)}`,
     minimum === null ? null : `minimum ${formatMoney(minimum)}`,
@@ -24,21 +24,28 @@ function priceHint(line: LineDraft): string | undefined {
   return parts.length === 0 ? undefined : parts.join(" · ");
 }
 
+function priceLabel(line: LineDraft, basket: boolean): string {
+  if (line.mode === "meter") return "Prix au mètre";
+  if (line.mode === "piece") return "Prix de la pièce";
+  if (basket) return "Prix unitaire";
+  return line.quantity > 1 ? `Prix d'une ${line.article.unit_label}` : "Prix";
+}
+
 /**
  * Prix négocié de la ligne (QC-2 : aucune remise, le prix se discute ligne par ligne) : prix de
- * base pré-rempli et modifiable ; sous le minimum, un avertissement (la vente reste possible,
- * notée au journal, sauf accord exigé par le réglage).
+ * base de l'unité choisie pré-rempli et modifiable ; sous le minimum, un avertissement (la vente
+ * reste possible, notée au journal, sauf accord exigé par le réglage). Textile (§ 7.5) : prix au
+ * mètre ou de la pièce, et le total de la ligne calculé dessous.
  */
 export function LinePrice({ line, issues, error, basket, onChange }: LinePriceProps) {
-  const unit = line.article.unit_label;
-  const label = basket ? "Prix unitaire" : line.quantity > 1 ? `Prix d'une ${unit}` : "Prix";
+  const detailed = basket || line.mode !== "unit";
   return (
     <>
       <AmountField
-        label={label}
+        label={priceLabel(line, basket)}
         value={line.unitPrice}
         error={error}
-        hint={basket ? priceHint(line) : undefined}
+        hint={detailed ? priceHint(line) : undefined}
         onChange={onChange}
       />
       {issues?.belowMinimum !== undefined && (
@@ -47,7 +54,7 @@ export function LinePrice({ line, issues, error, basket, onChange }: LinePricePr
           <span>{belowMinimumText(issues.belowMinimum, issues.approvalRequired === true)}</span>
         </p>
       )}
-      {basket && (
+      {detailed && (
         <p className="m-0 flex items-baseline justify-between gap-4 text-body text-text">
           <span>Ligne</span>
           <strong className="text-lead font-bold tabular-nums">

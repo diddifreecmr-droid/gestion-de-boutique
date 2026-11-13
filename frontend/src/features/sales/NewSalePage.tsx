@@ -132,6 +132,7 @@ function SaleFlow({ shopId, role, setup }: NewSalePageProps & { setup: SaleSetup
       notice={notice}
       searchHint={articleSearchHint(setup.article_fields)}
       fields={lineFieldsOf(setup.sale_fields)}
+      shortcuts={setup.sale_shortcuts}
     />
   );
 }

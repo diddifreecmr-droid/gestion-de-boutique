@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Tag } from "lucide-react";
+import { Pencil, Scissors, Tag } from "lucide-react";
 import type { ArticleForm, ArticleResponse } from "../../core/gateways/catalogAdminContract";
 import { Button, useToast } from "../../shared/ui";
 import { ArchiveAction } from "./ArchiveAction";
@@ -8,6 +8,7 @@ import { ArticleEditForm } from "./ArticleEditForm";
 import { ArticleFacts } from "./ArticleFacts";
 import { articleView } from "./articleView";
 import { catalogRights, type CatalogRole } from "./catalogRights";
+import { OffcutForm } from "./OffcutForm";
 import { PriceHistoryList } from "./PriceHistoryList";
 import { PricesForm } from "./PricesForm";
 import { articlePriceLabels } from "./textileFields";
@@ -22,7 +23,11 @@ export interface ArticleSheetProps {
   onOpenArticle: (articleId: string) => void;
 }
 
-type Mode = "view" | "edit" | "prices";
+type Mode = "view" | "edit" | "prices" | "offcut";
+
+/** Chute (RG-X06) : tissu au mètre encore actif ; propriétaire et comptable (écrans du catalogue). */
+const offcutAllowed = (article: ArticleResponse) =>
+  article.stock_unit.toUpperCase() === "METER" && article.status === "active";
 
 /** Fiche d'un article chargé : lecture, puis une tâche à la fois (P1). */
 export function ArticleSheet(props: ArticleSheetProps) {
@@ -67,6 +72,13 @@ export function ArticleSheet(props: ArticleSheetProps) {
           onReload={onReload}
         />
       )}
+      {mode === "offcut" && (
+        <OffcutForm
+          shopId={shopId}
+          article={{ id: props.article.id, name: view.name }}
+          onDone={back}
+        />
+      )}
       {mode === "view" && (
         <>
           <ArticleFacts view={view} fields={form.fields} />
@@ -92,6 +104,18 @@ export function ArticleSheet(props: ArticleSheetProps) {
               }}
             >
               Modifier les prix
+            </Button>
+          )}
+          {offcutAllowed(props.article) && (
+            <Button
+              variant="secondary"
+              fullWidth
+              icon={Scissors}
+              onClick={() => {
+                setMode("offcut");
+              }}
+            >
+              Déclarer une chute
             </Button>
           )}
           {view.kind === "owner" && view.history !== null && (

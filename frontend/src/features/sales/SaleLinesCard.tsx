@@ -1,7 +1,8 @@
 import { useId } from "react";
 import type { SaleResult, SoldDetail } from "../../core/gateways/salesContract";
-import { formatMoney, formatQuantity } from "../../shared/format";
+import { formatMoney } from "../../shared/format";
 import type { SaleRole } from "./salesNav";
+import { soldQuantityText } from "./soldQuantity";
 import { moneyOrNot, ownerCosts } from "./saleView";
 
 function detailText(detail: SoldDetail): string {
@@ -40,7 +41,7 @@ export function SaleLinesCard({ sale, role }: { sale: SaleResult; role: SaleRole
               <strong className="shrink-0 tabular-nums">{formatMoney(line.line_total)}</strong>
             </p>
             <p className="m-0 text-body text-text-muted">
-              {formatQuantity(line.quantity)} × {formatMoney(line.unit_price)}
+              {soldQuantityText(line)} × {formatMoney(line.unit_price)}
             </p>
             {line.details.map((detail, at) => (
               <p key={at} className="m-0 break-words text-body text-text-muted">

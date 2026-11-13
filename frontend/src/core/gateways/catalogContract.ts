@@ -36,9 +36,27 @@ export interface CatalogArticle {
   base_price: number | null;
   /** Prix minimum actif, sinon `null` (le serveur reste juge). */
   min_price: number | null;
-  /** Stock vendable au lieu de vente demandé. */
+  /** Stock vendable au lieu de vente demandé (en mètres pour un article au mètre). */
   available: DecimalString;
+  /**
+   * Vente « à la pièce » d'un article au mètre (Textile, `sold_by_piece`) : longueur d'une
+   * pièce et prix de la pièce. Absent si l'article ne se vend pas à la pièce.
+   */
+  piece?: PieceSale;
+  /** Longueur de la pièce (`piece_length_m`), même sans vente à la pièce (raccourcis RG-X05). */
+  piece_length_m?: DecimalString;
 }
+
+export interface PieceSale {
+  length_m: DecimalString;
+  /** Prix de base de la pièce (`base_price_piece`), `null` s'il n'est pas fixé. */
+  base_price: number | null;
+  /** Prix minimum actif de la pièce, sinon `null`. */
+  min_price: number | null;
+}
+
+/** Raccourci de longueur servi par `GET /profile` (RG-X05) ; vide hors Textile. */
+export type SaleShortcut = components["schemas"]["SaleShortcutResponse"];
 
 export interface ArticleSearch {
   location_id: string;
@@ -64,6 +82,8 @@ export interface SaleSetup {
   article_fields: ProfileFieldLabel[];
   /** Codes des champs de vente du profil (`chassis_number` : recherche par châssis). */
   sale_fields: string[];
+  /** Raccourcis de longueur du profil (pièce, demi-pièce, 1, 2, 3 m), vides hors Textile. */
+  sale_shortcuts: SaleShortcut[];
 }
 
 export interface CatalogGateway {

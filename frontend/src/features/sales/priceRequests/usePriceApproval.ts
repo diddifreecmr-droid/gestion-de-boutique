@@ -12,9 +12,9 @@ import { PRICE_POLL_MS, statusAt } from "./priceRequestText";
 
 type Entry = { status: "sending" } | { status: "known"; request: PriceRequest };
 
-/** Clé d'une demande d'accord : un article à un prix donné (changer le prix l'invalide). */
+/** Clé d'une demande d'accord : un article, une unité, un prix (changer l'un l'invalide). */
 export function approvalKey(line: LineDraft): string {
-  return `${line.article.id}:${String(line.unitPrice)}`;
+  return `${line.article.id}:${line.mode}:${String(line.unitPrice)}`;
 }
 
 export const POLL_OFFLINE =
@@ -73,7 +73,7 @@ export function usePriceApproval(shopId: string, needsApproval: readonly LineDra
         id: uuidV7(),
         article_id: target.article.id,
         requested_price: target.unitPrice,
-        sale_mode: target.article.sale_mode,
+        sale_mode: target.mode,
       });
       setNow(Date.now());
       set(key, { status: "known", request });
