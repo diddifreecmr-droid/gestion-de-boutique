@@ -3329,6 +3329,10 @@ export interface components {
       min_price_enabled: boolean;
       /** Min Price Requires Approval */
       min_price_requires_approval: boolean;
+      /** Exchange Days */
+      exchange_days: number | null;
+      /** Employee Exchange Allowed */
+      employee_exchange_allowed: boolean;
       /** Default Location Id */
       default_location_id: string | null;
       /** Entitlements */
@@ -4243,6 +4247,8 @@ export interface components {
       min_price_requires_approval?: boolean | null;
       /** Exchange Days */
       exchange_days?: number | null;
+      /** Employee Exchange Allowed */
+      employee_exchange_allowed?: boolean | null;
       /** Truck Silent Hours */
       truck_silent_hours?: number | null;
       /** Transfer In Transit Days */
@@ -4290,6 +4296,8 @@ export interface components {
       min_price_requires_approval: boolean;
       /** Exchange Days */
       exchange_days: number | null;
+      /** Employee Exchange Allowed */
+      employee_exchange_allowed: boolean;
       /** Truck Silent Hours */
       truck_silent_hours: number | null;
       /** Transfer In Transit Days */

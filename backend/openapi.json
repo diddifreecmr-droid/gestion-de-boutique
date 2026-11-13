@@ -15744,6 +15744,21 @@
             "type": "boolean",
             "title": "Min Price Requires Approval"
           },
+          "exchange_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exchange Days"
+          },
+          "employee_exchange_allowed": {
+            "type": "boolean",
+            "title": "Employee Exchange Allowed"
+          },
           "default_location_id": {
             "anyOf": [
               {
@@ -15781,6 +15796,8 @@
           "receipt",
           "min_price_enabled",
           "min_price_requires_approval",
+          "exchange_days",
+          "employee_exchange_allowed",
           "default_location_id",
           "entitlements"
         ],
@@ -18796,6 +18813,17 @@
             ],
             "title": "Exchange Days"
           },
+          "employee_exchange_allowed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Employee Exchange Allowed"
+          },
           "truck_silent_hours": {
             "anyOf": [
               {
@@ -18970,6 +18998,10 @@
             ],
             "title": "Exchange Days"
           },
+          "employee_exchange_allowed": {
+            "type": "boolean",
+            "title": "Employee Exchange Allowed"
+          },
           "truck_silent_hours": {
             "anyOf": [
               {
@@ -19024,6 +19056,7 @@
           "min_price_enabled",
           "min_price_requires_approval",
           "exchange_days",
+          "employee_exchange_allowed",
           "truck_silent_hours",
           "transfer_in_transit_days",
           "reception_location_id",
