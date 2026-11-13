@@ -8,6 +8,7 @@ import { FormMessage } from "../expenses/FormMessage";
 import { asError, useLoad } from "../expenses/useLoad";
 import { isStale, platformErrorMessage, STATUS_LABELS, type PlatformNav } from "./platformNav";
 import { ShopModules } from "./ShopModules";
+import { ShopProfileChange } from "./ShopProfileChange";
 import { ShopRights } from "./ShopRights";
 
 interface Sheet {
@@ -124,6 +125,14 @@ export function ShopAdmin({ shopId, nav }: { shopId: string; nav: PlatformNav })
           Rouvrir la boutique
         </Button>
       )}
+      <ShopProfileChange
+        key={`${String(round)}|${shop.profile_code}`}
+        shop={shop}
+        busy={busy}
+        onChanged={() => {
+          setRound((n) => n + 1);
+        }}
+      />
       <ShopModules
         key={`${String(round)}|${shop.enabled_modules.join(",")}`}
         enabled={shop.enabled_modules}
