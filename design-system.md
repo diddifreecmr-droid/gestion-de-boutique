@@ -345,6 +345,110 @@ Décision client du 12/11/2026 (specs § 15.1) : rien d'autre que ceci.
 - Titre de page « Accueil » gardé pour les lecteurs d'écran seulement (le nom de la boutique est dans la barre du haut).
 - Comptable et chauffeur : leur accueil simple (titre, salutation, leurs tuiles et chiffres), sans bouton de vente.
 
+### 7.4 Panier multi-lignes — Prêt-à-porter (Lot 3, T40)
+
+Décision client du 2026-11-13 (QC-2, specs § 15.1) : **aucune remise**. Il n'y a ni ligne « Remise », ni champ montant / %, ni sous-total : le prix se négocie **sur chaque ligne**, et le total est la somme des lignes.
+
+```
+┌──────────────────────────────────┐
+│ ←  Nouvelle vente        🔔 1    │
+├──────────────────────────────────┤
+│ 🔍 Cherchez par nom, référence…  │  SearchField (ou grille, § 7.6)
+│ ┌──────────────────────────────┐ │
+│ │ Chemise lin            ✕ Ret.│ │  carte de ligne (Card surface)
+│ │ Taille [S][✓M][L][XL] …      │ │  ChoiceChips compactes 48 px
+│ │ Couleur [✓Blanc][Bleu] …     │ │
+│ │ Quantité         [−] 2 [+]   │ │  QuantityStepper inline
+│ │ Prix unitaire                │ │
+│ │ [ 14 000              FCFA ] │ │  AmountField, prix de base pré-rempli
+│ │ Base 15 000 · minimum 12 000 │ │  text-muted
+│ │ Ligne               28 000   │ │  droite, --text-lead gras
+│ └──────────────────────────────┘ │
+│ ┌──────────────────────────────┐ │
+│ │ Robe pagne    T. 40 · Rouge  │ │  ligne repliée (déjà complète)
+│ │ 1 × 17 500          17 500 ⌄ │ │
+│ └──────────────────────────────┘ │
+│ [ ＋ Ajouter un article ]         │  Button secondary
+│ Paiement  [✓ Espèces] [OM] …     │  ChoiceChips (§ 6.2)
+├──────────────────────────────────┤
+│ 2 articles · Total 45 500 FCFA   │  barre fixe
+│ [       ✓ Valider la vente     ] │  primary lg
+└──────────────────────────────────┘
+```
+
+- **Une carte par ligne** ; seule la dernière ajoutée est ouverte, les autres se replient en une ligne (nom, taille · couleur, quantité × prix, total de ligne) et se rouvrent d'un appui (`ListCardDetailRow`).
+- **Listes rapides** : tailles `XS S M L XL XXL` ou pointures `36`–`46` selon la catégorie, couleurs de la boutique en ChoiceChips ; « Autre » ouvre un champ texte. Taille et couleur restent facultatives sauf si le profil les exige.
+- **Prix négocié** : `AmountField` pré-rempli avec le prix de base, modifiable à chaque ligne. Sous le **prix minimum** : message `warning-text` + `AlertTriangle` sous le champ (« Sous le prix minimum (12 000 FCFA) : la vente sera notée au journal ») ; la vente reste possible (règle du Lot 1). Si le réglage « Accord du propriétaire » est actif, le bouton devient « Demander l'accord du propriétaire » (§ 6.1).
+- Le **total** de la barre fixe est recalculé à chaque modification de quantité ou de prix ; il n'y a aucun autre chiffre (pas de sous-total, pas de remise).
+- **Reçu** : une ligne par article (« Chemise lin M Blanc — 2 × 14 000 = 28 000 »), puis le total ; jamais de coût ni de ligne de remise.
+
+### 7.5 Vente textile — « Au mètre / À la pièce » (Lot 3, T41)
+
+```
+┌──────────────────────────────────┐
+│ Wax Fleur de mariage             │
+│ Stock : 46,9 m (≈ 8 pièces)      │  text-muted, toujours en mètres
+│ ┌───────────────┬──────────────┐ │
+│ │ ✓ Au mètre    │  À la pièce  │ │  SegmentedControl 56 px
+│ └───────────────┴──────────────┘ │
+│ [Pièce 5,49 m][½ pièce 2,7 m]    │  ShortcutChips 48 px
+│ [ 1 m ] [ 2 m ] [ 3 m ]          │
+│ Longueur                         │
+│ [ 2,5                       m ]  │  Field décimal (dixième)
+│ Prix au mètre                    │
+│ [ 2 500                  FCFA ]  │  pré-rempli, modifiable
+│ Ligne                  6 250     │
+└──────────────────────────────────┘
+```
+
+- **SegmentedControl** (nouvel atome, `shared/ui/SegmentedControl.tsx`) : 2 segments pleine largeur, 56 px, bordure 1 px `border-strong`, `--radius-md` ; segment actif `primary-soft`, bordure 2 px `primary`, icône `Check` + mot (P7). Motif ARIA `radiogroup`. « À la pièce » n'apparaît que si l'article se vend à la pièce (on ne montre jamais ce qui n'existe pas).
+- **Au mètre** : raccourcis (RG-X05, servis par `GET /profile`) en ChoiceChips 48 px — pièce complète, demi-pièce, 1, 2, 3 m ; un appui remplit la longueur ; saisie au **dixième** (« 2,55 » → erreur « Une décimale au plus (ex. 2,5) »).
+- **À la pièce** : le stepper compte des pièces ; dessous en `text-muted` : « 1 pièce = 5,5 m retirés du stock » (stock tenu au dixième, QC-3).
+- Le prix de base **de l'unité choisie** est pré-rempli à chaque bascule et reste modifiable (prix négocié, même avertissement sous le minimum qu'au § 7.4).
+- Formats : « 2,5 m », « 1 pièce (5,49 m) » à l'écran et sur le reçu ; virgule décimale.
+- **Déclarer une chute** (fiche article, bouton `secondary` `Scissors`) : longueur (dixième), note, photo facultative (`FilePickerButton`), confirmation ; toast « Chute de 0,4 m enregistrée ».
+
+### 7.6 Grille de vignettes (Lot 3, T43)
+
+- Bascule « Liste / Vignettes » (SegmentedControl compact) au-dessus des résultats de recherche d'article ; le choix est gardé sur l'appareil.
+- Grille : **2 colonnes** sur téléphone (360 px), 3 dès 600 px, 4 dès 1024 px ; écart `--space-3`. Vignette carrée, `--radius-lg`, bordure `border` ; dessous : nom (`--text-body`, 2 lignes au plus, coupé avec « … »), prix de base (`--text-lead` gras), pastille « Rupture » si besoin. Toute la carte est la cible (≥ 48 px).
+- Les images se chargent **à la demande** (`loading="lazy"`, lien signé court renvoyé par `GET /articles?with_thumbnails=true`) ; pendant le chargement : `Skeleton` carré.
+- Sans photo, ou lien expiré / en échec : **initiales** de l'article (2 lettres, `--text-title-sm`, `primary` sur `primary-soft`) — jamais une image cassée.
+
+### 7.7 Import Excel (Lot 3, T44–T45)
+
+Parcours en 4 étapes sur un seul écran (`features/imports/`), indicateur « Étape 2 sur 4 » en `text-muted` :
+
+1. **Choisir le modèle** : `ListCard` par modèle (Articles, Stock de départ, Clients, Créances en cours, Fournisseurs — 5 modèles ; le comptable n'en voit que 3) ; bouton `secondary` « Télécharger le modèle » (`Download`).
+2. **Déposer le fichier** : `FilePickerButton` (`.xlsx`, `.csv`) ; fichier refusé : message `danger-text` lisible (« Ce fichier ne se lit pas : enregistrez-le en .xlsx »).
+3. **Aperçu** (aucune écriture) :
+
+```
+┌──────────────────────────────────┐
+│ ← Import : Articles  Étape 3 / 4 │
+├──────────────────────────────────┤
+│ ✓ 48 lignes prêtes               │  success-soft / success-text
+│ ⚠ 2 doublons ignorés             │  warning-soft / warning-text
+│ ✕ 3 lignes en erreur             │  danger-soft / danger-text
+│ 3 articles nouveaux seront créés │  text-muted
+│ Erreurs                          │
+│ ✕ Ligne 14 : le prix est vide    │  ListCard, danger-text + XCircle
+│ ✕ Ligne 22 : la quantité « 2,55 »│
+│   n'a pas le bon format          │
+│ ✕ Ligne 31 : le lieu « Dépôt »   │
+│   n'existe pas                   │
+│      ⌄ Voir les 48 lignes prêtes │  Disclosure
+├──────────────────────────────────┤
+│ [ ✓ Importer les lignes valides ]│  primary lg
+└──────────────────────────────────┘
+```
+
+   - Message d'erreur toujours de la forme « Ligne N : <problème en mots simples> » (jamais un nom de colonne technique ni un code) ; la colonne apparaît entre parenthèses si utile (« Ligne 14 : le prix est vide (colonne Prix de base) »).
+   - Aucune ligne valide : bouton désactivé avec la raison (« Aucune ligne à importer : corrigez le fichier »).
+4. **Rapport** : numéro `IMP-000001`, lignes importées, ignorées, éléments créés ; bouton `secondary` « Télécharger les erreurs » (`errors.xlsx`).
+
+- **Lots** (T45) : liste `ListCard` (numéro, modèle, date, lignes importées, pastille « Importé » `success` ou « Annulé » `danger`). « Annuler l'import » (bouton `danger`, propriétaire seulement, dans les 7 jours) ouvre un `ConfirmDialog` qui dit l'effet (« Les éléments seront archivés, rien n'est effacé ») ; refus : liste des opérations qui bloquent (« Vente V-000003 »), délai dépassé : « Annulation possible jusqu'au 17/11 ».
+
 ## 8. Accessibilité (critères bloquants)
 
 - Contraste : ≥ 7:1 pour le texte principal et ≥ 4,5:1 pour tout autre texte (vérifié au § 2.1) ; ≥ 3:1 pour les contours de contrôle.
