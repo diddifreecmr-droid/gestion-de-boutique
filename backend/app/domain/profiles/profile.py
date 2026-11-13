@@ -13,7 +13,7 @@ from enum import StrEnum
 
 from app.domain.profiles.fields import FieldSpec
 from app.domain.profiles.menus import MenuEntry
-from app.domain.profiles.modules import MANDATORY_MODULES, Module
+from app.domain.profiles.modules import MANDATORY_MODULES, Module, broken_dependencies
 from app.domain.profiles.printing import ReceiptFormat
 from app.domain.shared.quantity import StockUnit
 from app.domain.shared.roles import Role
@@ -95,7 +95,9 @@ class ShopProfile:
         if self.version < 1:
             problems.append("version ≥ 1")
         if not MANDATORY_MODULES <= self.modules <= self.available_modules:
-            problems.append("modules ⊄ disponibles ou socle/journal absents")
+            problems.append("modules ⊄ disponibles ou modules obligatoires absents")
+        if broken_dependencies(self.modules):
+            problems.append("dépendances de modules non tenues (transport ⇒ transfers)")
         if Role.OWNER not in self.roles or len(set(self.roles)) != len(self.roles):
             problems.append("rôles sans propriétaire ou en double")
         if set(self.role_labels) != set(self.roles) or set(self.menus) != set(self.roles):

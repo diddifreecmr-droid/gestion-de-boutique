@@ -5,8 +5,10 @@ Ne connaît aucun adaptateur concret : `bootstrap.container` lui fournit ses dé
 
 from fastapi import FastAPI
 
+from app.domain.profiles.modules import Module
 from app.interface.http.config import HttpConfig
 from app.interface.http.errors import register_error_handlers
+from app.interface.http.modules import ShopRoutes, require_declared_modules
 from app.interface.http.routes import health
 from app.interface.http.routes.attachment_components import AttachmentsComponents
 from app.interface.http.routes.attachments import build_attachments_router
@@ -54,7 +56,10 @@ def create_app(
     sync: SyncComponents | None = None,
     attachments: AttachmentsComponents | None = None,
 ) -> FastAPI:
-    """`journal`/`shops` absents : leurs routes ne sont pas montées (outils, tests ciblés)."""
+    """`journal`/`shops` absents : leurs routes ne sont pas montées (outils, tests ciblés).
+
+    Chaque routeur de boutique déclare son module (`ShopRoutes.include`, specs § 15.1).
+    """
     prefix = config.api_prefix
     expose_docs = config.expose_docs
     app = FastAPI(
@@ -67,38 +72,36 @@ def create_app(
     register_error_handlers(app, None if journal is None else journal.record_access_denied.execute)
     app.include_router(health.router, prefix=prefix)
     app.include_router(build_auth_router(auth, prefix), prefix=prefix)
+    shop = ShopRoutes(app, auth.guard, prefix)
     if journal is not None:
-        app.include_router(build_journal_router(journal), prefix=prefix)
+        shop.include(build_journal_router(journal), Module.AUDIT, {"/alerts": Module.CORE})
     if shops is not None:
-        for build in (
-            build_platform_router,
-            build_shop_profile_router,
-            build_places_router,
-            build_members_router,
-        ):
-            app.include_router(build(shops), prefix=prefix)
+        app.include_router(build_platform_router(shops), prefix=prefix)
+        for build in (build_shop_profile_router, build_places_router, build_members_router):
+            shop.include(build(shops), Module.CORE)
     if catalog is not None:
-        app.include_router(build_catalog_router(catalog), prefix=prefix)
+        shop.include(build_catalog_router(catalog), Module.CATALOG)
     if expenses is not None:
-        app.include_router(build_expenses_router(expenses), prefix=prefix)
-        app.include_router(build_expense_settings_router(expenses), prefix=prefix)
+        shop.include(build_expenses_router(expenses), Module.EXPENSES)
+        shop.include(build_expense_settings_router(expenses), Module.EXPENSES)
     if stock is not None:
-        app.include_router(build_stock_router(stock), prefix=prefix)
-        app.include_router(build_inventories_router(stock), prefix=prefix)
+        shop.include(build_stock_router(stock), Module.CATALOG)
+        shop.include(build_inventories_router(stock), Module.CATALOG)
     if purchasing is not None:
-        app.include_router(build_suppliers_router(purchasing), prefix=prefix)
-        app.include_router(build_purchases_router(purchasing), prefix=prefix)
+        shop.include(build_suppliers_router(purchasing), Module.PURCHASES)
+        shop.include(build_purchases_router(purchasing), Module.PURCHASES)
     if sales is not None:
-        app.include_router(build_sales_router(sales), prefix=prefix)
-        app.include_router(build_customers_router(sales), prefix=prefix)
-        app.include_router(build_sales_returns_router(sales), prefix=prefix)
+        shop.include(build_sales_router(sales), Module.SALES)
+        shop.include(build_customers_router(sales), Module.SALES)
+        shop.include(build_sales_returns_router(sales), Module.SALES)
     if receivables is not None:
-        app.include_router(build_receivables_router(receivables), prefix=prefix)
-        app.include_router(build_installments_router(receivables), prefix=prefix)
+        shop.include(build_receivables_router(receivables), Module.RECEIVABLES)
+        shop.include(build_installments_router(receivables), Module.RECEIVABLES)
     if reporting is not None:
-        app.include_router(build_reporting_router(reporting), prefix=prefix)
+        shop.include(build_reporting_router(reporting), Module.DASHBOARD, {"/home": Module.CORE})
     if sync is not None:
-        app.include_router(build_sync_router(sync), prefix=prefix)
+        shop.include(build_sync_router(sync), Module.CORE)
     if attachments is not None:
-        app.include_router(build_attachments_router(attachments, prefix), prefix=prefix)
+        shop.include(build_attachments_router(attachments, prefix), Module.CORE)
+    require_declared_modules(app, prefix)
     return app

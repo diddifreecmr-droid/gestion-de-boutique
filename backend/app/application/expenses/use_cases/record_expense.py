@@ -7,6 +7,8 @@ nouveaux sont créés à la volée (UC-DEP-02).
 Idempotence (specs § 6.1, TR-11) : un `expense_id` client déjà enregistré renvoie la dépense
 existante (`created=False`) sans rien réécrire ni consommer de numéro. `captured_at` (heure de
 l'appareil, `X-Captured-At`) et `device_id` sont gardés pour la saisie hors ligne (RG-T04).
+
+Module `expenses` éteint → 403 `MODULE_DISABLED`, avant toute lecture (route comme `POST /sync`).
 """
 
 from dataclasses import dataclass
@@ -26,9 +28,11 @@ from app.application.security.permissions import Permission
 from app.application.security.policy import Policy
 from app.application.security.roles import Role
 from app.application.shops.context import actor_shop, performer_of
+from app.application.shops.modules import require_module
 from app.domain.expenses.details import Capture
 from app.domain.expenses.expense import Expense
 from app.domain.expenses.ids import ExpenseId
+from app.domain.profiles.modules import Module
 from app.domain.shared.doc_number import DocType
 
 
@@ -49,6 +53,7 @@ class RecordExpense:
         self._policy.require(actor, Permission.EXPENSE_CREATE)
         now = self._clock.now()
         with self._uow_factory(actor_shop(actor)) as uow:
+            require_module(uow, Module.EXPENSES)
             expenses = ExpenseRepository.within(uow)
             if command.expense_id is not None:
                 existing = expenses.find(command.expense_id)

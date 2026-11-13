@@ -28,6 +28,7 @@ from app.application.ports.uow import UnitOfWorkFactory
 from app.application.receivables.reminders import register_receivable_alerts
 from app.application.receivables.sync import ReceivableSync
 from app.application.sales.alerts import register_sales_alerts
+from app.application.shops.modules import enabled_modules
 from app.application.shops.ports import ShopCatalog
 from app.application.stock.alerts import register_stock_alerts
 from app.application.sync.alerts import register_sync_alerts
@@ -74,7 +75,7 @@ class Core:
 
 
 def build_core(settings: Settings, clock: Clock) -> Core:
-    alerts = AlertDispatcher(clock)
+    alerts = AlertDispatcher(clock, modules=enabled_modules)
     register_stock_alerts(alerts)
     register_sales_alerts(alerts)
     register_receivable_alerts(alerts)

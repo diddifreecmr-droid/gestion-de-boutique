@@ -1,13 +1,15 @@
 """Droits sur une pièce jointe : ils **héritent** de l'élément lié (CDC § 20.5, § 4.2).
 
-| Élément lié | Envoyer | Voir | « Siens » du vendeur |
-| --- | --- | --- | --- |
-| client | `CUSTOMER_MANAGE` | `CUSTOMER_READ` | client créé par lui ou une vente de lui (Q-20) |
-| créance, garants | `RECEIVABLE_FOLLOW_UP` | `RECEIVABLE_READ` | vendeur responsable (Q-21) |
-| article | `ARTICLE_WRITE` | `STOCK_READ` | — |
-| dépense | `EXPENSE_CREATE` | `EXPENSE_READ` | — |
-| achat | `PURCHASE_WRITE` | `PURCHASE_READ` | — |
-| ajustement de stock | `STOCK_ADJUST` | `STOCK_HISTORY_READ` | — |
+| Élément lié | Module | Envoyer | Voir | « Siens » du vendeur |
+| --- | --- | --- | --- | --- |
+| client | `sales` | `CUSTOMER_MANAGE` | `CUSTOMER_READ` | client créé par lui ou vente de lui |
+| créance, garants | `receivables` | `RECEIVABLE_FOLLOW_UP` | `RECEIVABLE_READ` | responsable |
+| article | `catalog` | `ARTICLE_WRITE` | `STOCK_READ` | — |
+| dépense | `expenses` | `EXPENSE_CREATE` | `EXPENSE_READ` | — |
+| achat | `purchases` | `PURCHASE_WRITE` | `PURCHASE_READ` | — |
+| ajustement de stock | `catalog` | `STOCK_ADJUST` | `STOCK_HISTORY_READ` | — |
+
+Module de l'élément lié éteint pour la boutique → 403 `MODULE_DISABLED` d'abord (§ 15.1).
 
 Permission absente → 403 (journalisé). Élément hors de la portée de l'acteur ou d'une autre
 boutique → 404 (aucune fuite d'existence). **Pièce d'identité** (UC-CRE-07, SEC-N06) : le
@@ -30,30 +32,34 @@ from app.application.security.errors import PermissionDenied
 from app.application.security.permissions import Permission
 from app.application.security.policy import Policy
 from app.application.security.roles import Role
+from app.application.shops.modules import require_module
 from app.domain.attachments.attachment import Attachment
 from app.domain.attachments.values import OwnerType
+from app.domain.profiles.modules import Module
 from app.domain.receivables.ids import ReceivableId
 from app.domain.sales.ids import CustomerId
 from app.domain.shared.errors import ValidationFailed
 from app.domain.shared.ids import UserId
 
 P = Permission
+M = Module
 
 
 @dataclass(frozen=True, slots=True)
 class OwnerRights:
     write: Permission
     read: Permission
+    module: Module
 
 
 RIGHTS: Mapping[OwnerType, OwnerRights] = MappingProxyType(
     {
-        OwnerType.CUSTOMER: OwnerRights(P.CUSTOMER_MANAGE, P.CUSTOMER_READ),
-        OwnerType.RECEIVABLE: OwnerRights(P.RECEIVABLE_FOLLOW_UP, P.RECEIVABLE_READ),
-        OwnerType.ARTICLE: OwnerRights(P.ARTICLE_WRITE, P.STOCK_READ),
-        OwnerType.EXPENSE: OwnerRights(P.EXPENSE_CREATE, P.EXPENSE_READ),
-        OwnerType.PURCHASE: OwnerRights(P.PURCHASE_WRITE, P.PURCHASE_READ),
-        OwnerType.STOCK_ADJUSTMENT: OwnerRights(P.STOCK_ADJUST, P.STOCK_HISTORY_READ),
+        OwnerType.CUSTOMER: OwnerRights(P.CUSTOMER_MANAGE, P.CUSTOMER_READ, M.SALES),
+        OwnerType.RECEIVABLE: OwnerRights(P.RECEIVABLE_FOLLOW_UP, P.RECEIVABLE_READ, M.RECEIVABLES),
+        OwnerType.ARTICLE: OwnerRights(P.ARTICLE_WRITE, P.STOCK_READ, M.CATALOG),
+        OwnerType.EXPENSE: OwnerRights(P.EXPENSE_CREATE, P.EXPENSE_READ, M.EXPENSES),
+        OwnerType.PURCHASE: OwnerRights(P.PURCHASE_WRITE, P.PURCHASE_READ, M.PURCHASES),
+        OwnerType.STOCK_ADJUSTMENT: OwnerRights(P.STOCK_ADJUST, P.STOCK_HISTORY_READ, M.CATALOG),
     }
 )
 if set(RIGHTS) != set(OwnerType):  # tout nouvel élément lié doit déclarer ses droits
@@ -69,6 +75,7 @@ class AttachmentAccess:
         self, uow: UnitOfWork, actor: Actor, owner_type: OwnerType, owner_id: UUID | None
     ) -> None:
         """Droit d'envoi, puis élément lié visible (client, créance) ; 403 puis 404."""
+        require_module(uow, RIGHTS[owner_type].module)
         permission = RIGHTS[owner_type].write
         self._policy.require(actor, permission)
         if owner_type.is_personal:
@@ -80,6 +87,7 @@ class AttachmentAccess:
     def require_read(self, uow: UnitOfWork, actor: Actor, attachment: Attachment) -> None:
         """Droit de lecture de l'élément lié, portée « Siens », pièce d'identité réservée."""
         file = attachment.file
+        require_module(uow, RIGHTS[file.owner_type].module)
         permission = RIGHTS[file.owner_type].read
         self._policy.require(actor, permission)
         if file.owner_type.is_personal:

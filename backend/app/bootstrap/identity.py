@@ -22,6 +22,7 @@ from app.application.identity.use_cases.refresh_session import RefreshSession
 from app.application.ports.clock import Clock
 from app.application.security.rate_limit import AuthRateRules, AuthThrottle, RateLimitRule
 from app.application.shops.delegated_access import AuditDelegatedAccess
+from app.application.shops.modules import ModuleGate
 from app.bootstrap.config import Environment, Settings
 from app.bootstrap.core import Core, build_core
 from app.infrastructure.auth.argon2_hasher import Argon2PasswordHasher
@@ -104,7 +105,7 @@ def build_identity(
         logout=Logout(uow_factory, secrets, clock),
         change_pin=ChangePin(uow_factory, hasher, clock),
         get_me=GetMe(uow_factory, memberships),
-        guard=AuthGuard(authenticate),
+        guard=AuthGuard(authenticate, ModuleGate(core.shop_uow_factory)),
         clock=clock,
         throttle=throttle_from(settings, clock),
         trusted_proxies=settings.AUTH_TRUSTED_PROXIES,

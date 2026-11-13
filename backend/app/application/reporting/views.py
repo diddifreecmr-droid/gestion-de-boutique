@@ -46,7 +46,8 @@ class Summary:
     margin_gap: int
     margin_rate: Decimal | None
     without_cost: int
-    expenses: Compared
+    expenses: Compared | None
+    """`None` : module `expenses` éteint (aucune dépense dans les chiffres, specs § 15.1)."""
     result: Compared
     installments: Compared
 

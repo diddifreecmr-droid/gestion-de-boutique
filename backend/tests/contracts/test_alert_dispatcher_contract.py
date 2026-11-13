@@ -9,6 +9,7 @@ from app.application.alerts.ports import AlertRepository
 from app.application.ports.pagination import PageRequest
 from app.application.ports.uow import UnitOfWork
 from app.domain.alerts.alert import Alert, AlertType
+from app.domain.profiles.modules import ALL_MODULES, Module
 from app.domain.shared.errors import Duplicate
 from app.domain.shared.ids import ShopId, UserId
 from app.infrastructure.persistence.memory.clock import FixedClock
@@ -26,7 +27,7 @@ from tests.contracts.widget import NOW, WidgetCreated
 
 
 def dispatcher() -> AlertDispatcher:
-    handler = AlertDispatcher(FixedClock(NOW))
+    handler = AlertDispatcher(FixedClock(NOW), modules=lambda uow: ALL_MODULES)
     handler.register(StockChanged, low_stock_rule)
     return handler
 
@@ -53,6 +54,25 @@ def test_low_stock_alerts_owner_and_accountant_only_once(
     assert [a.active for a in mine(backend, shop_a, OWNER)] == [False]
     emit(backend, shop_a, 4, handler)  # nouvelle baisse : nouvelle alerte
     assert [a.active for a in mine(backend, shop_a, OWNER)] == [True, False]
+
+
+def test_no_alert_is_created_for_a_disabled_module(
+    backend: ContractBackend, shop_a: ShopId
+) -> None:
+    """Décision client specs § 15.1 : alerte d'un module éteint (ici `catalog`) → aucune."""
+    seen: list[UnitOfWork] = []
+
+    def modules(uow: UnitOfWork) -> frozenset[Module]:
+        seen.append(uow)
+        return ALL_MODULES - {Module.CATALOG}
+
+    handler = AlertDispatcher(FixedClock(NOW), modules=modules)
+    handler.register(StockChanged, low_stock_rule)
+    emit(backend, shop_a, 4, handler)
+    assert mine(backend, shop_a, OWNER) == []
+    assert len(seen) == 1  # modules lus seulement quand une alerte est demandée
+    emit(backend, shop_a, 7, handler)  # résolution : rien à lire
+    assert len(seen) == 1
 
 
 def test_events_without_rule_are_ignored(backend: ContractBackend, shop_a: ShopId) -> None:
@@ -98,7 +118,7 @@ def test_other_duplicates_are_not_swallowed(
 
     run_in_uow(backend, shop_a, lambda uow: AlertRepository.within(uow).add(taken))
     monkeypatch.setattr(Alert, "raise_for", same_id)
-    handler = AlertDispatcher(FixedClock(NOW))
+    handler = AlertDispatcher(FixedClock(NOW), modules=lambda uow: ALL_MODULES)
 
     def rule(event: StockChanged, uow: UnitOfWork) -> list[AlertNotice]:
         return [AlertNotice(recipients=(OWNER,), type=taken.type, entity=ARTICLE, message="m")]

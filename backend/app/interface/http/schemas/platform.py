@@ -41,7 +41,14 @@ class OpenShopRequest(_Strict):
 class AdministerShopRequest(_Strict):
     """Champs absents : inchangés. `entitlements[x] = null` retire la surcharge."""
 
-    modules: list[Module] | None = None
+    modules: list[Module] | None = Field(
+        default=None,
+        description=(
+            "Liste **complète** des modules actifs voulus, obligatoires compris (core, audit, "
+            "catalog, sales). 422 MODULE_MANDATORY si l'un manque, MODULE_DEPENDENCY si "
+            "transport sans transfers, MODULE_NOT_AVAILABLE hors profil."
+        ),
+    )
     status: ShopStatus | None = None
     entitlements: dict[Entitlement, bool | None] = Field(default_factory=dict)
 

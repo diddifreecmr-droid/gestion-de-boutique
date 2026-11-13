@@ -1498,12 +1498,12 @@ export interface components {
     };
     /** AccountantHomeOut */
     AccountantHomeOut: {
-      transfers_to_receive: components["schemas"]["NotAvailable"];
+      transfers_to_receive: components["schemas"]["NotAvailable"] | null;
       /** Low Stock */
       low_stock: number;
       stock_value: components["schemas"]["Valuation"];
       /** Expenses */
-      expenses: number;
+      expenses: number | null;
     };
     /** AdjustmentRequest */
     AdjustmentRequest: {
@@ -1588,7 +1588,10 @@ export interface components {
      * @description Champs absents : inchangés. `entitlements[x] = null` retire la surcharge.
      */
     AdministerShopRequest: {
-      /** Modules */
+      /**
+       * Modules
+       * @description Liste **complète** des modules actifs voulus, obligatoires compris (core, audit, catalog, sales). 422 MODULE_MANDATORY si l'un manque, MODULE_DEPENDENCY si transport sans transfers, MODULE_NOT_AVAILABLE hors profil.
+       */
       modules?: components["schemas"]["Module"][] | null;
       status?: components["schemas"]["ShopStatus"] | null;
       /** Entitlements */
@@ -2062,9 +2065,9 @@ export interface components {
       previous_period: components["schemas"]["PeriodOut"];
       summary: components["schemas"]["Summary"];
       series: components["schemas"]["Series"] | null;
-      receivables: components["schemas"]["ReceivablesBlock"];
+      receivables: components["schemas"]["ReceivablesBlock"] | null;
       stock: components["schemas"]["StockBlock"];
-      trucks: components["schemas"]["TrucksBlock"];
+      trucks: components["schemas"]["TrucksBlock"] | null;
       alerts: components["schemas"]["AlertsBlock"];
     };
     /** DetailLineOut */
@@ -2120,8 +2123,8 @@ export interface components {
     };
     /** DriverHomeOut */
     DriverHomeOut: {
-      current_trip: components["schemas"]["NotAvailable"];
-      trip_expenses: components["schemas"]["NotAvailable"];
+      current_trip: components["schemas"]["NotAvailable"] | null;
+      trip_expenses: components["schemas"]["NotAvailable"] | null;
     };
     /**
      * Entitlement
@@ -4179,7 +4182,7 @@ export interface components {
       /** Sales Amount */
       sales_amount: number;
       /** Reminders Due */
-      reminders_due: number;
+      reminders_due: number | null;
       /** Pending Uploads */
       pending_uploads: number;
     };
@@ -4407,7 +4410,7 @@ export interface components {
       low_stock: number;
       /** To Verify */
       to_verify: number;
-      in_transit: components["schemas"]["NotAvailable"];
+      in_transit: components["schemas"]["NotAvailable"] | null;
     };
     /** StockCell */
     StockCell: {
@@ -4492,7 +4495,7 @@ export interface components {
       margin_rate_pct: string | null;
       /** Without Cost */
       without_cost: number;
-      expenses: components["schemas"]["Compared"];
+      expenses: components["schemas"]["Compared"] | null;
       result: components["schemas"]["Compared"];
     };
     /** SupplierListResponse */

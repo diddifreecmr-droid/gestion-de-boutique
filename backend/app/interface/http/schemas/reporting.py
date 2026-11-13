@@ -4,6 +4,12 @@ Montants en entiers FCFA ; pourcentages en chaînes décimales à 2 chiffres (`"
 de flottant) ; `null` = non calculable (variation sur une période précédente à 0, taux sans
 ventes, valeur de stock avec un article sans coût, RG-T15). Un bloc du Lot 2 est un objet
 `NotAvailable` explicite, jamais un 0.
+
+**Module éteint pour la boutique** (specs § 15.1) : son bloc vaut `null` — `summary.expenses`
+(`expenses` ; le résultat simple est alors la marge), `receivables` (`receivables`),
+`stock.in_transit` (`transfers`), `trucks` (`transport`) ; dans les accueils,
+`seller.reminders_due`, `accountant.expenses`, `accountant.transfers_to_receive`, les blocs du
+chauffeur. Aucun 0 trompeur.
 """
 
 from datetime import date
@@ -49,7 +55,8 @@ class Summary(_Out):
     margin_rate_pct: str | None
     without_cost: int
     """« N ventes sans coût connu » : lignes à marge non calculable (RG-T15)."""
-    expenses: Compared
+    expenses: Compared | None
+    """`null` : module `expenses` éteint (aucune dépense dans les chiffres)."""
     result: Compared
 
 
@@ -79,7 +86,7 @@ class StockBlock(_Out):
     damaged: Valuation
     low_stock: int
     to_verify: int
-    in_transit: NotAvailable
+    in_transit: NotAvailable | None
 
 
 class AlertsBlock(_Out):
@@ -97,9 +104,9 @@ class DashboardResponse(_Out):
     previous_period: PeriodOut
     summary: Summary
     series: Series | None
-    receivables: ReceivablesBlock
+    receivables: ReceivablesBlock | None
     stock: StockBlock
-    trucks: TrucksBlock
+    trucks: TrucksBlock | None
     alerts: AlertsBlock
 
 
@@ -125,20 +132,20 @@ class DashboardDetailResponse(_Out):
 class SellerHomeOut(_Out):
     sales_count: int
     sales_amount: int
-    reminders_due: int
+    reminders_due: int | None
     pending_uploads: int
 
 
 class AccountantHomeOut(_Out):
-    transfers_to_receive: NotAvailable
+    transfers_to_receive: NotAvailable | None
     low_stock: int
     stock_value: Valuation
-    expenses: int
+    expenses: int | None
 
 
 class DriverHomeOut(_Out):
-    current_trip: NotAvailable
-    trip_expenses: NotAvailable
+    current_trip: NotAvailable | None
+    trip_expenses: NotAvailable | None
 
 
 class HomeResponse(_Out):

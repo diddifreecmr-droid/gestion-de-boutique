@@ -9,6 +9,10 @@ l'unité de travail (pour lire, ex. les destinataires) et renvoie des directives
 - `AlertResolution` : la condition a cessé, les alertes actives de cette clé sont résolues
   (la clé redevient libre : la prochaine baisse de stock alertera de nouveau).
 
+Module éteint (specs § 15.1) : une `AlertNotice` dont le type relève d'un module désactivé
+pour la boutique (`domain/alerts/modules.py`) ne crée **aucune** alerte ; les modules actifs
+sont lus par `modules(uow)` (la boutique de la transaction), seulement s'il y a une alerte.
+
 Concurrence : deux transactions qui créent la même alerte active → la seconde écriture viole
 `ALERT_ACTIVE_DEDUP`. Sur PostgreSQL l'écriture attend la première puis échoue dans son
 savepoint : la règle « une seule fois » est alors déjà satisfaite, l'alerte n'est pas recréée
@@ -25,7 +29,9 @@ from app.application.ports.clock import Clock
 from app.application.ports.event_handler import EventHandler
 from app.application.ports.uow import UnitOfWork
 from app.domain.alerts.alert import Alert, AlertType
+from app.domain.alerts.modules import alert_module
 from app.domain.audit.values import EntityRef
+from app.domain.profiles.modules import Module
 from app.domain.shared.errors import Duplicate
 from app.domain.shared.events import DomainEvent
 from app.domain.shared.ids import UserId
@@ -47,11 +53,13 @@ class AlertResolution:
 
 type AlertDirective = AlertNotice | AlertResolution
 type AlertRule[E: DomainEvent] = Callable[[E, UnitOfWork], Iterable[AlertDirective]]
+type ModulesOf = Callable[[UnitOfWork], frozenset[Module]]
 
 
 class AlertDispatcher(EventHandler):
-    def __init__(self, clock: Clock) -> None:
+    def __init__(self, clock: Clock, *, modules: ModulesOf) -> None:
         self._clock = clock
+        self._modules = modules
         self._rules: list[tuple[type[DomainEvent], Callable[[Any, UnitOfWork], Any]]] = []
 
     def register[E: DomainEvent](self, event_type: type[E], rule: AlertRule[E]) -> None:
@@ -78,6 +86,8 @@ class AlertDispatcher(EventHandler):
                 alert.resolve(self._clock.now())
                 alerts.update(alert)
             return
+        if alert_module(directive.type) not in self._modules(uow):
+            return  # module éteint pour la boutique : aucune alerte (specs § 15.1)
         for recipient in dict.fromkeys(directive.recipients):  # sans doublon, ordre conservé
             self._notify(alerts, recipient, directive, uow)
 

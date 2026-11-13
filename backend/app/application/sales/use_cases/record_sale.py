@@ -6,6 +6,8 @@ contrôles (prix minimum : avertissement par défaut, accord du propriétaire si
 l'exige, `price_approval.py` ; plafond de crédit : `checks.py`), règles de paiement (`rules.py`),
 châssis réservés (RG-M01), une « Sortie vente » par article (grand livre, RG-T17), journal.
 Une vente à crédit publie `CreditSaleRecorded` (créance de T17) ; `remaining` est dans la vue.
+Sans le module `receivables`, une vente (ou un échange) à crédit est refusée : 403
+`MODULE_DISABLED`, `details.module = receivables` (specs § 15.1), avant toute lecture.
 
 - Date (`sold_on`, Q-46 tranchée) : facultative, aujourd'hui (Douala) par défaut ; RG-T09
   (vendeur J-7 inclus, propriétaire sans limite, jamais dans le futur).
@@ -38,8 +40,10 @@ from app.application.security.permissions import Permission
 from app.application.security.policy import Policy
 from app.application.security.roles import Role
 from app.application.shops.context import actor_shop, performer_of
+from app.application.shops.modules import require_module
 from app.application.shops.ports import ShopRepository, ShopSettingsRepository
 from app.application.stock.ledger import StockLedger
+from app.domain.profiles.modules import Module
 from app.domain.profiles.registry import profile_for
 from app.domain.purchasing.values import Capture
 from app.domain.sales.ids import SaleId
@@ -109,6 +113,8 @@ class RecordSale:
         self, uow: UnitOfWork, actor: Actor, command: RecordSaleCommand, now: datetime
     ) -> tuple[Sale, SaleView]:
         data, today = command.data, self._clock.today()
+        if data.kind is SaleKind.CREDIT:
+            require_module(uow, Module.RECEIVABLES)
         if data.kind is SaleKind.CASH and data.credit is not None:
             msg = "Conditions de crédit sur une vente au comptant"
             raise ValidationFailed(msg, details={"field": "credit"})

@@ -11,9 +11,13 @@ demandes de prix). Indicateurs définis dans `indicators.py` seulement.
 - Une seule lecture des sommes couvre la période **et** la précédente (comparaison).
 - Les états (créances, stock, alertes) sont ceux de **maintenant**, quelle que soit la période.
 - Jamais servi hors ligne (RG-T25) : l'API ne met rien en cache (`no-store`, § 7.3).
+- Modules éteints (specs § 15.1) : sans `expenses`, `summary.expenses` vaut `None` et aucune
+  dépense n'est lue (résultat simple = marge) ; sans `receivables`, le bloc `receivables` vaut
+  `None` ; sans `transfers`, `transfers_in_transit` vaut `None` ; sans `transport`, `trucks` et
+  `transport_expenses` valent `None`. L'argent encaissé reste l'argent réellement reçu.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 
 from app.application.ports.clock import Clock
@@ -36,6 +40,8 @@ from app.application.security.actor import Actor
 from app.application.security.permissions import Permission
 from app.application.security.policy import Policy
 from app.application.shops.context import actor_shop
+from app.application.shops.modules import enabled_modules
+from app.domain.profiles.modules import Module
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -53,12 +59,12 @@ class DashboardReport:
     previous: Period
     summary: Summary
     series: Series | None
-    receivables: ReceivablesBlock
+    receivables: ReceivablesBlock | None
     stock: StockFigures
     alerts: PendingAlerts
-    transfers_in_transit: NotAvailable = LOT_2
-    trucks: NotAvailable = LOT_2
-    transport_expenses: NotAvailable = LOT_2
+    transfers_in_transit: NotAvailable | None = LOT_2
+    trucks: NotAvailable | None = LOT_2
+    transport_expenses: NotAvailable | None = LOT_2
 
 
 class ReadDashboard:
@@ -81,21 +87,28 @@ class ReadDashboard:
         previous = period.previous()
         both = Period(period.kind, previous.first_day, period.last_day)
         with self._uow_factory(actor_shop(actor)) as uow:
-            days = figures_by_day(uow, both)
+            modules = enabled_modules(uow)
+            days = figures_by_day(uow, both, expenses=Module.EXPENSES in modules)
             queries = DashboardQueries.within(uow)
-            position = queries.receivables_position()
-            reminders = queries.reminders_due(today)
+            position, reminders = None, 0
+            if Module.RECEIVABLES in modules:
+                position = queries.receivables_position()
+                reminders = queries.reminders_due(today)
             alerts = queries.pending_alerts(now)
             stock = stock_figures(uow)
         current = [d for d in days if d.day >= period.first_day]
         before = total_of(d for d in days if d.day < period.first_day)
         figures = total_of(current)
+        summary = summary_of(figures, before)
+        transport = LOT_2 if Module.TRANSPORT in modules else None
         return DashboardReport(
             period=period,
             previous=previous,
-            summary=summary_of(figures, before),
+            summary=summary if Module.EXPENSES in modules else replace(summary, expenses=None),
             series=series_of(current),
-            receivables=ReceivablesBlock(
+            receivables=None
+            if position is None
+            else ReceivablesBlock(
                 total_due=position.total_due,
                 debtor_count=position.debtor_count,
                 received=Compared(figures.installments, before.installments),
@@ -103,4 +116,7 @@ class ReadDashboard:
             ),
             stock=stock,
             alerts=alerts,
+            transfers_in_transit=LOT_2 if Module.TRANSFERS in modules else None,
+            trucks=transport,
+            transport_expenses=transport,
         )
