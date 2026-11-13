@@ -5,7 +5,7 @@
  * Hors connexion et sans valeur gardée, rien n'est inventé (`unavailable`) : la lecture est
  * refaite au retour du réseau.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Role } from "../auth/me";
 import { NetworkError } from "../api/errors";
 import { useIsOnline, useServices } from "../services/servicesContext";
@@ -39,7 +39,11 @@ function stateOf(response: ProfileResponse | null, role: Role): ShopProfileState
 export function useShopProfile(shopId: string, role: Role): ShopProfileState {
   const { api, session } = useServices();
   const online = useIsOnline();
-  const [loaded, setLoaded] = useState<Loaded | null>(null);
+  // Dernier profil gardé : affiché tout de suite, puis remplacé par la réponse du serveur.
+  const [loaded, setLoaded] = useState<Loaded | null>(() => {
+    const saved = savedProfile(shopId, role);
+    return saved === null ? null : { shopId, response: saved, fallback: true };
+  });
   const last = useRef<Loaded | null>(null);
   const [failure, setFailure] = useState<unknown>(null);
   if (failure !== null) {
@@ -84,7 +88,11 @@ export function useShopProfile(shopId: string, role: Role): ShopProfileState {
     };
   }, [api, session, shopId, role, online]);
 
-  const response = loaded?.shopId === shopId ? loaded.response : savedProfile(shopId, role);
-  if (loaded?.shopId !== shopId && response === null) return { status: "loading" };
-  return stateOf(response, role);
+  // Une seule construction par réponse : la valeur des modules et du profil reste stable d'un
+  // rendu à l'autre (les écrans s'en servent dans leurs dépendances d'effets).
+  const shown = loaded?.shopId === shopId ? loaded : null;
+  return useMemo<ShopProfileState>(
+    () => (shown === null ? { status: "loading" } : stateOf(shown.response, role)),
+    [shown, role],
+  );
 }

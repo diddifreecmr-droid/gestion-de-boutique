@@ -69,13 +69,15 @@ describe("boutique active (UC-SOC-03)", () => {
   it("plusieurs boutiques : liste, puis le nom en haut ramène à la liste", async () => {
     const shops = [
       { shop_id: SHOP_A, shop_name: "Motos Garoua", role: "owner" },
-      { shop_id: SHOP_B, shop_name: "Motos Ngaoundéré", role: "driver" },
+      { shop_id: SHOP_B, shop_name: "Motos Ngaoundéré", role: "accountant" },
     ];
     const { router, user } = renderApp("/", signedIn(meBody({ shops })));
     expect(await screen.findByRole("heading", { name: "Choisir une boutique" })).toBeVisible();
     await user.click(screen.getByRole("button", { name: /Motos Ngaoundéré/ }));
     expect(router.state.location.pathname).toBe(`/s/${SHOP_B}`);
-    expect(navLabels()).toEqual(["Mon voyage"]); // transport : module à venir
+    // Menu servi par le profil de cette boutique pour ce rôle (Déplacements : module à venir).
+    expect(await screen.findByRole("link", { name: "Achats" })).toBeVisible();
+    expect(navLabels()).toEqual(["Accueil", "Achats", "Stock", "Dépenses"]);
     await user.click(screen.getByRole("button", { name: "Motos Ngaoundéré" }));
     expect(router.state.location.pathname).toBe("/boutiques");
   });
