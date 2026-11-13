@@ -1,4 +1,8 @@
-"""UC-VEN-09 — Enregistrer un retour ou un échange (propriétaire, `SALE_RETURN` ; SCN-05, EXC-01).
+"""UC-VEN-09 — Enregistrer un retour ou un échange (SCN-05, EXC-01, UC-PAP-01).
+
+Droits (`exchange_rights.py`, QC-4) : retour = `SALE_RETURN` (propriétaire) ; échange =
+`SALE_EXCHANGE` (propriétaire ; vendeur sur ses ventes si `employee_exchange_allowed`, dans le
+délai `exchange_days` — le propriétaire le dépasse, journal sensible).
 
 Dans **une** transaction, sur une vente valide (annulée → `INVALID_STATE_TRANSITION`) :
 lignes rendues aux conditions de la vente (coûts figés, `returning.py`), motif obligatoire,
@@ -21,6 +25,7 @@ from dataclasses import dataclass, replace
 
 from app.application.ports.clock import Clock
 from app.application.ports.uow import UnitOfWork, UnitOfWorkFactory
+from app.application.sales import exchange_rights as rights
 from app.application.sales import returning as rt
 from app.application.sales.inputs import PaymentInput, SaleInput
 from app.application.sales.ports import SaleRepository
@@ -29,8 +34,8 @@ from app.application.sales.return_ports import SaleReturnRepository
 from app.application.sales.return_views import SaleReturnView, return_view
 from app.application.sales.use_cases.record_sale import RecordSale, RecordSaleCommand
 from app.application.sales.views import SaleView
+from app.application.security.access import Access
 from app.application.security.actor import Actor
-from app.application.security.permissions import Permission
 from app.application.security.policy import Policy
 from app.application.shops.context import actor_shop, performer_of
 from app.application.stock.ledger import StockLedger
@@ -85,24 +90,33 @@ class RecordReturn:
         self._record = record
 
     def execute(self, actor: Actor, command: ReturnCommand) -> tuple[SaleReturnView, bool]:
-        self._policy.require(actor, Permission.SALE_RETURN)  # avant toute lecture
-        return with_sale_retry(lambda: self._attempt(actor, command))
+        exchanging = command.exchange is not None
+        access = rights.required_access(self._policy, actor, exchange=exchanging)  # avant lecture
+        return with_sale_retry(lambda: self._attempt(actor, command, access))
 
-    def _attempt(self, actor: Actor, command: ReturnCommand) -> tuple[SaleReturnView, bool]:
+    def _attempt(
+        self, actor: Actor, command: ReturnCommand, access: Access
+    ) -> tuple[SaleReturnView, bool]:
         with self._uow_factory(actor_shop(actor)) as uow:
+            sale = SaleRepository.within(uow).get(command.sale_id)
+            if command.exchange is not None:
+                rights.require_own_exchange(uow, actor, access, sale)
             returns = SaleReturnRepository.within(uow)
             if command.return_id is not None:
                 existing = returns.find(command.return_id)
                 if existing is not None:
+                    rights.require_same_sale(access, existing, sale)
                     return return_view(self._policy, actor, existing), False
-            sale = SaleRepository.within(uow).get(command.sale_id)
             sale.require_valid()
-            made, exchange = self._record_in(uow, actor, command, sale)
+            late = command.exchange is not None and rights.exchange_is_late(
+                uow, access, sale, self._clock.today()
+            )
+            made, exchange = self._record_in(uow, actor, command, sale, late=late)
             uow.commit()
         return return_view(self._policy, actor, made, exchange), True
 
     def _record_in(
-        self, uow: UnitOfWork, actor: Actor, command: ReturnCommand, sale: Sale
+        self, uow: UnitOfWork, actor: Actor, command: ReturnCommand, sale: Sale, *, late: bool
     ) -> tuple[SaleReturn, SaleView | None]:
         now, today = self._clock.now(), self._clock.today()
         previous = SaleReturnRepository.within(uow).for_sale(sale.id)
@@ -127,6 +141,7 @@ class RecordReturn:
             now=now,
             exchange_sale_id=new_id,
             return_id=command.return_id,
+            late=late,
         )
         SaleReturnRepository.within(uow).add(made)
         rt.post_entries(uow, self._ledger, sale, made)

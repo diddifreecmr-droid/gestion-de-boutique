@@ -2,8 +2,9 @@
 
 Base `ShopAuditedEvent` + motif et instant de capture. Sont **sensibles** (pastille du journal,
 UC-JRN-01) : la vente sous le prix minimum par le propriétaire (ERR-PRM-03), toute modification
-de prix d'une vente (UC-VEN-07) et l'annulation (UC-VEN-08). Les événements destinés aux
-Créances (T17) sont dans `receivable_events.py` (non journalisés : la vente l'est déjà).
+de prix d'une vente (UC-VEN-07), l'annulation (UC-VEN-08) et l'échange hors délai (QC-4). Les
+événements destinés aux Créances (T17) sont dans `receivable_events.py` (non journalisés : la
+vente l'est déjà).
 """
 
 from dataclasses import dataclass
@@ -127,3 +128,10 @@ class SaleReturnRecorded(SalesAuditedEvent):
     """Retour ou échange sur une vente (UC-VEN-09), au journal de la vente d'origine."""
 
     action = AuditAction.CREATE
+
+
+@dataclass(frozen=True, kw_only=True)
+class SaleExchangedLate(SaleReturnRecorded):
+    """Échange du propriétaire au-delà du délai `exchange_days` (QC-4, T29) : sensible."""
+
+    sensitive = True

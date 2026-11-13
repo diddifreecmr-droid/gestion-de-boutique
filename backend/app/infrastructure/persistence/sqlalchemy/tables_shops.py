@@ -59,6 +59,7 @@ shop_settings = _base(
     sa.Column("min_price_enabled", sa.Boolean, nullable=False),
     sa.Column("min_price_requires_approval", sa.Boolean, nullable=False, server_default=sa.false()),
     sa.Column("exchange_days", sa.Integer, nullable=True),
+    sa.Column("employee_exchange_allowed", sa.Boolean, nullable=False, server_default=sa.false()),
     sa.Column("truck_silent_hours", sa.Integer, nullable=True),
     sa.Column("transfer_in_transit_days", sa.Integer, nullable=True),
     sa.Column("reception_location_id", sa.Uuid, nullable=True),

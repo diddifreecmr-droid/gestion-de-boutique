@@ -59,6 +59,8 @@ EXPECTED: Mapping[str, str] = {
     "SALE_UPDATE": "TNNN",
     "SALE_CANCEL": "TNNN",
     "SALE_RETURN": "TNNN",
+    # Échange UC-PAP-01 — QC-4 : vendeur, ses ventes, si réglage (cas d'utilisation)
+    "SALE_EXCHANGE": "TSNN",
     "SALE_ERROR_REPORT": "TSNN",
     # Vendre au-dessous du prix minimum (UC-VEN-03)
     "SALE_BELOW_MIN": "TNNN",
