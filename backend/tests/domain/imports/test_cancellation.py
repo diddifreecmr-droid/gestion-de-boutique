@@ -13,6 +13,7 @@ from app.domain.imports.blocking import BlockingOperation, BlockingType
 from app.domain.imports.errors import ImportCancelBlocked
 from app.domain.purchasing.supplier import Supplier, SupplierDetails
 from app.domain.sales.customer import Customer, CustomerDetails
+from app.domain.sales.events import CustomerChanged
 from app.domain.shared.errors import InvalidStateTransition
 from app.domain.shared.ids import ShopId, UserId
 from tests.domain.catalog.test_article import created
@@ -53,6 +54,7 @@ def test_a_withdrawn_customer_frees_its_phone() -> None:
     customer.events.pull()
     customer.withdraw(performer=WHO, now=NOW)
     [event] = customer.events.pull()
+    assert isinstance(event, CustomerChanged)
     assert event.audit_record().summary == "Client désactivé (import annulé) : Ali"
     assert (customer.unique_phone, customer.phone_key) == (None, "+237690000001")
     with pytest.raises(InvalidStateTransition):

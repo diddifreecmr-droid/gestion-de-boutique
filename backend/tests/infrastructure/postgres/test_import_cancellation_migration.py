@@ -79,10 +79,8 @@ def test_downgrade_then_upgrade_keeps_phones(pg: PostgresContractBackend) -> Non
     assert (released["nullable"], name_key["nullable"], problems) == (False, True, True)
 
 
-def test_downgrade_is_refused_once_a_key_was_freed(pg: PostgresContractBackend) -> None:
-    migration = _migration()
+def _free_a_name_then_downgrade(pg: PostgresContractBackend) -> None:
     with (
-        pytest.raises(RuntimeError, match="Retour arrière de 0020 impossible"),
         pg.engine.begin() as connection,
         Operations.context(MigrationContext.configure(connection)),
     ):
@@ -93,6 +91,13 @@ def test_downgrade_is_refused_once_a_key_was_freed(pg: PostgresContractBackend) 
             ),
             {"id": uuid4(), "shop": uuid4()},
         )
-        migration.downgrade()  # l'exception annule la transaction : rien ne reste
+        _migration().downgrade()  # l'exception annule la transaction : rien ne reste
+
+
+def test_downgrade_is_refused_once_a_key_was_freed(pg: PostgresContractBackend) -> None:
+    with pytest.raises(RuntimeError, match="Retour arrière de 0020 impossible"):
+        _free_a_name_then_downgrade(pg)
     with pg.engine.connect() as connection:
         assert "phone_key" in _columns(connection, "customer")
+        left = connection.execute(sa.text("SELECT COUNT(*) FROM supplier WHERE name_key IS NULL"))
+        assert left.scalar_one() == 0

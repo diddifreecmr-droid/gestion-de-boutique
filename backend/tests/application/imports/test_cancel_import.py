@@ -48,7 +48,7 @@ def test_scn_l3_05_steps_1_and_4_cancel_in_reverse_order() -> None:
     assert (str(again.number), again.counts.rows_imported) == ("IMP-000003", 2)
     journal = world.journal(world.shop_of(owner))
     cancels = [e for e in journal if e.action is AuditAction.CANCEL and e.module == "import"]
-    assert sorted(e.entity.number for e in cancels) == ["IMP-000001", "IMP-000002"]
+    assert sorted(str(e.entity.number) for e in cancels) == ["IMP-000001", "IMP-000002"]
     assert all(e.sensitive for e in cancels)
 
 

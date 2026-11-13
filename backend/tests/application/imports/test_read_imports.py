@@ -39,4 +39,6 @@ def test_list_detail_and_errors_report() -> None:
     assert [row[0] for row in rows[1:]] == [3, 4]
     assert "nom" in str(rows[1][2])
     empty = read.errors(owner, people.id)
-    assert len(load_workbook(BytesIO(empty.content)).active["A"]) == 1  # en-tête seul
+    blank = load_workbook(BytesIO(empty.content)).active
+    assert blank is not None
+    assert len(list(blank.iter_rows(values_only=True))) == 1  # en-tête seul
