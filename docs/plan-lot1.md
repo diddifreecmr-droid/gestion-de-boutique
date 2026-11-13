@@ -81,3 +81,8 @@ flowchart LR
 | T12 | Numéro de version dans `GET /health` (specs § 7.3) ; accès à « Mon compte » pour les rôles sans Réglages | T22 |
 | Recette (2026-11-12) | **Exigence client** — Délégation, côté propriétaire : bouton « Autoriser l'administrateur pendant 24 h » et « Retirer l'accès » dans les Réglages (`POST /shops/{id}/admin-access` existe ; il manque `DELETE` dans le client HTTP) | Plus tard (décision client) |
 | Recette (2026-11-12) | **Exigence client** — Délégation, côté administrateur : mode « consultation en tant qu'administrateur » pour entrer dans une boutique déléguée (aujourd'hui `ShopShell` exige un rattachement), actions inscrites au journal | Plus tard (décision client) |
+| Audit UX (2026-11-13) | Nom d'article en double dans le Stock (« Robe Bleu Marine Robe ») : dédoublonnage seulement dans l'écran de vente ; garde-fou à la création d'article | Plus tard (décision client) |
+| Audit UX (2026-11-13) | Accueils du comptable et du chauffeur : lignes « Disponible au Lot 2 » mortes à retirer | Lot 2 |
+| Audit UX (2026-11-13) | Rôle Chauffeur proposé dans Membres alors que Transport est à venir | Lot 2 |
+| Audit UX (2026-11-13) | Profil Prêt-à-porter (vocabulaire, champs, lieux par défaut) : une boutique « Pret a Porter » tourne sur le profil Motos | Lot 3 |
+| Modules (2026-11-13) | Alertes créées avant l'extinction d'un module encore listées ; accueil : nom du client à ajouter à `SaleResponse` (aujourd'hui `GET /customers` sans limite) ; partage PDF compté comme impression (« Duplicata ») ; compteur de la cloche à 0 ; journal non protégé au niveau PostgreSQL (rôle sans UPDATE/DELETE) | Plus tard (décision client) |
