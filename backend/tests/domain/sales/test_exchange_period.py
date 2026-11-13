@@ -99,5 +99,5 @@ def test_employee_exchange_setting_defaults_to_false() -> None:
     assert base.employee_exchange_allowed is False
     assert replace(base, employee_exchange_allowed=True).scalars()["employee_exchange_allowed"]
     with pytest.raises(ValidationFailed) as raised:
-        replace(base, employee_exchange_allowed="oui")
+        replace(base, employee_exchange_allowed="oui")  # type: ignore[arg-type]  # type faux testé
     assert raised.value.details == {"field": "employee_exchange_allowed"}
