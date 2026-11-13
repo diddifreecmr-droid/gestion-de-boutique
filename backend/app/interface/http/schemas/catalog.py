@@ -64,6 +64,13 @@ class PriceHistoryResponse(_Strict):
     author_id: str
 
 
+class ThumbnailResponse(_Strict):
+    """Lien signé court vers la photo de l'article (même forme que `GET /attachments/…/url`)."""
+
+    url: str
+    expires_at: datetime
+
+
 class ArticleResponse(_Strict):
     id: str
     version: int
@@ -94,6 +101,9 @@ class ArticleResponse(_Strict):
     wac: int | None = None
     price_history: list[PriceHistoryResponse] | None = None
     """Fiche article seulement, pour qui voit l'historique des prix (propriétaire)."""
+    thumbnail: ThumbnailResponse | None = None
+    """Liste avec `with_thumbnails=true` seulement (clé absente sinon) ; `null` = pas de
+    photo utilisable (le client affiche les initiales, UC-PAP-02)."""
 
 
 class ArticleListResponse(_Strict):

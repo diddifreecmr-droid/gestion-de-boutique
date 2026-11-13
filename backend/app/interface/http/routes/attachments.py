@@ -21,6 +21,7 @@ from app.domain.catalog.ids import AttachmentId
 from app.domain.shared.errors import ValidationFailed
 from app.domain.shared.ids import ShopId
 from app.interface.http.modules import SIGNED_LINK
+from app.interface.http.presenters.attachment_links import content_url
 from app.interface.http.routes.attachment_components import AttachmentsComponents
 from app.interface.http.schemas.attachments import AttachmentLinkResponse, AttachmentResponse
 
@@ -87,9 +88,8 @@ def build_attachments_router(c: AttachmentsComponents, api_prefix: str) -> APIRo
         issued = c.issue_link.execute(actor, AttachmentId.parse(attachment_id))
         response.headers["Cache-Control"] = "no-store"
         link, file = issued.link, issued.attachment.file
-        path = f"{api_prefix}/shops/{link.shop_id}/attachments/{link.attachment_id}/content"
         return AttachmentLinkResponse(
-            url=f"{path}?expires={link.expires}&signature={link.signature}",
+            url=content_url(api_prefix, link),
             expires_at=link.expires_at,
             mime=file.file_format,
             kind=file.kind,

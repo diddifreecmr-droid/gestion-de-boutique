@@ -94,18 +94,20 @@ def assembled[StorageT: FileStorage](
     identity = build_identity(settings, hasher=hasher, core=core)
     journal = build_journal(settings, clock=clock, guard=identity.auth.guard, core=core)
     stock = build_stock(identity)
+    attachments = build_attachments(settings, identity, storage)
+    catalog = build_catalog(identity, ranking=sales_ranking(clock), signer=attachments.signer)
     app = create_app(
         http_config_from(settings),
         identity.auth,
         journal.http,
         build_shops(identity, pins=FixedPins()).http,
-        catalog=build_catalog(identity, ranking=sales_ranking(clock)).http,
+        catalog=catalog.http,
         expenses=build_expenses(identity).http,
         stock=stock.http,
         purchasing=build_purchasing(identity, stock.ledger).http,
         sales=build_sales(identity, stock.ledger).http,
         receivables=build_receivables(identity).http,
-        attachments=build_attachments(settings, identity, storage).http,
+        attachments=attachments.http,
     )
     admin = User.register(
         phone=PhoneNumber.parse(ADMIN_PHONE),

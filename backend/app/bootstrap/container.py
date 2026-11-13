@@ -58,7 +58,8 @@ def build_app(env_file: Path | None = DEFAULT_ENV_FILE) -> FastAPI:
     identity = build_identity(settings, core=core)
     journal = build_journal(settings, clock=clock, guard=identity.auth.guard, core=core)
     shops = build_shops(identity)
-    catalog = build_catalog(identity, ranking=sales_ranking(clock))
+    attachments = build_attachments(settings, identity)
+    catalog = build_catalog(identity, ranking=sales_ranking(clock), signer=attachments.signer)
     expenses = build_expenses(identity)
     stock = build_stock(identity)
     purchasing = build_purchasing(identity, stock.ledger)
@@ -79,7 +80,7 @@ def build_app(env_file: Path | None = DEFAULT_ENV_FILE) -> FastAPI:
         receivables=receivables.http,
         reporting=reporting.http,
         sync=sync.http,
-        attachments=build_attachments(settings, identity).http,
+        attachments=attachments.http,
     )
     # Fabrique des unités de travail de boutique (handlers du journal et des alertes branchés).
     app.state.uow_factory = journal.uow_factory

@@ -13,6 +13,7 @@ from app.application.ports.pagination import PageRequest
 from app.domain.attachments.attachment import Attachment, AttachmentFile
 from app.domain.attachments.values import AttachmentKind, FileFormat, OwnerType
 from app.domain.audit.values import Performer
+from app.domain.catalog.ids import AttachmentId
 from app.domain.receivables.ids import ReceivableId
 from app.domain.shared.errors import Duplicate, NotFound
 from app.domain.shared.ids import DeviceId, ShopId, UserId
@@ -79,3 +80,19 @@ def test_upload_is_journaled_in_the_same_transaction(
         page = AuditLog.within(uow).search(query, PageRequest())
     [entry] = page.items
     assert (entry.module, entry.action.value) == ("attachments", "create")
+
+
+def test_find_many_reads_only_the_shop_s_attachments(
+    backend: ContractBackend, shop_a: ShopId, shop_b: ShopId
+) -> None:
+    mine, other, theirs = _attachment(shop_a), _attachment(shop_a), _attachment(shop_b)
+    for shop, item in ((shop_a, mine), (shop_a, other), (shop_b, theirs)):
+        with backend.uow(shop) as uow:
+            AttachmentRepository.within(uow).add(item)
+            uow.commit()
+    with backend.uow(shop_a) as uow:
+        repository = AttachmentRepository.within(uow)
+        found = repository.find_many([mine.id, theirs.id, AttachmentId.new()])
+        assert [item.id for item in found] == [mine.id]  # autre boutique et inconnu : omis
+        assert (found[0].file, found[0].storage_key) == (mine.file, mine.storage_key)
+        assert repository.find_many([]) == []
