@@ -144,7 +144,9 @@ class OpeningPlanner:
         stock_day = self._day(day(row, "stock_day"))
         duplicate_key = (article_key, str(place.id))
         if duplicate_key in self.seen:
-            message = f"doublon : « {self._wanted(values)} » à {place.name} figure déjà ligne"
+            message = (
+                f"doublon : « {article.details.display_name} » à {place.name} figure déjà ligne"
+            )
             raise RowRefused(None, f"{message} {self.seen[duplicate_key]}")
         if self._already_opened(article, place):
             message = (

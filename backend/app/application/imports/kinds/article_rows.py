@@ -38,7 +38,7 @@ from app.application.security.role_matrix import access_for
 from app.domain.catalog.article import Article
 from app.domain.catalog.details import ArticleDetails
 from app.domain.catalog.errors import DuplicateArticle
-from app.domain.catalog.prices import ArticlePrices, PriceKind
+from app.domain.catalog.prices import ArticlePrices, PriceKind, price_changes
 from app.domain.imports.article_columns import field_value
 from app.domain.imports.columns import ColumnSpec
 from app.domain.imports.problems import CellRejected
@@ -61,7 +61,15 @@ def may(actor: Actor, permission: Permission) -> bool:
     return actor.role is not None and access_for(actor.role, permission) is not Access.NONE
 
 
-def _prices(actor: Actor, row: ParsedRow, headers: Mapping[str, str]) -> ArticlePrices | None:
+def _prices(
+    actor: Actor,
+    row: ParsedRow,
+    headers: Mapping[str, str],
+    details: ArticleDetails,
+    *,
+    min_price_enabled: bool,
+) -> ArticlePrices | None:
+    """Prix de la ligne, contrôlés comme à l'écran (minimum désactivé, prix à la pièce…)."""
     found = {kind: amount(row, kind.value) for kind in PriceKind if kind.value in headers}
     given = {kind: value for kind, value in found.items() if value is not None}
     if not given:
@@ -69,9 +77,17 @@ def _prices(actor: Actor, row: ParsedRow, headers: Mapping[str, str]) -> Article
     if not may(actor, Permission.PRICE_SET):
         raise RowRefused(headers[next(iter(given)).value], PRICE_RESERVED)
     try:
-        return ArticlePrices(**{kind.value: Money(value) for kind, value in given.items()})
+        prices = ArticlePrices(**{kind.value: Money(value) for kind, value in given.items()})
+        price_changes(
+            ArticlePrices(),
+            prices,
+            sold_by_piece=details.fields.sold_by_piece,
+            min_price_enabled=min_price_enabled,
+        )
     except DomainError as error:
-        raise RowRefused(headers[PriceKind.MINIMUM.value], problem_of(error)) from error
+        column = str(error.details.get("field", next(iter(given)).value))
+        raise RowRefused(headers.get(column), problem_of(error)) from error
+    return prices
 
 
 def read_details(
@@ -98,7 +114,8 @@ class ArticlePlanner:
     seen: dict[str, int] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        self.profile = shop_context(self.uow).profile
+        context = shop_context(self.uow)
+        self.profile, self.min_price_enabled = context.profile, context.settings.min_price_enabled
         self.articles = ArticleRepository.within(self.uow)
         self.headers = {column.key: column.header for column in self.columns}
 
@@ -111,7 +128,9 @@ class ArticlePlanner:
                 column = next(c for c in self.columns if c.key == spec.code)
                 raise RowRefused(column.header, f"{column.subject} : {rejected.message}") from None
         details = read_details(self.profile, values, number(row, "alert_threshold"))
-        prices = _prices(self.actor, row, self.headers)
+        prices = _prices(
+            self.actor, row, self.headers, details, min_price_enabled=self.min_price_enabled
+        )
         self.require_new(details, row.line)
         return PlannedArticle(row.line, details, prices)
 
