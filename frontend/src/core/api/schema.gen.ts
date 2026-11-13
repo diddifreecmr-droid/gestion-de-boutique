@@ -1487,6 +1487,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/shops/{shop_id}/imports/templates/{kind}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Download Template */
+    get: operations["download_template_api_v1_shops__shop_id__imports_templates__kind__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/imports/preview": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Preview */
+    post: operations["preview_import"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1838,6 +1872,13 @@ export interface components {
       items: components["schemas"]["AuditEntryResponse"][];
       /** Next Cursor */
       next_cursor: string | null;
+    };
+    /** Body_preview_import */
+    Body_preview_import: {
+      /** File */
+      file: string;
+      /** Kind */
+      kind: string;
     };
     /** Body_upload_attachment */
     Body_upload_attachment: {
@@ -2520,6 +2561,46 @@ export interface components {
      * @enum {string}
      */
     IdDocumentType: "national_id" | "passport" | "driving_license" | "residence_permit" | "other";
+    /**
+     * ImportKind
+     * @description Modèle d'import (code stable de l'API : `GET /imports/templates/{kind}`).
+     * @enum {string}
+     */
+    ImportKind: "articles" | "opening_stock" | "customers" | "receivables" | "suppliers";
+    /** ImportPreviewResponse */
+    ImportPreviewResponse: {
+      /** Preview Id */
+      preview_id: string;
+      kind: components["schemas"]["ImportKind"];
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
+      /** Rows Read */
+      rows_read: number;
+      /** Rows Valid */
+      rows_valid: number;
+      /** Rows Ignored */
+      rows_ignored: number;
+      /** Problems */
+      problems: components["schemas"]["ImportProblemResponse"][];
+      /** Problems Total */
+      problems_total: number;
+      /** Notes */
+      notes: string[];
+    };
+    /** ImportProblemResponse */
+    ImportProblemResponse: {
+      /** Line */
+      line: number;
+      /** Column */
+      column: string | null;
+      /** Message */
+      message: string;
+      /** Text */
+      text: string;
+    };
     /** InstallmentReceiptResponse */
     InstallmentReceiptResponse: {
       /** Shop Name */
@@ -8845,6 +8926,79 @@ export interface operations {
           "image/jpeg": unknown;
           "image/png": unknown;
           "application/pdf": unknown;
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  download_template_api_v1_shops__shop_id__imports_templates__kind__get: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        kind: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": unknown;
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  preview_import: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["Body_preview_import"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ImportPreviewResponse"];
         };
       };
       /** @description Validation Error */
