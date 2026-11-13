@@ -1,13 +1,18 @@
 import { History } from "lucide-react";
-import { Button } from "../../shared/ui";
+import { useModules } from "../../core/profile/modulesContext";
+import { Button, ListCardDetailRow } from "../../shared/ui";
 import { moneyOr, NOT_COMPUTABLE, NOT_SET } from "../catalog/money";
 import { Facts, type Fact } from "./Facts";
 import { StockBadge } from "./Notice";
 import { isZero, quantityText } from "./quantities";
 import { basePriceOf, costsOf, type StockLine } from "./stockView";
 
-/** Quantités : un lieu par ligne (ordre des lieux), « En route », puis « Total ». */
-function quantityFacts(line: StockLine): Fact[] {
+/**
+ * Quantités : un lieu par ligne (ordre des lieux), « En route », puis « Total ». « En route »
+ * vient des déplacements (module `transfers`) : sans le module, la ligne n'apparaît que si une
+ * quantité est réellement en route (données gardées), pour que le total reste expliqué.
+ */
+function quantityFacts(line: StockLine, transfers: boolean): Fact[] {
   const qty = (value: string) => quantityText(value, line.unit);
   const places = line.places.map((place) => ({
     label: place.name,
@@ -15,11 +20,9 @@ function quantityFacts(line: StockLine): Fact[] {
       ? qty(place.sellable)
       : `${qty(place.sellable)} (+ ${qty(place.damaged)} abîmé)`,
   }));
-  return [
-    ...places,
-    { label: "En route", value: qty(line.incoming) },
-    { label: "Total", value: qty(line.total), strong: true },
-  ];
+  const incoming =
+    transfers || !isZero(line.incoming) ? [{ label: "En route", value: qty(line.incoming) }] : [];
+  return [...places, ...incoming, { label: "Total", value: qty(line.total), strong: true }];
 }
 
 /** Prix et coûts : seulement ce que la vue du rôle contient (le vendeur n'a aucun coût). */
@@ -40,10 +43,11 @@ function priceFacts(line: StockLine): Fact[] {
 }
 
 /**
- * Un article de la matrice (UC-STK-05) en carte : à 360 px, une table article × lieux ne
- * tient pas ; la carte garde les colonnes de la matrice sous forme de liste, sans défilement.
+ * Un article de la matrice (UC-STK-05, audit UX du 13/11/2026) : sur la ligne, le nom, la
+ * quantité totale et la pastille (Rupture, Stock bas) ; un appui déplie le détail — stock par
+ * lieu, prix et coûts selon le rôle, historique. Aucun prix ni coût sur la ligne elle-même.
  */
-export function StockCard({
+export function StockItem({
   line,
   onHistory,
 }: {
@@ -51,19 +55,22 @@ export function StockCard({
   /** Propriétaire et comptable : ouvre l'historique (UC-STK-06). */
   onHistory?: () => void;
 }) {
+  const transfers = useModules().has("transfers");
+  const prices = priceFacts(line);
   return (
-    <li className="flex flex-col gap-2 rounded-lg bg-surface p-4 shadow-card">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="m-0 min-w-0 break-words text-lead font-semibold text-text">{line.name}</h2>
-        <StockBadge status={line.status} />
-      </div>
-      <Facts facts={quantityFacts(line)} />
-      {priceFacts(line).length > 0 && <Facts facts={priceFacts(line)} />}
+    <ListCardDetailRow
+      title={line.name}
+      value={quantityText(line.total, line.unit)}
+      valueLabel="En stock"
+      badge={<StockBadge status={line.status} />}
+    >
+      <Facts facts={quantityFacts(line, transfers)} />
+      {prices.length > 0 && <Facts facts={prices} />}
       {onHistory !== undefined && (
         <Button variant="secondary" fullWidth icon={History} onClick={onHistory}>
           {`Historique de ${line.name}`}
         </Button>
       )}
-    </li>
+    </ListCardDetailRow>
   );
 }

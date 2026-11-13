@@ -2,7 +2,14 @@ import { useState } from "react";
 import { ChevronDown, CirclePlus, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router";
 import type { ArticleStatusFilter } from "../../core/gateways/catalogAdminContract";
-import { Button, ChoiceChips, EmptyState, SearchField, Skeleton } from "../../shared/ui";
+import {
+  Button,
+  ChoiceChips,
+  Disclosure,
+  EmptyState,
+  SearchField,
+  Skeleton,
+} from "../../shared/ui";
 import { ArticleRows } from "./ArticleRows";
 import { loadFailureMessage } from "./catalogErrors";
 import { articlePath, newArticlePath } from "./catalogPaths";
@@ -48,7 +55,10 @@ export function CatalogListPage({ shopId, role }: CatalogListPageProps) {
         value={text}
         onChange={setText}
       />
-      <ChoiceChips label="Afficher" options={FILTERS} value={status} onChange={setStatus} />
+      {/* Filtre replié (audit UX du 13/11/2026) : la liste des articles reste au 1er écran. */}
+      <Disclosure label="Filtrer" defaultOpen={status !== "active"}>
+        <ChoiceChips label="Afficher" options={FILTERS} value={status} onChange={setStatus} />
+      </Disclosure>
       {first.status === "loading" && <Skeleton lines={3} label="Chargement des articles…" />}
       {first.status === "offline" && (
         <EmptyState
