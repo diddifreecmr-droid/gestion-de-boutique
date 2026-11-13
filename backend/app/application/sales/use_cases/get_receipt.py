@@ -4,12 +4,17 @@ Chaque demande **est** une impression : elle est inscrite (`ReceiptPrint`, journ
 avec son rang ; dès la 2ᵉ, le reçu porte « Duplicata » (Q-25 tranchée). Le reçu d'une vente
 annulée porte « Annulé ». Portée : le vendeur ne lit que les reçus de ses ventes (404 sinon) ;
 comptable et chauffeur : 403 (RG-D03). Le nom du vendeur vient du compte (plateforme).
+Lignes « à la pièce » : la longueur de la pièce est relue sur l'article (`quantity_label.py`).
 """
+
+from decimal import Decimal
+
+from app.application.catalog.ports import ArticleRepository
 
 from app.application.identity.uow import IdentityUnitOfWorkFactory
 from app.application.ports.clock import Clock
 from app.application.ports.repository import not_found
-from app.application.ports.uow import UnitOfWorkFactory
+from app.application.ports.uow import UnitOfWork, UnitOfWorkFactory
 from app.application.sales.ports import CustomerRepository, ReceiptPrintRepository, SaleRepository
 from app.application.sales.receipt import Receipt, build_receipt
 from app.application.sales.retry import with_sale_retry
@@ -22,7 +27,10 @@ from app.application.shops.ports import (
     ShopRepository,
     ShopSettingsRepository,
 )
+from app.domain.catalog.ids import ArticleId
 from app.domain.sales.ids import SaleId
+from app.domain.sales.lines import SaleMode
+from app.domain.sales.sale import Sale
 from app.domain.sales.receipt_print import ReceiptPrint
 from app.domain.shared.ids import UserId
 
@@ -68,6 +76,7 @@ class GetReceipt:
             modes = {mode.id: mode for mode in PaymentModeRepository.within(uow).list_all()}
             shop = ShopRepository.within(uow).current()
             settings = ShopSettingsRepository.within(uow).current().values
+            lengths = _piece_lengths(uow, sale)
             uow.commit()
         return build_receipt(
             shop=shop,
@@ -78,4 +87,11 @@ class GetReceipt:
             modes=modes,
             sequence=sequence,
             printed_at=now,
+            piece_lengths=lengths,
         )
+
+
+def _piece_lengths(uow: UnitOfWork, sale: Sale) -> dict[ArticleId, Decimal | None]:
+    articles = ArticleRepository.within(uow)
+    wanted = {line.article_id for line in sale.content.lines if line.sale_mode is SaleMode.PIECE}
+    return {ident: articles.get(ident).details.fields.piece_length_m for ident in wanted}

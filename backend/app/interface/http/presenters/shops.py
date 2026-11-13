@@ -15,6 +15,7 @@ from app.domain.shops.location import Location
 from app.domain.shops.payment_mode import PaymentMode
 from app.domain.shops.settings import SettingsValues
 from app.domain.shops.shop import Shop
+from app.interface.http.presenters.sale_shortcuts import sale_shortcuts
 from app.interface.http.schemas.members import MemberResponse
 from app.interface.http.schemas.places import LocationResponse, PaymentModeResponse
 from app.interface.http.schemas.platform import ShopSummaryResponse
@@ -106,6 +107,7 @@ def profile_response(view: ShopProfileView) -> ProfileResponse:
         menu=[_menu(entry) for entry in view.menu],
         article_fields=[_field(spec) for spec in profile.article_fields],
         sale_fields=[_field(spec) for spec in profile.sale_fields],
+        sale_shortcuts=sale_shortcuts(profile.code),
         stock_units=[unit.value for unit in profile.stock_units],
         receipt=_receipt(shop, view.settings),
         min_price_enabled=view.settings.min_price_enabled,

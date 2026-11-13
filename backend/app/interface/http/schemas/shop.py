@@ -58,6 +58,22 @@ class ReceiptSettingsResponse(_Strict):
     header: ShopHeaderResponse
 
 
+class SaleShortcutResponse(_Strict):
+    """Raccourci de longueur à la vente (RG-X05) ; calcul : `domain/profiles/textile.py`.
+
+    `piece` : 1 pièce « à la pièce » si l'article se vend à la pièce, sinon la longueur de la
+    pièce au mètre ; `half_piece` : moitié de la longueur de la pièce, au mètre ; `length` :
+    `length_m` mètres. Longueur de pièce absente : `yards` x 0,9144. Arrondi au dixième, demi
+    vers le haut (pièce de 5,49 m → demi-pièce 2,7 m).
+    """
+
+    code: str
+    label: str
+    basis: str
+    length_m: str | None
+    yards: str | None
+
+
 class ProfileResponse(_Strict):
     shop_id: str
     profile_code: str
@@ -70,6 +86,8 @@ class ProfileResponse(_Strict):
     menu: list[MenuEntryResponse]
     article_fields: list[FieldResponse]
     sale_fields: list[FieldResponse]
+    sale_shortcuts: list[SaleShortcutResponse]
+    """Raccourcis de longueur (Textile : pièce, demi-pièce, 1, 2, 3 m) ; vide sinon."""
     stock_units: list[str]
     receipt: ReceiptSettingsResponse
     min_price_enabled: bool

@@ -3,7 +3,8 @@
 - Sens + ou -, quantité **strictement positive** dans l'unité de stock (RG-T08 : 1,5 moto
   refusée), état Vendable ou Abîmé.
 - Motif dans la liste du CDC ; « Autre » exige une note (ADJ-02). Photo : identifiant de pièce
-  jointe facultatif (TR-17 plus tard). Le CDC ne prévoit **pas de numéro** d'ajustement.
+  jointe facultatif (TR-17). « Chute » (RG-X06, UC-TEX-03) : sortie seulement, mouvement
+  « Chute » ; la longueur est la quantité (au dixième de mètre pour un tissu). Le CDC ne prévoit **pas de numéro** d'ajustement.
 - Un écart d'inventaire crée aussi un ajustement (`inventory_id` renseigné, motif
   `INVENTORY_GAP`, note = motif saisi pour l'écart) ; ce motif n'est pas proposé à la saisie.
 - L'ajustement est figé dès sa création (il ne se corrige que par un nouvel ajustement) ;
@@ -94,6 +95,9 @@ class Adjustment:
         if needs_note and not self.note:
             msg = "Une note est obligatoire pour ce motif"
             raise ValidationFailed(msg, details={"field": "note"})
+        if self.reason is AdjustmentReason.OFFCUT and self.direction is AdjustmentDirection.IN:
+            msg = "Une chute sort du stock : sens « - » seulement (RG-X06)"
+            raise ValidationFailed(msg, details={"field": "direction"})
         if (self.reason is AdjustmentReason.INVENTORY_GAP) != (self.inventory_id is not None):
             msg = "Le motif « écart d'inventaire » est réservé aux inventaires"
             raise ValidationFailed(msg, details={"field": "reason"})
@@ -142,13 +146,14 @@ class Adjustment:
             author_id=performer.user_id,
         )
         sign = "+" if adjustment.direction is AdjustmentDirection.IN else "-"
+        kind = "Chute" if adjustment.reason is AdjustmentReason.OFFCUT else "Ajustement"
         adjustment.events.record(
             AdjustmentRecorded(
                 shop_id=shop_id,
                 occurred_at=now,
                 performer=performer,
                 entity=adjustment.entity,
-                summary=f"Ajustement {sign}{adjustment.quantity} : {article_name}"[:500],
+                summary=f"{kind} {sign}{adjustment.quantity} : {article_name}"[:500],
                 reason=adjustment.note or adjustment.reason.value,
                 from_inventory=adjustment.inventory_id is not None,
             )
