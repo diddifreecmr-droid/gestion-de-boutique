@@ -3,7 +3,14 @@ import type { Role } from "../auth/me";
 import { servedProfile } from "../../testing/servedProfile";
 import { ALL_MODULES, shopModules } from "./modules";
 import { profileFromResponse } from "./servedProfile";
-import { activeNavKey, findSection, homeEntry, navItems, shopPath, withModules } from "./shopProfile";
+import {
+  activeNavKey,
+  findSection,
+  homeEntry,
+  navItems,
+  shopPath,
+  withModules,
+} from "./shopProfile";
 
 const SHOP = "01890a5d-ac96-774b-bcce-b302099a8057";
 const motos = (role: Role) => profileFromResponse(servedProfile("motos", role), role);
@@ -42,7 +49,8 @@ describe("filtre par modules (profil gardé hors connexion)", () => {
     const minimal = withModules(owner, shopModules([]));
     expect(minimal.more.map((e) => e.label)).toEqual(["Clients", "Journal", "Réglages"]);
     expect(minimal.menu.map((e) => e.label)).toEqual(["Ventes", "Stock", "Plus"]);
-    const noMore = withModules({ ...owner, more: [owner.more[0]!] }, shopModules([]));
+    // Seule « Créances » (receivables, éteint) dans « Plus » : « Plus » disparaît.
+    const noMore = withModules({ ...owner, more: owner.more.slice(0, 1) }, shopModules([]));
     expect(noMore.menu.map((e) => e.key)).not.toContain("plus");
   });
 

@@ -8,7 +8,8 @@ import { profileFromResponse } from "./servedProfile";
 
 const profile = (code: ServedProfileCode, role: Role) =>
   profileFromResponse(servedProfile(code, role), role);
-const labels = (code: ServedProfileCode, role: Role) => profile(code, role).menu.map((e) => e.label);
+const labels = (code: ServedProfileCode, role: Role) =>
+  profile(code, role).menu.map((e) => e.label);
 const moreLabels = (code: ServedProfileCode, role: Role) =>
   profile(code, role).more.map((e) => e.label);
 
@@ -116,9 +117,8 @@ describe("rupture de contrat : erreur explicite (fail-fast)", () => {
 
   it("sous-entrées ailleurs que sous « Plus »", () => {
     const served = body();
-    served.menu = [
-      { code: "stock", label: "Stock", module: "catalog", children: [served.menu[0]!] },
-    ];
+    const child = { code: "audit", label: "Journal", module: "audit", children: [] };
+    served.menu = [{ code: "stock", label: "Stock", module: "catalog", children: [child] }];
     expect(() => profileFromResponse(served, "seller")).toThrow("seule l'entrée « Plus »");
   });
 });
