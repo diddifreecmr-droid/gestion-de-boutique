@@ -16,7 +16,7 @@ const e = (code: string, label: string, module: string, children: Entry[] = []):
   children,
 });
 
-const HOME = e("home", "Accueil", "dashboard");
+const HOME = e("home", "Accueil", "core");
 const STOCK = e("stock", "Stock", "catalog");
 const SELLER = [
   HOME,
@@ -51,7 +51,7 @@ const MOTOS: Partial<Record<Role, Entry[]>> = {
     e("expenses", "Dépenses", "expenses"),
   ],
   driver: [
-    e("my_trip", "Mon voyage", "transport"),
+    e("my_trip", "Mon voyage", "core"),
     e("my_trip_expenses", "Mes dépenses", "transport"),
     e("my_trips", "Mes voyages", "transport"),
   ],

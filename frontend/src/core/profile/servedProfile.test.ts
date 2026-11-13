@@ -19,7 +19,7 @@ describe("menus servis par rôle (modules disponibles à l'ouverture)", () => {
     ["motos", "owner", ["Accueil", "Ventes", "Stock", "Plus"]],
     ["motos", "seller", ["Accueil", "Nouvelle vente", "Mes ventes", "Créances", "Stock"]],
     ["motos", "accountant", ["Accueil", "Achats", "Stock", "Dépenses"]],
-    ["motos", "driver", []],
+    ["motos", "driver", ["Mon voyage"]],
     ["apparel", "owner", ["Accueil", "Ventes", "Stock", "Créances", "Plus"]],
     ["apparel", "seller", ["Accueil", "Nouvelle vente", "Mes ventes", "Créances", "Stock"]],
     ["apparel", "accountant", ["Accueil", "Achats", "Stock", "Dépenses", "Inventaire"]],

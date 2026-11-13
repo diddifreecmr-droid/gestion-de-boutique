@@ -47,10 +47,14 @@ describe("coquille — menus par rôle (CDC § 17.4)", () => {
     ).toEqual(labels);
   });
 
-  it("chauffeur : tout son menu dépend de Transport (à venir) — ni barre du bas ni entrée", async () => {
+  it("chauffeur : Transport à venir — seule « Mon voyage » (son accueil, socle) reste", async () => {
     openAs("driver");
-    expect(await screen.findByRole("heading", { level: 1, name: "Accueil" })).toBeInTheDocument();
-    expect(screen.queryByRole("navigation", { name: "Navigation principale" })).toBeNull();
+    const nav = await screen.findByRole("navigation", { name: "Navigation principale" });
+    expect(
+      within(nav)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["Mon voyage"]);
   });
 
   it("l'adresse d'un écran à venir donne « Page introuvable », jamais « arrive bientôt »", async () => {

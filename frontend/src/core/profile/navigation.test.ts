@@ -48,7 +48,7 @@ describe("filtre par modules (profil gardé hors connexion)", () => {
     const owner = motos("owner");
     const minimal = withModules(owner, shopModules([]));
     expect(minimal.more.map((e) => e.label)).toEqual(["Clients", "Journal", "Réglages"]);
-    expect(minimal.menu.map((e) => e.label)).toEqual(["Ventes", "Stock", "Plus"]);
+    expect(minimal.menu.map((e) => e.label)).toEqual(["Accueil", "Ventes", "Stock", "Plus"]);
     // Seule « Créances » (receivables, éteint) dans « Plus » : « Plus » disparaît.
     const noMore = withModules({ ...owner, more: owner.more.slice(0, 1) }, shopModules([]));
     expect(noMore.menu.map((e) => e.key)).not.toContain("plus");

@@ -45,15 +45,15 @@ describe("boutique minimale (socle, journal, catalogue, ventes) et accueil", () 
     expect(await navLabels()).toEqual(labels);
   });
 
-  it("sans « dashboard » : l'accueil n'est pas servi, il n'est pas inventé", async () => {
+  it("sans « dashboard » : l'accueil reste (socle, specs § 15.1 « Page d'accueil »)", async () => {
     open("seller", MINIMAL);
-    expect(await navLabels()).toEqual(["Nouvelle vente", "Mes ventes", "Stock"]);
+    expect(await navLabels()).toEqual(["Accueil", "Nouvelle vente", "Mes ventes", "Stock"]);
   });
 
-  it("chauffeur (Transport à venir) : menu servi vide, pas de barre du bas", async () => {
+  it("chauffeur (Transport à venir) : seul « Mon voyage », son accueil (socle)", async () => {
     open("driver", ALL_MODULES);
     expect(await screen.findByRole("heading", { level: 1 })).toBeVisible();
-    expect(screen.queryByRole("navigation", { name: "Navigation principale" })).toBeNull();
+    expect(await navLabels()).toEqual(["Mon voyage"]);
   });
 
   it("propriétaire : « Plus » sans Créances, Achats, Dépenses ni Paie ; axe", async () => {

@@ -30,7 +30,7 @@ M = Module  # abréviation des tables de menus ci-dessous
 
 _MENUS = {
     Role.OWNER: menu(
-        entry("home", "Accueil", M.DASHBOARD),
+        entry("home", "Accueil", M.CORE),
         entry("sales", "Ventes", M.SALES),
         entry("stock", "Stock", M.CATALOG),
         entry("receivables", "Créances", M.RECEIVABLES),
@@ -46,14 +46,14 @@ _MENUS = {
         ),
     ),
     Role.SELLER: menu(
-        entry("home", "Accueil", M.DASHBOARD),
+        entry("home", "Accueil", M.CORE),
         entry("new_sale", "Nouvelle vente", M.SALES),
         entry("my_sales", "Mes ventes", M.SALES),
         entry("receivables", "Créances", M.RECEIVABLES),
         entry("stock", "Stock", M.CATALOG),
     ),
     Role.ACCOUNTANT: menu(
-        entry("home", "Accueil", M.DASHBOARD),
+        entry("home", "Accueil", M.CORE),
         entry("purchases", "Achats", M.PURCHASES),
         entry("stock", "Stock", M.CATALOG),
         entry("expenses", "Dépenses", M.EXPENSES),
