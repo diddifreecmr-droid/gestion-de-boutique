@@ -7,7 +7,13 @@ import type {
   SoldDetailInput,
 } from "../../core/gateways/salesContract";
 import { BUSINESS_TIME_ZONE } from "../../shared/format";
-import { CREDIT_CHOICE, type CustomerDraft, type SaleDraft, type UnitDetail } from "./draft";
+import {
+  CREDIT_CHOICE,
+  type CustomerDraft,
+  type LineDraft,
+  type SaleDraft,
+  type UnitDetail,
+} from "./draft";
 import { normalizePhone } from "./phone";
 
 /** Jour métier « AAAA-MM-JJ » à Douala (la date du jour est pré-remplie, CDC § 1.3). */
@@ -34,6 +40,16 @@ function details(units: readonly UnitDetail[]): SoldDetailInput[] {
       engine_number: orNull(unit.engine)?.toUpperCase() ?? null,
     }))
     .filter((detail) => Object.values(detail).some((value) => value !== null));
+}
+
+/**
+ * Taille et couleur de la ligne (Prêt-à-porter, § 7.4) : une seule entrée pour toute la ligne
+ * (le serveur en accepte au plus une par unité) ; rien si ni l'une ni l'autre n'est précisée.
+ */
+function lineAttributes(line: LineDraft): SoldDetailInput[] {
+  const size = orNull(line.size);
+  const color = orNull(line.color);
+  return size === null && color === null ? [] : [{ size, color }];
 }
 
 /** Type de client lu de l'API (`string`) : une valeur inconnue est une rupture de contrat. */
@@ -90,7 +106,7 @@ export function buildCommand(
         sale_mode: line.article.sale_mode,
         quantity: String(line.quantity),
         unit_price: line.unitPrice,
-        details: details(line.units),
+        details: [...lineAttributes(line), ...details(line.units)],
       };
     }),
     payments: payments(draft, total),

@@ -95,7 +95,7 @@ export function SectionPage() {
   if ((entry.key === SALES_KEY || entry.key === MY_SALES_KEY) && SALE_ROLES.includes(role)) {
     return (
       <Suspense fallback={<Skeleton lines={4} label="Ouverture des ventes…" />}>
-        <SalesRoute shopId={shopId} role={role} title={entry.label} />
+        <SalesRoute shopId={shopId} role={role} title={entry.label} exchange={profile.exchange} />
       </Suspense>
     );
   }

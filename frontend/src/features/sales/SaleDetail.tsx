@@ -7,7 +7,9 @@ import { Badge, Button } from "../../shared/ui";
 import { LoadingOrOffline } from "../expenses/LoadingOrOffline";
 import { ErrorReports } from "./ErrorReports";
 import { ReceiptPrint } from "./ReceiptPrint";
+import { deadlineText, exchangeAccess } from "./returns/exchangeRules";
 import { SaleReturnsCard } from "./returns/SaleReturnsCard";
+import { SellerExchangeAction } from "./returns/SellerExchangeAction";
 import { ShareButton } from "./ShareButton";
 import { SaleFacts } from "./SaleFacts";
 import { SaleLinesCard } from "./SaleLinesCard";
@@ -116,14 +118,17 @@ export function SaleDetail({ shopId, refs, id, onBack, onReturn, onOpenSale }: S
           setUpdated({ ...sale, error_reports: [...sale.error_reports, report] });
         }}
       />
-      {refs.role === "owner" && (
+      {refs.role === "owner" ? (
         <SaleOwnerActions
           shopId={shopId}
           sale={sale}
           listing={listing}
+          deadline={deadlineText(exchangeAccess(sale, refs, refs.exchange))}
           onCancelled={setUpdated}
           onReturn={onReturn}
         />
+      ) : (
+        <SellerExchangeAction sale={sale} refs={refs} listing={listing} onExchange={onReturn} />
       )}
     </>
   );

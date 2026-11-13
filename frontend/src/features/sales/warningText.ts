@@ -23,3 +23,14 @@ export function warningText(warning: SaleWarning): string {
   const after = formatMoney(amount(warning, "due_after"));
   return `Plafond de crédit dépassé : ce client doit maintenant ${after} pour un plafond de ${limit}. Vente acceptée car vous êtes le propriétaire.`;
 }
+
+/**
+ * Avertissement sous le prix d'une ligne (design-system § 7.4, règle du Lot 1) : « Sous le prix
+ * minimum (12 000 FCFA) : la vente sera notée au journal » ; accord exigé par le réglage : dit.
+ */
+export function belowMinimumText(minimum: number, approval: boolean): string {
+  const head = `Sous le prix minimum (${formatMoney(minimum)})`;
+  return approval
+    ? `${head} : validation du propriétaire nécessaire.`
+    : `${head} : la vente sera notée au journal`;
+}

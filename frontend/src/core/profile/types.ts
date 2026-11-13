@@ -47,6 +47,16 @@ export interface ShopProfile {
   articleFields: readonly ProfileField[];
   saleFields: readonly ProfileField[];
   stockUnits: readonly string[];
+  /** Règles de l'échange (QC-4, T42) : délai et autorisation de l'employé. */
+  exchange: ExchangeRules;
+}
+
+/** Réglages d'échange servis par `GET /profile` (`exchange_days`, `employee_exchange_allowed`). */
+export interface ExchangeRules {
+  /** Délai en jours (inclusif, depuis la journée de la vente) ; `null` = aucune limite. */
+  days: number | null;
+  /** L'employé peut échanger ses ventes, dans le délai (désactivé par défaut). */
+  employeeAllowed: boolean;
 }
 
 /** Clé de l'entrée « Plus » : elle ouvre la liste `more`. */

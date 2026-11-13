@@ -4,6 +4,8 @@
  */
 import type { CatalogGateway } from "../../core/gateways/catalogContract";
 import type { SaleMember, SalesGateway } from "../../core/gateways/salesContract";
+import type { ExchangeRules } from "../../core/profile/types";
+import { lineFieldsOf, type LineFields } from "./lineFields";
 import { searchesChassis } from "./profileLabels";
 import type { SaleRole } from "./salesNav";
 
@@ -16,12 +18,16 @@ export interface SaleRefs {
   members: readonly SaleMember[];
   /** Le profil saisit un n° de châssis : la recherche le propose (Motos seulement). */
   searchChassis: boolean;
+  /** Champs d'une ligne de la nouvelle vente d'un échange (taille, couleur ou détails). */
+  lineFields: LineFields;
+  /** Délai d'échange et autorisation de l'employé (profil servi, QC-4). */
+  exchange: ExchangeRules;
 }
 
 export async function loadSaleRefs(
   gateways: { catalog: CatalogGateway; sales: SalesGateway },
   shopId: string,
-  who: { role: SaleRole; userId: string },
+  who: { role: SaleRole; userId: string; exchange: ExchangeRules },
 ): Promise<SaleRefs> {
   const [setup, members] = await Promise.all([
     gateways.catalog.saleSetup(shopId),
@@ -33,6 +39,7 @@ export async function loadSaleRefs(
     modes: setup.payment_modes,
     members,
     searchChassis: searchesChassis(setup.sale_fields),
+    lineFields: lineFieldsOf(setup.sale_fields),
   };
 }
 

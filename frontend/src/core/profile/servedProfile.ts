@@ -71,5 +71,25 @@ export function profileFromResponse(response: ProfileResponse, role: Role): Shop
     articleFields: response.article_fields,
     saleFields: response.sale_fields,
     stockUnits: response.stock_units,
+    exchange: exchangeRules(response),
   };
+}
+
+/**
+ * Règles d'échange servies. Un profil gardé avant le Lot 3 n'a pas ces champs : échange de
+ * l'employé fermé (le défaut), délai inconnu (le serveur reste juge). Un type faux est une
+ * rupture de contrat.
+ */
+function exchangeRules(response: ProfileResponse): ShopProfile["exchange"] {
+  const days: unknown = response.exchange_days;
+  const allowed: unknown = response.employee_exchange_allowed;
+  if (days !== undefined && days !== null && (typeof days !== "number" || days < 0)) {
+    throw new Error(`Profil servi : exchange_days invalide (${JSON.stringify(days)})`);
+  }
+  if (allowed !== undefined && typeof allowed !== "boolean") {
+    throw new Error(
+      `Profil servi : employee_exchange_allowed invalide (${JSON.stringify(allowed)})`,
+    );
+  }
+  return { days: typeof days === "number" ? days : null, employeeAllowed: allowed === true };
 }

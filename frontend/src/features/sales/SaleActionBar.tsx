@@ -12,6 +12,8 @@ import {
 
 export interface SaleActionBarProps {
   total: number;
+  /** Nombre de lignes : « 2 articles · Total » dès deux lignes (§ 7.4). */
+  lineCount?: number;
   /** Accord du propriétaire pour un prix sous le minimum (UC-VEN-03). */
   approval: ApprovalView;
   submitting: boolean;
@@ -38,6 +40,7 @@ function Status({ badge, word, children }: { badge: BadgeStatus; word: string; c
  */
 export function SaleActionBar(props: SaleActionBarProps) {
   const { total, approval, submitting, onSubmit, onRequestApproval, onRefreshApproval } = props;
+  const lineCount = props.lineCount ?? 1;
   const validate = (reason?: string) => (
     <Button
       size="lg"
@@ -116,7 +119,10 @@ export function SaleActionBar(props: SaleActionBarProps) {
   }
   const summary = (
     <p className="m-0 flex items-baseline justify-between gap-4">
-      <span>Total</span>
+      <span>
+        {lineCount > 1 ? `${String(lineCount)} articles · ` : ""}
+        Total
+      </span>
       <strong className="text-amount tabular-nums">{formatMoney(total)}</strong>
     </p>
   );

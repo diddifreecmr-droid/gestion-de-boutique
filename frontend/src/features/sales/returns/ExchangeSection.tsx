@@ -1,10 +1,8 @@
-import { useId, useState } from "react";
-import { Plus } from "lucide-react";
+import { useId } from "react";
 import { formatMoney } from "../../../shared/format";
-import { Button, ChoiceChips } from "../../../shared/ui";
-import { ArticlePicker } from "../ArticlePicker";
-import { newLine, type SaleDraft } from "../draft";
-import { SaleLineCard } from "../SaleLineCard";
+import { ChoiceChips } from "../../../shared/ui";
+import { UNIT_FIELDS, type LineFields } from "../lineFields";
+import { SaleBasket } from "../SaleBasket";
 import { ExchangeCreditFields } from "./ExchangeCreditFields";
 import type { ReturnChecks, ReturnDraft } from "./returnDraft";
 
@@ -16,6 +14,8 @@ export interface ExchangeSectionProps {
   checks: ReturnChecks;
   showErrors: boolean;
   update: (patch: Partial<ReturnDraft>) => void;
+  /** Champs d'une ligne selon le profil (taille, couleur ou détails ; Motos par défaut). */
+  lineFields?: LineFields;
 }
 
 /**
@@ -25,67 +25,30 @@ export interface ExchangeSectionProps {
  */
 export function ExchangeSection(props: ExchangeSectionProps) {
   const { shopId, location, modes, draft, checks, showErrors, update } = props;
+  const lineFields = props.lineFields ?? UNIT_FIELDS;
   const titleId = useId();
-  const [picking, setPicking] = useState(false);
   const sale = draft.exchange;
-  const setSale = (patch: Partial<SaleDraft>) => {
-    update({ exchange: { ...sale, ...patch } });
-  };
   const { applied, toPay, toGive } = checks.balance;
-  const showPicker = picking || sale.lines.length === 0;
   return (
     <section aria-labelledby={titleId} className="flex flex-col gap-4">
       <h2 id={titleId} className="m-0 text-title-sm font-semibold text-text">
         Nouvelle vente de l'échange
       </h2>
-      {sale.lines.map((line) => (
-        <SaleLineCard
-          key={line.key}
-          line={line}
-          locationName={location.name}
-          issues={checks.exchange.lines[line.key]}
-          showErrors={showErrors}
-          onChange={(next) => {
-            setSale({ lines: sale.lines.map((l) => (l.key === line.key ? next : l)) });
-          }}
-          onRemove={() => {
-            setSale({ lines: sale.lines.filter((l) => l.key !== line.key) });
-          }}
-        />
-      ))}
       {showErrors && checks.exchangeLines !== undefined && (
         <p className="m-0 text-body text-danger-text">{checks.exchangeLines}</p>
       )}
-      {showPicker ? (
-        <ArticlePicker
-          shopId={shopId}
-          locationId={location.id}
-          locationName={location.name}
-          excluded={sale.lines.map((line) => line.article.id)}
-          onPick={(article) => {
-            setSale({ lines: [...sale.lines, newLine(article)] });
-            setPicking(false);
-          }}
-          {...(sale.lines.length > 0
-            ? {
-                onClose: () => {
-                  setPicking(false);
-                },
-              }
-            : {})}
-        />
-      ) : (
-        <Button
-          variant="secondary"
-          icon={Plus}
-          fullWidth
-          onClick={() => {
-            setPicking(true);
-          }}
-        >
-          Ajouter un article
-        </Button>
-      )}
+      <SaleBasket
+        shopId={shopId}
+        location={location}
+        lines={sale.lines}
+        issues={checks.exchange.lines}
+        showErrors={showErrors}
+        fields={lineFields}
+        removeLast
+        onLines={(lines) => {
+          update({ exchange: { ...sale, lines } });
+        }}
+      />
       <ChoiceChips
         label="Mode de paiement de l'échange"
         options={modes.map((mode) => ({ value: mode.id, label: mode.name }))}
