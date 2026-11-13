@@ -1,9 +1,9 @@
 """Application avec le socle, le catalogue, les pièces jointes et l'import (modèles témoins),
 stockage mémoire observable.
 
-Le module `import` est **à venir** jusqu'à T46 : `importable` le rend activable pour la durée
-d'un test (retrait de `UPCOMING_MODULES`, lu à chaque contrôle) puis l'active pour la
-boutique ; sans cette fixture, toutes les routes de l'import répondent 403 `MODULE_DISABLED`.
+Depuis T46, le module `import` est disponible (ouvert par défaut à l'ouverture d'une boutique ;
+l'administrateur l'active ou l'éteint). `shop` est une boutique où l'administrateur l'a **éteint**
+(toutes les routes de l'import répondent 403 `MODULE_DISABLED`) ; `importable` l'a **actif**.
 """
 
 from collections.abc import Iterator
@@ -26,7 +26,6 @@ from app.bootstrap.sales import sales_ranking
 from app.bootstrap.shops import build_shops
 from app.domain.identity.phone import PhoneNumber
 from app.domain.identity.user import User
-from app.domain.profiles import modules as profile_modules
 from app.domain.profiles.modules import AVAILABLE_MODULES, Module
 from app.infrastructure.persistence.memory.clock import FixedClock
 from app.infrastructure.storage.memory import MemoryFileStorage
@@ -89,18 +88,20 @@ def bench(settings: Settings, bench_models: tuple[ImportModel, ...] | None) -> I
         yield Bench(Api(client, identity), storage)
 
 
-@pytest.fixture
-def shop(bench: Bench) -> Shop:
-    return Shop(bench.api)
-
-
-@pytest.fixture
-def importable(bench: Bench, shop: Shop, monkeypatch: pytest.MonkeyPatch) -> Shop:
-    """La boutique avec le module `import` actif (comme après T46)."""
-    upcoming = profile_modules.UPCOMING_MODULES - {Module.IMPORT}
-    monkeypatch.setattr(profile_modules, "UPCOMING_MODULES", upcoming)
-    body = {"modules": sorted({*AVAILABLE_MODULES, Module.IMPORT})}
-    admin = bench.api.admin()
-    response = bench.api.call("PATCH", f"/platform/shops/{shop.id}", admin, json=body)
+def _set_modules(bench: Bench, shop: Shop, modules: frozenset[Module]) -> Shop:
+    body = {"modules": sorted(modules)}
+    response = bench.api.call("PATCH", f"/platform/shops/{shop.id}", bench.api.admin(), json=body)
     assert response.status_code == 200, response.text
     return shop
+
+
+@pytest.fixture
+def shop(bench: Bench) -> Shop:
+    """Boutique dont l'administrateur a éteint le module `import`."""
+    return _set_modules(bench, Shop(bench.api), AVAILABLE_MODULES - {Module.IMPORT})
+
+
+@pytest.fixture
+def importable(bench: Bench, shop: Shop) -> Shop:
+    """La même boutique, module `import` actif."""
+    return _set_modules(bench, shop, AVAILABLE_MODULES)

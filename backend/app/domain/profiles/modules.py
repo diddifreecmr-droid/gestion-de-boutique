@@ -38,8 +38,9 @@ MANDATORY_MODULES: frozenset[Module] = frozenset(
 ALL_MODULES: frozenset[Module] = frozenset(Module)
 OPTIONAL_MODULES: frozenset[Module] = ALL_MODULES - MANDATORY_MODULES
 
-UPCOMING_MODULES: frozenset[Module] = frozenset({Module.TRANSFERS, Module.TRANSPORT, Module.IMPORT})
-"""Pas encore construits (décision du 2026-11-13) : on ne montre jamais ce qui n'existe pas."""
+UPCOMING_MODULES: frozenset[Module] = frozenset({Module.TRANSFERS, Module.TRANSPORT})
+"""Pas encore construits (décision du 2026-11-13) : on ne montre jamais ce qui n'existe pas.
+`import` en est sorti au Lot 3 (T46) : ses écrans existent, l'administrateur l'active."""
 AVAILABLE_MODULES: frozenset[Module] = ALL_MODULES - UPCOMING_MODULES
 """Modules construits, donc activables (dans les limites du profil)."""
 

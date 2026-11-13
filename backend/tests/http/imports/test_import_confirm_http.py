@@ -45,7 +45,7 @@ def test_confirm_writes_once_and_replays(bench: Bench, importable: Shop) -> None
     assert garbled.status_code in {400, 422}
 
 
-def test_the_upcoming_import_module_closes_confirmation(bench: Bench, shop: Shop) -> None:
+def test_import_turned_off_by_the_admin_closes_confirmation(bench: Bench, shop: Shop) -> None:
     response = bench.confirm(shop, shop.owner, "0190f0c2-0000-7000-8000-000000000000")
     assert (response.status_code, response.json()["error"]["code"]) == (403, "MODULE_DISABLED")
 

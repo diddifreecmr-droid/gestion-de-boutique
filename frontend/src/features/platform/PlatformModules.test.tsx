@@ -48,6 +48,7 @@ describe("console — modules d'une boutique", () => {
       ["Créances", "false"],
       ["Dépenses", "false"],
       ["Tableau de bord", "false"],
+      ["Import Excel", "false"],
     ]);
     expect(saveButton()).toHaveAttribute("aria-disabled", "true");
     expect(screen.getByText("Aucun changement à enregistrer.")).toBeVisible();
@@ -79,12 +80,11 @@ describe("console — modules d'une boutique", () => {
     expect(rows.map((row) => row.textContent)).toEqual([
       expect.stringContaining("Transferts"),
       expect.stringContaining("Transport"),
-      expect.stringContaining("Import Excel"),
     ]);
-    expect(within(upcoming).getAllByText("Bientôt")).toHaveLength(3);
+    expect(within(upcoming).getAllByText("Bientôt")).toHaveLength(2);
     expect(within(upcoming).queryByRole("switch")).toBeNull();
     expect(within(upcoming).queryByRole("button")).toBeNull();
-    for (const name of ["Transferts", "Transport", "Import Excel"]) {
+    for (const name of ["Transferts", "Transport"]) {
       expect(screen.queryByRole("switch", { name })).toBeNull();
     }
     expect(await axeViolations(container)).toEqual([]);
@@ -95,7 +95,7 @@ describe("console — modules d'une boutique", () => {
     await user.click(await screen.findByRole("switch", { name: "Achats" }));
     await user.click(saveButton());
     expect(fake.calls.find((c) => c.method === "PATCH")?.body).toEqual({
-      modules: ["core", "audit", "catalog", "sales", "purchases"],
+      modules: ["core", "audit", "catalog", "sales", "purchases", "import"],
     });
   });
 

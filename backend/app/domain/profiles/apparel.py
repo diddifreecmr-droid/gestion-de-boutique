@@ -42,6 +42,7 @@ _MENUS = {
             entry("expenses", "Dépenses", M.EXPENSES),
             entry("customers", "Clients", M.SALES),
             entry("audit", "Journal", M.AUDIT),
+            entry("import", "Import", M.IMPORT),
             entry("settings", "Réglages", M.CORE),
         ),
     ),

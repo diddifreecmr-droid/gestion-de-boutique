@@ -82,6 +82,6 @@ def test_cancel_rights_blocking_and_freed_name(bench: Bench, importable: Shop) -
     assert kept["status"] == "archived"  # rien d'effacé
 
 
-def test_the_upcoming_import_module_closes_the_batches(bench: Bench, shop: Shop) -> None:
+def test_import_turned_off_by_the_admin_closes_the_batches(bench: Bench, shop: Shop) -> None:
     response = shop.call("GET", "/imports", shop.owner)
     assert (response.status_code, response.json()["error"]["code"]) == (403, "MODULE_DISABLED")

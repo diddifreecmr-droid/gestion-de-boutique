@@ -28,7 +28,7 @@ def test_routes_declare_the_import_module(bench: Bench) -> None:
         assert paths[f"{PREFIX}{path}"][method.lower()]["x-module"] == "import"
 
 
-def test_import_stays_an_upcoming_module_closed_for_every_shop(bench: Bench, shop: Shop) -> None:
+def test_import_turned_off_by_the_admin_is_closed_to_everyone(bench: Bench, shop: Shop) -> None:
     for who in (shop.owner, shop.staff["accountant"]):
         responses = [
             shop.call("GET", "/imports/templates/articles", who),
@@ -45,10 +45,11 @@ def test_import_stays_an_upcoming_module_closed_for_every_shop(bench: Bench, sho
         bench.preview(shop, stranger, CSV),
     ):
         assert response.status_code == 404, response.text
+    # Depuis T46, l'administrateur peut l'activer (il n'est plus « à venir »).
     body = {"modules": ["audit", "catalog", "core", "import", "sales"]}
-    refused = bench.api.call("PATCH", f"/platform/shops/{shop.id}", bench.api.admin(), json=body)
-    assert refused.status_code == 422
-    assert refused.json()["error"]["code"] == "MODULE_NOT_YET_AVAILABLE"
+    allowed = bench.api.call("PATCH", f"/platform/shops/{shop.id}", bench.api.admin(), json=body)
+    assert allowed.status_code == 200, allowed.text
+    assert "import" in allowed.json()["enabled_modules"]
     assert bench.storage.keys() == []
 
 

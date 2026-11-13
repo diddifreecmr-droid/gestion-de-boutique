@@ -36,9 +36,10 @@ describe("menus servis par rôle (modules disponibles à l'ouverture)", () => {
       "Dépenses",
       "Clients",
       "Journal",
+      "Import",
       "Réglages",
     ]);
-    const apparel = ["Achats", "Dépenses", "Clients", "Journal", "Réglages"];
+    const apparel = ["Achats", "Dépenses", "Clients", "Journal", "Import", "Réglages"];
     expect(moreLabels("apparel", "owner")).toEqual(apparel);
     expect(moreLabels("textile", "owner")).toEqual(apparel);
     expect(moreLabels("apparel", "seller")).toEqual([]);

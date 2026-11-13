@@ -63,8 +63,10 @@ def test_mandatory_and_optional_modules_follow_the_client_decision() -> None:
     assert broken_dependencies([*MINIMAL, Module.TRANSPORT, Module.TRANSFERS]) == []
 
 
-def test_upcoming_modules_are_transfers_transport_and_import() -> None:
-    assert {Module.TRANSFERS, Module.TRANSPORT, Module.IMPORT} == UPCOMING_MODULES
+def test_upcoming_modules_are_transfers_and_transport() -> None:
+    # `import` est sorti des modules à venir au Lot 3 (T46).
+    assert {Module.TRANSFERS, Module.TRANSPORT} == UPCOMING_MODULES
+    assert Module.IMPORT in AVAILABLE_MODULES
     assert AVAILABLE_MODULES == ALL_MODULES - UPCOMING_MODULES
     assert MANDATORY_MODULES <= AVAILABLE_MODULES
 
@@ -107,7 +109,7 @@ def test_a_stored_shop_with_an_upcoming_module_fails_fast() -> None:
     with pytest.raises(ValueError, match="Module à venir actif"):
         Shop(
             id=shop.id, account_id=shop.account_id, profile_code=shop.profile_code,
-            identity=shop.identity, enabled_modules=shop.enabled_modules | {Module.IMPORT},
+            identity=shop.identity, enabled_modules=shop.enabled_modules | {Module.TRANSPORT},
             status=shop.status, created_at=NOW,
         )  # fmt: skip
 

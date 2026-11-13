@@ -44,6 +44,7 @@ _MENUS = {
             entry("customers", "Clients", M.SALES),
             entry("payroll", "Paie", M.TRANSPORT),
             entry("audit", "Journal", M.AUDIT),
+            entry("import", "Import", M.IMPORT),
             entry("settings", "Réglages", M.CORE),
         ),
     ),

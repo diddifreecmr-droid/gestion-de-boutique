@@ -48,7 +48,7 @@ def test_prf03_apparel_profile_menus_and_labels(api: Api) -> None:
     assert [r["label"] for r in profile["roles"]] == ["Propriétaire", "Employé", "Comptable"]
     assert menu(profile) == [
         "Accueil", "Ventes", "Stock", "Créances",
-        ("Plus", ["Achats", "Dépenses", "Clients", "Journal", "Réglages"]),
+        ("Plus", ["Achats", "Dépenses", "Clients", "Journal", "Import", "Réglages"]),
     ]  # fmt: skip
     seller = api.call(
         "GET", f"/shops/{shop}/profile", staff(api, owner, shop, "677000002", "seller")

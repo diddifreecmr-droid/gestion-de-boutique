@@ -98,6 +98,7 @@ describe("matrice de stock — propriétaire et comptable", () => {
       "Inventaire",
       "Valeur du stock",
       "Stock abîmé",
+      "Importer depuis Excel", // module `import` actif (T46)
     ]);
     expect(await axeViolations(container)).toEqual([]);
     await user.click(within(tabs).getByRole("link", { name: "Articles" }));

@@ -15,6 +15,7 @@ import { EXPENSES_KEY } from "../features/expenses/expenseNav";
 import { PURCHASES_KEY } from "../features/purchasing/purchasingNav";
 import { RECEIVABLES_KEY } from "../features/receivables/receivablesNav";
 import { MY_SALES_KEY, NEW_SALE_KEY, SALES_KEY } from "../features/sales/salesNav";
+import { IMPORTS_KEY } from "../features/imports/importsNav";
 import { SETTINGS_KEY } from "../features/shopSettings/settingsNav";
 import type { ServedProfileCode } from "../testing/profileMenus";
 import { servedProfile } from "../testing/servedProfile";
@@ -32,6 +33,7 @@ const DELIVERED = new Set<string>([
   RECEIVABLES_KEY,
   EXPENSES_KEY,
   SETTINGS_KEY,
+  IMPORTS_KEY,
   "journal",
   "clients",
 ]);

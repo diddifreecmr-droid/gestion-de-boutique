@@ -30,10 +30,10 @@ beforeAll(async () => {
 const PATH = `${SHOP_PATH}/${IMPORTS_KEY}`;
 
 describe("adresse de l'import (on ne montre jamais ce qui n'existe pas)", () => {
-  it("module à venir servi actif par le serveur : écran introuvable", async () => {
+  it("module `import` servi actif par le serveur (T46) : l'écran s'ouvre sans forçage", async () => {
     flags.forceUpcoming = false;
     renderApp(PATH, memberSession("owner"));
-    expect(await screen.findByRole("heading", { name: "Page introuvable" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Import Excel" })).toBeVisible();
   });
 
   it("module `import` forcé actif : le propriétaire ouvre l'import ; axe", async () => {

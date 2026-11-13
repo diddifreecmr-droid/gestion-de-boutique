@@ -23,7 +23,6 @@ export type OptionalModule = Exclude<ModuleCode, (typeof ALWAYS_ON)[number]>;
 export const UPCOMING_MODULES = [
   "transfers",
   "transport",
-  "import",
 ] as const satisfies readonly OptionalModule[];
 export type UpcomingModule = (typeof UPCOMING_MODULES)[number];
 
@@ -33,6 +32,7 @@ export const AVAILABLE_OPTIONAL_MODULES = [
   "receivables",
   "expenses",
   "dashboard",
+  "import",
 ] as const satisfies readonly Exclude<OptionalModule, UpcomingModule>[];
 
 export const OPTIONAL_MODULES: readonly OptionalModule[] = [
