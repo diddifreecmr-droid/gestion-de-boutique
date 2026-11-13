@@ -127,6 +127,7 @@ describe("Paiement réparti sur plusieurs modes (RG-T20)", () => {
   it("total payé ≤ total : dépassement refusé, manque signalé, puis envoi", async () => {
     const { user, recordSale, container } = renderSale();
     await user.click(await articleButton("Haojue HJ125-8"));
+    await user.click(screen.getByRole("button", { name: "Autre mode" }));
     await user.click(screen.getByRole("button", { name: "Répartir sur plusieurs modes" }));
     const cash = priceField("Espèces");
     expect(plain(cash.value)).toBe("780 000");
@@ -154,6 +155,7 @@ describe("Paiement réparti sur plusieurs modes (RG-T20)", () => {
   it("revenir à un seul mode", async () => {
     const { user } = renderSale();
     await user.click(await articleButton("Haojue HJ125-8"));
+    await user.click(screen.getByRole("button", { name: "Autre mode" }));
     await user.click(screen.getByRole("button", { name: "Répartir sur plusieurs modes" }));
     expect(priceField("Orange Money")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Payer avec un seul mode" }));

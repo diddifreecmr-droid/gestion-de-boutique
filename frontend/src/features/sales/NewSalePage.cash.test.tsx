@@ -95,7 +95,7 @@ describe("Nouvelle vente au comptant (UC-VEN-01)", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("confirmation : total, Imprimer et Partager actifs, puis « Nouvelle vente » avec le dernier mode", async () => {
+  it("confirmation : total, Imprimer et Partager actifs, puis « Nouvelle vente » de nouveau en Espèces", async () => {
     const { user } = renderSale();
     await user.click(await articleButton("Sanya SY125-8"));
     await user.click(radio("MTN MoMo"));
@@ -109,9 +109,39 @@ describe("Nouvelle vente au comptant (UC-VEN-01)", () => {
     await user.click(screen.getByRole("button", { name: "Nouvelle vente" }));
     await user.click(await articleButton("Sanya SY125-8"));
     expect(screen.getByText("Stock disponible à Garoua : 6")).toBeVisible();
-    expect(radio("MTN MoMo")).toHaveAttribute("aria-checked", "true");
+    expect(radio("Espèces")).toHaveAttribute("aria-checked", "true");
+    expect(radio("MTN MoMo")).toHaveAttribute("aria-checked", "false");
     await user.click(validateButton());
     expect(await screen.findByRole("heading", { name: /V-000125/ })).toBeVisible();
+  });
+
+  it("paiement : Espèces par défaut, 2 autres modes visibles, le reste derrière « Autre mode »", async () => {
+    const { user, recordSale, container } = renderSale();
+    await user.click(await articleButton("Sanya SY125-8"));
+    const group = screen.getByRole("radiogroup", { name: "Paiement" });
+    expect(
+      within(group)
+        .getAllByRole("radio")
+        .map((r) => r.textContent),
+    ).toEqual(["Espèces", "Orange Money", "MTN MoMo", "À crédit"]);
+    expect(radio("Espèces")).toHaveAttribute("aria-checked", "true");
+    expect(screen.queryByRole("button", { name: "Répartir sur plusieurs modes" })).toBeNull();
+
+    const more = screen.getByRole("button", { name: "Autre mode" });
+    expect(more).toHaveAttribute("aria-expanded", "false");
+    await user.click(more);
+    expect(more).toHaveAttribute("aria-expanded", "true");
+    await user.click(radio("Chèque"));
+    expect(screen.getByRole("button", { name: "Répartir sur plusieurs modes" })).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
+
+    await user.click(more); // refermé : le mode choisi reste affiché et choisi
+    expect(radio("Chèque")).toHaveAttribute("aria-checked", "true");
+    expect(screen.queryByRole("radio", { name: "Virement" })).toBeNull();
+    await user.click(validateButton());
+    await screen.findByRole("heading", { name: /V-000124/ });
+    const [, command] = recordSale.mock.calls[0] ?? [];
+    expect(command?.payments).toEqual([{ mode_id: "pm-cheque", amount: 650_000, reference: null }]);
   });
 
   it("plusieurs lignes, quantité bornée par le stock, détails par unité", async () => {

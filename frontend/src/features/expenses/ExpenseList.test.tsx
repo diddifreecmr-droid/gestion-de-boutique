@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { axeViolations } from "../../testing/axe";
 import {
@@ -94,15 +94,52 @@ describe("Liste des dépenses (UC-DEP-03)", () => {
       ),
     });
     await screen.findByText("Aucune dépense sur cette période.");
+    // Période sur une ligne : « Aujourd'hui ▾ » ouvre le choix, refermé dès qu'on a choisi.
+    const period = screen.getByRole("button", { name: "Période : Aujourd'hui" });
+    expect(period).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("radiogroup", { name: "Période" })).toBeNull();
+    await user.click(period);
     await user.click(screen.getByRole("radio", { name: "7 derniers jours" }));
     expect(await screen.findByText("Total — Dépenses du 05/11/2026 au 11/11/2026")).toBeVisible();
+    expect(screen.queryByRole("radiogroup", { name: "Période" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Période : 7 derniers jours" })).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Filtres" }));
     const category = screen.getByRole("radiogroup", { name: "Catégorie" });
     await user.click(within(category).getByRole("radio", { name: "Carburant" }));
     await screen.findByRole("list", { name: "Liste des dépenses" });
+    expect(screen.getByRole("button", { name: "Filtres (1)" })).toBeVisible();
     expect(
       fake.count(route("GET", "/expenses?from=2026-11-05&to=2026-11-11&category_id=cat-carburant")),
     ).toBe(1);
+  });
+
+  it("premier écran : le total puis la liste, avant la répartition et les réglages", async () => {
+    const { container, user, fake } = renderApp(EXPENSES_PATH, {
+      ...expenseRoutes("owner"),
+      [route("GET", "/expenses")]: json(200, page(ITEMS)),
+      [route("GET", "/expenses?from=2026-11-11&to=2026-11-11")]: json(200, page(ITEMS)),
+      [route("GET", "/expenses?from=2026-11-01&to=2026-11-11")]: json(200, page(ITEMS)),
+      [route("GET", "/expenses?from=2026-11-01&to=2026-11-03")]: json(200, page([])),
+    });
+    const list = await screen.findByRole("list", { name: "Liste des dépenses" });
+    const total = screen.getByText("Total — Dépenses du jour");
+    const bars = screen.getByRole("region", { name: "Par catégorie" });
+    const settings = screen.getByRole("button", { name: "Catégories et tags" });
+    const before = (a: Node, b: Node) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(before(total, list)).toBe(true);
+    expect(before(list, bars)).toBe(true);
+    expect(before(bars, settings)).toBe(true);
+
+    // « Autres dates » : le choix reste ouvert pour saisir les deux dates.
+    await user.click(screen.getByRole("button", { name: "Période : Aujourd'hui" }));
+    await user.click(screen.getByRole("radio", { name: "Autres dates" }));
+    expect(screen.getByRole("radiogroup", { name: "Période" })).toBeVisible();
+    fireEvent.change(screen.getByLabelText("Du"), { target: { value: "2026-11-01" } });
+    fireEvent.change(screen.getByLabelText("Au"), { target: { value: "2026-11-03" } });
+    expect(await screen.findByText("Aucune dépense sur cette période.")).toBeVisible();
+    expect(fake.count(route("GET", "/expenses?from=2026-11-01&to=2026-11-03"))).toBe(1);
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("comptable : filtre d'auteur « Moi », aucun nom des autres membres demandé", async () => {

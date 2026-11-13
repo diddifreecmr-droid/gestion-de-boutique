@@ -50,6 +50,7 @@ export function PeriodBar(props: PeriodBarProps) {
             <Button
               variant="secondary"
               fullWidth
+              aria-label={`Période : ${PERIOD_LABELS[value]}`}
               aria-expanded={periodOpen}
               aria-controls={periodId}
               onClick={() => {
@@ -57,7 +58,6 @@ export function PeriodBar(props: PeriodBarProps) {
               }}
             >
               <span className="inline-flex items-center gap-1">
-                <span className="sr-only">Période : </span>
                 {PERIOD_LABELS[value]}
                 <ChevronDown aria-hidden="true" className="size-6 shrink-0" />
               </span>
