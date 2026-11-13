@@ -4,7 +4,7 @@ import { isUuidV7 } from "../../core/api/uuidv7";
 import type { InstallmentReceipt, Receivable } from "../../core/gateways/receivablesContract";
 import { axeViolations } from "../../testing/axe";
 import { setClock } from "../../testing/expensesApi";
-import { apiError, json, SHOP_A } from "../../testing/fakeApi";
+import { apiError, json } from "../../testing/fakeApi";
 import {
   CUSTOMER,
   GET_ONE,
@@ -65,16 +65,14 @@ const validate = () => screen.getByRole("button", { name: "Valider le versement"
 const afterText = () => plain(screen.getByText(/Reste à payer après ce versement/).textContent);
 
 describe("Enregistrer un versement (UC-CRE-03)", () => {
-  it("vendeur, depuis « Versement » de l'accueil : client, reste affiché, soldée, reçu « Soldé »", async () => {
+  it("vendeur, « Enregistrer un versement » : client, reste affiché, soldée, reçu « Soldé »", async () => {
     const settled = receivable({ total_paid: 800000, remaining: 0, status: "settled" });
-    const { user, fake, router, container } = renderApp(`/s/${SHOP_A}`, {
+    const { user, fake, router, container } = renderApp(`${RECEIVABLES_PATH}?vue=versement`, {
       ...receivableRoutes("seller"),
       [SEARCH]: json(200, { items: [CUSTOMER] }),
       [PAY]: json(201, paid(600000, settled)),
       [route("GET", "/installments/inst-2/receipt")]: json(200, RECEIPT),
     });
-    await user.click(await screen.findByRole("button", { name: "Versement" }));
-    expect(router.state.location.pathname).toBe(RECEIVABLES_PATH);
     await user.click(await screen.findByLabelText("Chercher le client"));
     await user.paste("Moussa");
     await user.click(await screen.findByRole("button", { name: /Moussa Hamadou/ }));
