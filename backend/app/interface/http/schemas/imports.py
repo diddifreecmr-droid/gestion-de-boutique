@@ -1,13 +1,13 @@
-"""Schémas de l'import (UC-IMP-02) : aperçu ligne par ligne, sans écriture.
+"""Schémas de l'import (UC-IMP-02) : aperçu ligne par ligne, sans écriture ; lot confirmé.
 
 Jamais de clé de stockage ni de lien vers le fichier déposé (SEC-N3-03).
 """
 
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
-from app.domain.imports.values import ImportKind
+from app.domain.imports.values import ImportedEntity, ImportKind, ImportStatus
 
 
 class ImportProblemResponse(BaseModel):
@@ -32,3 +32,29 @@ class ImportPreviewResponse(BaseModel):
     problems_total: int
     notes: list[str]
     """Ce que l'import créerait : « 3 articles nouveaux seront créés »."""
+
+
+class ImportConfirmRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    preview_id: str = Field(min_length=1, max_length=64)
+    """Aperçu à confirmer : seules ses lignes valides sont importées."""
+
+
+class ImportCreatedCount(BaseModel):
+    entity: ImportedEntity
+    count: int
+
+
+class ImportBatchResponse(BaseModel):
+    id: str
+    number: str
+    """`IMP-000001`."""
+    kind: ImportKind
+    status: ImportStatus
+    rows_read: int
+    rows_imported: int
+    rows_ignored: int
+    created: list[ImportCreatedCount]
+    """Éléments créés, par type (articles, mouvements de stock, clients…)."""
+    imported_at: datetime

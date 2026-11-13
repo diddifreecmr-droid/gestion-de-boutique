@@ -6,10 +6,14 @@ d'origine (passé illimité, jamais future : RG-T09), description obligatoire, v
 responsable facultatif (membre actif vendeur ou propriétaire), conditions. Aucune vente,
 aucun mouvement de stock : elle ne compte ni dans les ventes ni dans les marges.
 Idempotent par `receivable_id` client (201 puis 200).
+
+`open_legacy` : le même enregistrement **dans l'unité de travail de l'appelant**, sans `add`
+ni `commit` — repris tel quel par l'import « Créances en cours » (T34), qui écrit tout un lot
+dans une seule transaction.
 """
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 
 from app.application.ports.clock import Clock
 from app.application.ports.uow import UnitOfWork, UnitOfWorkFactory
@@ -53,6 +57,33 @@ def require_seller(uow: UnitOfWork, user_id: UserId | None) -> UserId | None:
     return user_id
 
 
+def open_legacy(
+    uow: UnitOfWork,
+    actor: Actor,
+    command: LegacyReceivableCommand,
+    *,
+    now: datetime,
+    today: date,
+) -> Receivable:
+    """Créance ancienne prête à être ajoutée (client créé si son téléphone est inconnu)."""
+    customer = sale_customer(uow, actor, command.customer, now)
+    if customer is None:  # exclu par le type de `customer` : défense en profondeur
+        msg = "Client obligatoire"
+        raise ValidationFailed(msg, details={"field": "customer"})
+    return Receivable.open_legacy(
+        uow.shop_id,
+        receivable_id=command.receivable_id or ReceivableId.new(),
+        customer_id=customer.id,
+        amount=Money.entry(command.amount, "amount"),
+        opened_on=validate_entry_date(command.opened_on, today, is_owner=True),
+        description=command.description,
+        responsible_seller_id=require_seller(uow, command.responsible_seller_id),
+        terms=command.terms,
+        performer=performer_of(actor),
+        now=now,
+    )
+
+
 class RecordLegacyReceivable:
     def __init__(self, uow_factory: UnitOfWorkFactory, policy: Policy, clock: Clock) -> None:
         self._uow_factory = uow_factory
@@ -70,22 +101,7 @@ class RecordLegacyReceivable:
                 existing = receivables.find(command.receivable_id)
                 if existing is not None and existing.origin is ReceivableOrigin.LEGACY:
                     return view_of(uow, actor, existing, today), False
-            customer = sale_customer(uow, actor, command.customer, now)
-            if customer is None:  # exclu par le type de `customer` : défense en profondeur
-                msg = "Client obligatoire"
-                raise ValidationFailed(msg, details={"field": "customer"})
-            receivable = Receivable.open_legacy(
-                uow.shop_id,
-                receivable_id=command.receivable_id or ReceivableId.new(),
-                customer_id=customer.id,
-                amount=Money.entry(command.amount, "amount"),
-                opened_on=validate_entry_date(command.opened_on, today, is_owner=True),
-                description=command.description,
-                responsible_seller_id=require_seller(uow, command.responsible_seller_id),
-                terms=command.terms,
-                performer=performer_of(actor),
-                now=now,
-            )
+            receivable = open_legacy(uow, actor, command, now=now, today=today)
             receivables.add(receivable)
             view = view_of(uow, actor, receivable, today)
             uow.commit()

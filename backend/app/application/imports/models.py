@@ -9,7 +9,12 @@ Un modèle (`ImportModel`) déclare :
   Textile : unité, longueur d'une pièce) ;
 - `check(uow, actor, rows)` : contrôle **en lecture seule** des lignes déjà nettoyées
   (doublons dans le fichier ou en base, lieu inconnu…) et ce que l'import créerait
-  (« 3 articles nouveaux seront créés »). Il n'écrit jamais : l'aperçu ne modifie rien (IMP-03).
+  (« 3 articles nouveaux seront créés »). Il n'écrit jamais : l'aperçu ne modifie rien (IMP-03) ;
+- `apply(uow, actor, rows, run)` (confirmation, T33) : écrit les lignes que `check` vient
+  d'accepter **dans la même unité de travail**, sans valider (`commit` à l'appelant : tout le
+  lot passe ou rien) ; renvoie chaque élément créé avec sa ligne (`ImportedItem`), que le lot
+  garde pour l'annulation (QC-6). Une ligne reçue que le modèle refuserait est une erreur
+  d'appelant (`RuntimeError`), jamais une ligne ignorée en silence.
 
 `ImportModels.get(texte)` : modèle inconnu ou pas encore branché → 404 `NOT_FOUND` (IMP-02 :
 `trucks`, `drivers`). Deux modèles du même `kind` : refus à l'assemblage (fail-fast).
@@ -18,17 +23,22 @@ Un modèle (`ImportModel`) déclare :
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
+from datetime import date, datetime
 from typing import ClassVar
 
 from app.application.ports.uow import UnitOfWork
 from app.application.security.actor import Actor
 from app.application.security.permissions import Permission
+from app.domain.audit.values import Performer
+from app.domain.imports.batch import ImportedItem
+from app.domain.imports.ids import ImportBatchId
 from app.domain.imports.problems import RowError
 from app.domain.imports.sheet import ParsedRow
 from app.domain.imports.template import TemplateSpec
 from app.domain.imports.values import ImportKind
 from app.domain.profiles.modules import Module
 from app.domain.profiles.profile import ShopProfile
+from app.domain.shared.doc_number import DocNumber
 from app.domain.shared.errors import NotFound
 
 
@@ -49,6 +59,17 @@ class ModelCheck:
             raise ValueError(msg)
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ImportRun:
+    """Lot en cours d'écriture : les éléments créés le citent (mouvement « Reprise de départ »)."""
+
+    batch_id: ImportBatchId
+    number: DocNumber
+    performer: Performer
+    now: datetime
+    today: date
+
+
 class ImportModel(ABC):
     kind: ClassVar[ImportKind]
     permission: ClassVar[Permission]
@@ -61,6 +82,12 @@ class ImportModel(ABC):
     @abstractmethod
     def check(self, uow: UnitOfWork, actor: Actor, rows: Sequence[ParsedRow]) -> ModelCheck:
         """Contrôle en lecture seule ; chaque ligne reçue est acceptée ou écartée."""
+
+    @abstractmethod
+    def apply(
+        self, uow: UnitOfWork, actor: Actor, rows: Sequence[ParsedRow], run: ImportRun
+    ) -> tuple[ImportedItem, ...]:
+        """Écrit les lignes acceptées par `check` (même unité de travail, sans `commit`)."""
 
 
 class ImportModels:

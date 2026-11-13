@@ -14,7 +14,7 @@ from app.application.imports.workbook import ChoiceList, TemplateWorkbook
 from app.application.ports.uow import UnitOfWork
 from app.application.security.actor import Actor
 from app.application.security.errors import PermissionDenied
-from app.bootstrap.imports import MODELS, build_imports
+from app.bootstrap.imports import build_imports, import_models
 from app.domain.imports.columns import ChoiceSource
 from app.domain.imports.problems import RowError
 from app.domain.imports.sheet import ParsedRow
@@ -26,8 +26,12 @@ from app.domain.shared.roles import Role
 from tests.application.imports.support import NAME, PLACE, ImportWorld, WitnessArticles
 
 
-def test_the_registry_is_empty_until_t33_and_refuses_twins() -> None:
-    assert MODELS == ()
+def test_the_registry_holds_the_five_lot3_models_and_refuses_twins() -> None:
+    world = ImportWorld()
+    kinds = ImportModels(import_models(world.identity)).kinds
+    assert [kind.value for kind in kinds] == [
+        "articles", "customers", "opening_stock", "receivables", "suppliers",
+    ]  # fmt: skip
     with pytest.raises(NotFound):
         ImportModels().get("articles")
     with pytest.raises(ValueError, match="Deux modèles"):

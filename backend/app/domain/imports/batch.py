@@ -126,9 +126,11 @@ class ImportBatch:
         items: tuple[ImportedItem, ...],
         performer: Performer,
         now: datetime,
+        batch_id: ImportBatchId | None = None,
     ) -> "ImportBatch":
+        """`batch_id` : choisi avant l'écriture des éléments, qui citent leur lot (T33)."""
         batch = cls(
-            id=ImportBatchId.new(),
+            id=batch_id or ImportBatchId.new(),
             shop_id=shop_id,
             number=number,
             kind=kind,
