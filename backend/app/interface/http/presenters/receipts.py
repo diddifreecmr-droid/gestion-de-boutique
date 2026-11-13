@@ -41,6 +41,7 @@ def receipt_response(receipt: Receipt) -> r.SaleReceiptResponse:
                 article_name=line.article_name,
                 sale_mode=line.sale_mode.value,
                 quantity=str(line.quantity),
+                quantity_label=line.quantity_label,
                 unit_price=line.unit_price,
                 line_total=line.line_total,
                 details=[detail_response(d) for d in line.details],

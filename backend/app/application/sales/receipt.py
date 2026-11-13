@@ -3,10 +3,10 @@
 Contenu : en-tête de la boutique (nom, ville, téléphone, adresse, NIU et RCCM s'ils sont
 renseignés, logo affiché ou non), « Reçu de vente », numéro (et numéro provisoire), date et
 heure, vendeur, client (nom, téléphone), lignes (article, détails couleur / châssis / moteur /
-taille, quantité, prix unitaire, total), totaux (total, payé **par mode**, reste à payer),
-mentions (« Vente à crédit », « Annulé », « Duplicata »), message de pied et réglages
-d'impression. **Aucun** coût, CMP ni marge, même pour le propriétaire (RG-D02, SEC-N04) : le
-DTO ne les porte pas, il n'y a donc rien à filtrer.
+taille, quantité et son libellé « 2,5 m » / « 1 pièce (5,49 m) », prix unitaire, total),
+totaux (total, payé **par mode**, reste à payer), mentions (« Vente à crédit », « Annulé »,
+« Duplicata »), message de pied et réglages d'impression. **Aucun** coût, CMP ni marge, même
+pour le propriétaire (RG-D02, SEC-N04) : le DTO ne les porte pas, il n'y a rien à filtrer.
 """
 
 from collections.abc import Mapping
@@ -14,9 +14,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
+from types import MappingProxyType
 
+from app.domain.catalog.ids import ArticleId
 from app.domain.sales.customer import Customer
 from app.domain.sales.lines import SaleMode, SoldDetail
+from app.domain.sales.quantity_label import quantity_label, sold_piece_length
 from app.domain.sales.sale import Sale
 from app.domain.sales.values import SaleKind, SaleStatus
 from app.domain.shops.ids import PaymentModeId
@@ -47,6 +50,8 @@ class ReceiptLine:
     unit_price: int
     line_total: int
     details: tuple[SoldDetail, ...]
+    quantity_label: str
+    """« 2 », « 2,5 m », « 1 pièce (5,49 m) » (TEX-06)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,7 +86,9 @@ def build_receipt(
     modes: Mapping[PaymentModeId, PaymentMode],
     sequence: int,
     printed_at: datetime,
+    piece_lengths: Mapping[ArticleId, Decimal | None] = MappingProxyType({}),
 ) -> Receipt:
+    """`piece_lengths` : longueur actuelle de la pièce des articles vendus « à la pièce »."""
     mentions = []
     if sale.kind is SaleKind.CREDIT:
         mentions.append(Mention.CREDIT_SALE)
@@ -97,6 +104,11 @@ def build_receipt(
             unit_price=line.unit_price.amount,
             line_total=line.line_total.amount,
             details=line.details,
+            quantity_label=quantity_label(
+                line.sale_mode,
+                line.quantity,
+                sold_piece_length(line, piece_lengths.get(line.article_id)),
+            ),
         )
         for line in sale.content.lines
     )

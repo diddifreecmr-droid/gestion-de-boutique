@@ -26,9 +26,9 @@ ACCOUNTANT_KEYS = ("sale", "customer", "receivable", "revenue", "cash_in", "marg
 ACCOUNTANT_ALLOWED = {"sales_since_start", "sales_message"}
 DRIVER_KEYS = ("price", "amount", "total", "cost", "wac", "margin", "value")
 # Noms de réglages ou de schéma, jamais des montants : marge d'impression du reçu, lieu point
-# de vente, champs de saisie du profil, interrupteurs du prix minimum.
-SETTING_KEYS = {"margin_mm", "is_point_of_sale", "sale_fields", "min_price_enabled",
-                "min_price_requires_approval"}  # fmt: skip
+# de vente, champs de saisie et raccourcis de longueur du profil, interrupteurs du prix minimum.
+SETTING_KEYS = {"margin_mm", "is_point_of_sale", "sale_fields", "sale_shortcuts",
+                "min_price_enabled", "min_price_requires_approval"}  # fmt: skip
 RULES: dict[str, tuple[tuple[str, ...], set[str], tuple[int, ...]]] = {
     "seller": (SELLER_KEYS, set(), (SENTINEL_COST, MARGIN)),
     "accountant": (ACCOUNTANT_KEYS, ACCOUNTANT_ALLOWED, (SENTINEL_PRICE, MARGIN)),

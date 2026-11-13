@@ -37,6 +37,8 @@ class ReceiptLineResponse(BaseModel):
     article_name: str
     sale_mode: str
     quantity: str
+    quantity_label: str
+    """Quantité imprimée : « 2 », « 2,5 m », « 1 pièce (5,49 m) » (TEX-06)."""
     unit_price: int
     line_total: int
     details: list[DetailResponse]

@@ -43,6 +43,7 @@ export function profileBody(role: Role, minPriceEnabled = true) {
       },
     ],
     sale_fields: [],
+    sale_shortcuts: [],
     stock_units: ["unit"],
     receipt: {
       format: "80mm",

@@ -71,12 +71,14 @@ def test_entry_units_rg_x02() -> None:
     assert str(to_stock_quantity(Decimal(4), EntryUnit.UNIT, StockUnit.UNIT)) == "4"
     for unit, stock, length in (
         (EntryUnit.YARD, StockUnit.UNIT, None),
-        (EntryUnit.PIECE, meter, None),  # article non vendu à la pièce
         (EntryUnit.METER, StockUnit.PIECE, None),
     ):
         with pytest.raises(ValidationFailed) as refused:
             to_stock_quantity(Decimal(1), unit, stock, length)
         assert refused.value.details["field"] == "unit"
+    with pytest.raises(ValidationFailed) as no_length:  # SCN-L3-03 : pièce sans longueur
+        to_stock_quantity(Decimal(3), EntryUnit.PIECE, meter, None)
+    assert no_length.value.details["field"] == "piece_length_m"
     for bad in ("0", "-1", "1.5"):
         with pytest.raises(InvalidQuantity):
             to_stock_quantity(Decimal(bad), EntryUnit.UNIT, StockUnit.UNIT)  # PUR-04

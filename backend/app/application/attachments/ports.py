@@ -12,6 +12,7 @@ tests). Contrat (vérifié par `tests/contracts/test_file_storage_contract.py`) 
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Collection
 
 from app.application.shops.ports import ShopRecordRepository
 from app.domain.attachments.attachment import Attachment
@@ -37,6 +38,14 @@ class MissingFile(RuntimeError):
 
 class AttachmentRepository(ShopRecordRepository[AttachmentId, Attachment]):
     """Métadonnées des pièces jointes de la boutique (le contenu est dans `FileStorage`)."""
+
+    @abstractmethod
+    def find_many(self, ids: Collection[AttachmentId]) -> list[Attachment]:
+        """Pièces **de la boutique** parmi `ids`, en **une** lecture (vignettes, T30).
+
+        Un identifiant absent ou d'une autre boutique est simplement omis (aucune fuite) ;
+        ordre non garanti ; `ids` vide → liste vide sans lecture.
+        """
 
 
 class FileStorage(ABC):

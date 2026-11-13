@@ -20,7 +20,7 @@ from app.domain.catalog.article import Article
 from app.domain.catalog.prices import PriceKind
 from app.domain.profiles.profile import ShopProfile
 from app.domain.sales.lines import SaleLine, SaleMode, SoldDetail
-from app.domain.shared.errors import ValidationFailed
+from app.domain.shared.errors import InvalidQuantity, ValidationFailed
 from app.domain.shared.money import Money
 from app.domain.shared.quantity import TENTH, Quantity, StockUnit
 
@@ -55,8 +55,15 @@ def stock_quantity(article: Article, mode: SaleMode, quantity: Quantity) -> Quan
 
 
 def entered(item: LineInput, mode: SaleMode) -> Quantity:
+    """Quantité saisie : au dixième au mètre (2,55 m refusé, ERR3-09), entière sinon."""
     grain = StockUnit.METER if mode is SaleMode.METER else StockUnit.UNIT
-    return Quantity.of(item.quantity, grain).require_positive("lines.quantity")
+    try:
+        quantity = Quantity.of(item.quantity, grain)
+    except InvalidQuantity as exc:  # même erreur, avec le champ fautif pour le client
+        raise InvalidQuantity(
+            exc.message, details={**exc.details, "field": "lines.quantity"}
+        ) from exc
+    return quantity.require_positive("lines.quantity")
 
 
 def check_details(details: tuple[SoldDetail, ...], profile: ShopProfile) -> None:

@@ -2790,6 +2790,16 @@
             }
           },
           {
+            "name": "with_thumbnails",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "With Thumbnails"
+            }
+          },
+          {
             "name": "authorization",
             "in": "header",
             "required": false,
@@ -10742,6 +10752,16 @@
               }
             ],
             "title": "Price History"
+          },
+          "thumbnail": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThumbnailResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -16105,6 +16125,13 @@
             "type": "array",
             "title": "Sale Fields"
           },
+          "sale_shortcuts": {
+            "items": {
+              "$ref": "#/components/schemas/SaleShortcutResponse"
+            },
+            "type": "array",
+            "title": "Sale Shortcuts"
+          },
           "stock_units": {
             "items": {
               "type": "string"
@@ -16171,6 +16198,7 @@
           "menu",
           "article_fields",
           "sale_fields",
+          "sale_shortcuts",
           "stock_units",
           "receipt",
           "min_price_enabled",
@@ -16882,6 +16910,10 @@
             "type": "string",
             "title": "Quantity"
           },
+          "quantity_label": {
+            "type": "string",
+            "title": "Quantity Label"
+          },
           "unit_price": {
             "type": "integer",
             "title": "Unit Price"
@@ -16903,6 +16935,7 @@
           "article_name",
           "sale_mode",
           "quantity",
+          "quantity_label",
           "unit_price",
           "line_total",
           "details"
@@ -18922,6 +18955,55 @@
         ],
         "title": "SaleReturnsResponse"
       },
+      "SaleShortcutResponse": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "basis": {
+            "type": "string",
+            "title": "Basis"
+          },
+          "length_m": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Length M"
+          },
+          "yards": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Yards"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "label",
+          "basis",
+          "length_m",
+          "yards"
+        ],
+        "title": "SaleShortcutResponse",
+        "description": "Raccourci de longueur à la vente (RG-X05) ; calcul : `domain/profiles/textile.py`.\n\n`piece` : 1 pièce « à la pièce » si l'article se vend à la pièce, sinon la longueur de la\npièce au mètre ; `half_piece` : moitié de la longueur de la pièce, au mètre ; `length` :\n`length_m` mètres. Longueur de pièce absente : `yards` x 0,9144. Arrondi au dixième, demi\nvers le haut (pièce de 5,49 m → demi-pièce 2,7 m)."
+      },
       "SaleTotalsResponse": {
         "properties": {
           "count": {
@@ -20628,6 +20710,27 @@
           "temporary_pin"
         ],
         "title": "TemporaryPinResponse"
+      },
+      "ThumbnailResponse": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "url",
+          "expires_at"
+        ],
+        "title": "ThumbnailResponse",
+        "description": "Lien signé court vers la photo de l'article (même forme que `GET /attachments/…/url`)."
       },
       "TokenResponse": {
         "properties": {

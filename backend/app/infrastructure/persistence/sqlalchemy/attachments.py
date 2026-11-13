@@ -1,5 +1,6 @@
 """Dépôt SQL des pièces jointes (métadonnées ; contenu dans `FileStorage`)."""
 
+from collections.abc import Collection
 from typing import Any
 
 import sqlalchemy as sa
@@ -16,6 +17,16 @@ from app.infrastructure.persistence.sqlalchemy.tables_attachments import attachm
 
 class SqlAttachmentRepository(SqlRepository[AttachmentId, Attachment], AttachmentRepository):
     table = attachment
+
+    def find_many(self, ids: Collection[AttachmentId]) -> list[Attachment]:
+        wanted = sorted({ident.value for ident in ids})
+        if not wanted:
+            return []
+        statement = sa.select(self.table).where(
+            self.table.c.shop_id == self.shop_id.value, self.table.c.id.in_(wanted)
+        )
+        rows = self._transaction.fetch_all(statement)
+        return self._tracked([self._from_row(row) for row in rows])
 
     def _to_columns(self, aggregate: Attachment) -> dict[str, Any]:
         file = aggregate.file

@@ -6,7 +6,8 @@
 | Yard | Mètre | `yards_to_meters` : x 0,9144, dixième le plus proche, demi vers le haut |
 | Pièce | Mètre (vendu à la pièce) | pièces x longueur de la pièce, même arrondi |
 
-Toute autre combinaison est refusée (`ValidationFailed`, champ `unit`). La quantité saisie est
+Toute autre combinaison est refusée (`ValidationFailed`, champ `unit`) ; des pièces d'un article
+sans longueur de pièce : champ `piece_length_m` (SCN-L3-03). La quantité saisie est
 strictement positive, entière en Unité et Pièce, au dixième en Mètre et Yard (RG-T08) ; la
 quantité de stock obtenue l'est aussi (0,04 yard ne fait pas 0 m de stock).
 """
@@ -59,7 +60,10 @@ def to_stock_quantity(
         raise _incompatible(unit, stock_unit)
     if unit is EntryUnit.YARD:
         meters = yards_to_meters(value)
-    elif unit is EntryUnit.PIECE and piece_length_m is not None:
+    elif unit is EntryUnit.PIECE:
+        if piece_length_m is None:  # SCN-L3-03 : la longueur de la pièce manque à l'article
+            msg = "Longueur de la pièce inconnue pour cet article : saisir en mètres ou en yards"
+            raise ValidationFailed(msg, details={"field": "piece_length_m"})
         product = (value * piece_length_m).quantize(TENTH, rounding=ROUND_HALF_UP)
         meters = Quantity.of(product, StockUnit.METER)
     else:

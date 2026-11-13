@@ -1795,6 +1795,7 @@ export interface components {
       wac?: number | null;
       /** Price History */
       price_history?: components["schemas"]["PriceHistoryResponse"][] | null;
+      thumbnail?: components["schemas"]["ThumbnailResponse"] | null;
     };
     /**
      * AttachmentKind
@@ -3435,6 +3436,8 @@ export interface components {
       article_fields: components["schemas"]["FieldResponse"][];
       /** Sale Fields */
       sale_fields: components["schemas"]["FieldResponse"][];
+      /** Sale Shortcuts */
+      sale_shortcuts: components["schemas"]["SaleShortcutResponse"][];
       /** Stock Units */
       stock_units: string[];
       receipt: components["schemas"]["ReceiptSettingsResponse"];
@@ -3672,6 +3675,8 @@ export interface components {
       sale_mode: string;
       /** Quantity */
       quantity: string;
+      /** Quantity Label */
+      quantity_label: string;
       /** Unit Price */
       unit_price: number;
       /** Line Total */
@@ -4283,6 +4288,27 @@ export interface components {
       /** Balances */
       balances: components["schemas"]["LineBalanceResponse"][];
     };
+    /**
+     * SaleShortcutResponse
+     * @description Raccourci de longueur à la vente (RG-X05) ; calcul : `domain/profiles/textile.py`.
+     *
+     *     `piece` : 1 pièce « à la pièce » si l'article se vend à la pièce, sinon la longueur de la
+     *     pièce au mètre ; `half_piece` : moitié de la longueur de la pièce, au mètre ; `length` :
+     *     `length_m` mètres. Longueur de pièce absente : `yards` x 0,9144. Arrondi au dixième, demi
+     *     vers le haut (pièce de 5,49 m → demi-pièce 2,7 m).
+     */
+    SaleShortcutResponse: {
+      /** Code */
+      code: string;
+      /** Label */
+      label: string;
+      /** Basis */
+      basis: string;
+      /** Length M */
+      length_m: string | null;
+      /** Yards */
+      yards: string | null;
+    };
     /** SaleTotalsResponse */
     SaleTotalsResponse: {
       /** Count */
@@ -4776,6 +4802,19 @@ export interface components {
     TemporaryPinResponse: {
       /** Temporary Pin */
       temporary_pin: string;
+    };
+    /**
+     * ThumbnailResponse
+     * @description Lien signé court vers la photo de l'article (même forme que `GET /attachments/…/url`).
+     */
+    ThumbnailResponse: {
+      /** Url */
+      url: string;
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
     };
     /**
      * TokenResponse
@@ -6125,6 +6164,7 @@ export interface operations {
         sort?: components["schemas"]["ArticleOrder"];
         cursor?: string | null;
         limit?: number | null;
+        with_thumbnails?: boolean;
       };
       header: {
         authorization?: string | null;

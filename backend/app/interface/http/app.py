@@ -83,7 +83,7 @@ def create_app(
         for build in (build_shop_profile_router, build_places_router, build_members_router):
             shop.include(build(shops), Module.CORE)
     if catalog is not None:
-        shop.include(build_catalog_router(catalog), Module.CATALOG)
+        shop.include(build_catalog_router(catalog, prefix), Module.CATALOG)
     if expenses is not None:
         shop.include(build_expenses_router(expenses), Module.EXPENSES)
         shop.include(build_expense_settings_router(expenses), Module.EXPENSES)

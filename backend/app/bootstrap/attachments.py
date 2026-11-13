@@ -30,6 +30,8 @@ from app.interface.http.routes.attachment_components import AttachmentsComponent
 class AttachmentsModule:
     http: AttachmentsComponents
     storage: FileStorage
+    signer: LinkSigner
+    """Signataire des liens courts, partagé avec les vignettes du catalogue (T30)."""
 
 
 def build_storage(settings: Settings) -> FileStorage:
@@ -72,4 +74,4 @@ def build_attachments(
         read_content=ReadAttachmentContent(uows, clock, signer, files),
         guard=identity.auth.guard,
     )
-    return AttachmentsModule(http=http, storage=files)
+    return AttachmentsModule(http=http, storage=files, signer=signer)

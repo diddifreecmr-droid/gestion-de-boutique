@@ -107,6 +107,7 @@ export function receiptOf(sale: SaleResult, sequence: number): Receipt {
       article_name: line.article_name,
       sale_mode: line.sale_mode,
       quantity: line.quantity,
+      quantity_label: line.quantity, // vitrine Motos : ventes à l'unité seulement
       unit_price: line.unit_price,
       line_total: line.line_total,
       details: line.details,

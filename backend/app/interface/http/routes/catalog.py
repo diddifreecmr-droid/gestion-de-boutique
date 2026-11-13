@@ -3,6 +3,10 @@
 Création : 201, ou 200 si l'`id` fourni existe déjà (rejeu idempotent, § 6.1). Chaque réponse
 est la fiche relue **avec les droits de l'acteur** (`GetArticle`) : un comptable qui crée un
 article ne reçoit pas plus de prix qu'en lecture. Clés invisibles absentes du JSON (TR-05).
+
+Liste `with_thumbnails=true` (UC-PAP-02, T30) : chaque article porte `thumbnail` (lien signé
+court vers sa photo, ou `null`), délivré après contrôle des droits ; réponse `no-store` (les
+liens expirent en 60 s).
 """
 
 from dataclasses import dataclass
@@ -73,7 +77,7 @@ def _patch(body: ArticlePatch) -> dict[str, Any]:
     return patch
 
 
-def build_catalog_router(catalog: CatalogComponents) -> APIRouter:
+def build_catalog_router(catalog: CatalogComponents, api_prefix: str) -> APIRouter:
     router = APIRouter(tags=["catalog"])
     Member = Annotated[Actor, Depends(catalog.guard.current_actor)]  # noqa: N806
     sparse: dict[str, Any] = {"response_model_exclude_unset": True}
@@ -84,6 +88,7 @@ def build_catalog_router(catalog: CatalogComponents) -> APIRouter:
     @router.get("/shops/{shop_id}/articles", **sparse)
     def search_articles(
         actor: Member,
+        response: Response,
         q: Annotated[str | None, Query(max_length=100)] = None,
         status_filter: Annotated[str, Query(alias="status", pattern="^(active|archived|all)$")] = (
             "active"
@@ -91,12 +96,19 @@ def build_catalog_router(catalog: CatalogComponents) -> APIRouter:
         sort: ArticleOrder = ArticleOrder.NAME,
         cursor: Annotated[str | None, Query(max_length=512)] = None,
         limit: int | None = None,
+        with_thumbnails: bool = False,
     ) -> ArticleListResponse:
         wanted = None if status_filter == ALL_STATUSES else ArticleStatus(status_filter)
         found = catalog.search.execute(
-            actor, ArticleQuery(q, wanted), ArticlePageRequest.parse(cursor, limit), sort
+            actor,
+            ArticleQuery(q, wanted),
+            ArticlePageRequest.parse(cursor, limit),
+            sort,
+            with_thumbnails=with_thumbnails,
         )
-        return list_response(found)
+        if with_thumbnails:
+            response.headers["Cache-Control"] = "no-store"
+        return list_response(found, api_prefix)
 
     @router.post("/shops/{shop_id}/articles", status_code=status.HTTP_201_CREATED, **sparse)
     def create_article(

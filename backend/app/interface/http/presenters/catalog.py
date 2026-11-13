@@ -8,14 +8,17 @@ quoi » vient de `CatalogVisibility` (application) ; ce module n'en prend aucune
 from decimal import Decimal
 from typing import Any
 
+from app.application.attachments.links import SignedLink
 from app.application.catalog.use_cases.read_articles import ArticleList, ArticleSheet
 from app.application.catalog.visibility import CatalogVisibility
 from app.domain.catalog.article import Article
 from app.domain.catalog.prices import MINIMUM_KINDS, PriceHistory, PriceKind
+from app.interface.http.presenters.attachment_links import content_url
 from app.interface.http.schemas.catalog import (
     ArticleListResponse,
     ArticleResponse,
     PriceHistoryResponse,
+    ThumbnailResponse,
 )
 
 
@@ -94,17 +97,28 @@ def sheet_response(sheet: ArticleSheet) -> ArticleResponse:
     )
 
 
-def list_response(found: ArticleList) -> ArticleListResponse:
-    cursor = found.page.next_cursor
-    return ArticleListResponse(
-        items=[
-            article_response(
-                article,
-                found.visibility,
-                min_price_enabled=found.min_price_enabled,
-                shop_threshold=found.shop_threshold,
-            )
-            for article in found.page.items
-        ],
-        next_cursor=None if cursor is None else cursor.encode(),
+def _with_thumbnail(
+    item: ArticleResponse, link: SignedLink | None, api_prefix: str
+) -> ArticleResponse:
+    thumbnail = (
+        None
+        if link is None
+        else ThumbnailResponse(url=content_url(api_prefix, link), expires_at=link.expires_at)
     )
+    return item.model_copy(update={"thumbnail": thumbnail})
+
+
+def list_response(found: ArticleList, api_prefix: str) -> ArticleListResponse:
+    cursor = found.page.next_cursor
+    items = []
+    for article in found.page.items:
+        item = article_response(
+            article,
+            found.visibility,
+            min_price_enabled=found.min_price_enabled,
+            shop_threshold=found.shop_threshold,
+        )
+        if found.thumbnails is not None:
+            item = _with_thumbnail(item, found.thumbnails[article.id], api_prefix)
+        items.append(item)
+    return ArticleListResponse(items=items, next_cursor=None if cursor is None else cursor.encode())

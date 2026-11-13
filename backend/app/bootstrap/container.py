@@ -59,7 +59,8 @@ def build_app(env_file: Path | None = DEFAULT_ENV_FILE) -> FastAPI:
     identity = build_identity(settings, core=core)
     journal = build_journal(settings, clock=clock, guard=identity.auth.guard, core=core)
     shops = build_shops(identity)
-    catalog = build_catalog(identity, ranking=sales_ranking(clock))
+    attachments = build_attachments(settings, identity)
+    catalog = build_catalog(identity, ranking=sales_ranking(clock), signer=attachments.signer)
     expenses = build_expenses(identity)
     stock = build_stock(identity)
     purchasing = build_purchasing(identity, stock.ledger)
@@ -67,7 +68,6 @@ def build_app(env_file: Path | None = DEFAULT_ENV_FILE) -> FastAPI:
     receivables = build_receivables(identity)
     reporting = build_reporting(identity)
     sync = build_sync(identity, journal, sales, expenses)
-    attachments = build_attachments(settings, identity)
     app = create_app(
         http_config_from(settings),
         identity.auth,
