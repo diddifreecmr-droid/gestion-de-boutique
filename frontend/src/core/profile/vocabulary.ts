@@ -3,7 +3,6 @@
  * parlent de « marque », « modèle » ou « châssis » que si le profil servi a ces champs, et
  * nomment les rôles avec les libellés du profil (« Vendeur » en Motos, « Employé » ailleurs).
  */
-import type { Role } from "../auth/me";
 
 /** Champ décrit par le profil (code et libellé suffisent ici). */
 export interface FieldLabel {
@@ -44,7 +43,6 @@ export function rolePlural(label: string): string {
 }
 
 /** Libellé servi d'un rôle, en minuscules dans une phrase : « les employés ». */
-export function roleWord(roleLabel: (role: Role) => string, role: Role, plural = false): string {
-  const label = roleLabel(role);
+export function roleWord(label: string, plural = false): string {
   return (plural ? rolePlural(label) : label).toLocaleLowerCase("fr");
 }

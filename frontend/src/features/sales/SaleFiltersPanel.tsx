@@ -100,7 +100,7 @@ export function SaleFiltersPanel({ refs, value, onChange }: SaleFiltersPanelProp
             label={profile.roleLabel("seller")}
             options={withAll(
               sellers.map((m) => ({ id: m.user_id, name: m.name })),
-              `Tous les ${roleWord(profile.roleLabel, "seller", true)}`,
+              `Tous les ${roleWord(profile.roleLabel("seller"), true)}`,
             )}
             value={value.sellerId}
             onChange={(sellerId) => {

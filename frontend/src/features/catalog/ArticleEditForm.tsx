@@ -13,6 +13,7 @@ import { ExtraFields } from "./ExtraFields";
 import { notesValue, thresholdError, thresholdValue } from "./extraValues";
 import { changedValues, checkDraft, draftOf } from "./fieldValues";
 import { InlineMessage } from "./InlineMessage";
+import { shownFields, textileErrors, withChange } from "./textileFields";
 import { SubmitFailureNotice } from "./SubmitFailureNotice";
 import { useCatalogSubmit } from "./useCatalogSubmit";
 
@@ -42,7 +43,11 @@ export function ArticleEditForm(props: ArticleEditFormProps) {
   const [reason, setReason] = useState("");
   const [checked, setChecked] = useState(false);
   const [unchanged, setUnchanged] = useState(false);
-  const errors = checked ? checkDraft(fields, draft) : {};
+  const problems = () => ({
+    ...checkDraft(shownFields(fields, draft), draft),
+    ...textileErrors(draft),
+  });
+  const errors = checked ? problems() : {};
 
   function patch(): ArticlePatchRequest | null {
     const changed = changedValues(fields, initial, draft);
@@ -60,7 +65,7 @@ export function ArticleEditForm(props: ArticleEditFormProps) {
   function onSubmit(event: FormEvent) {
     event.preventDefault();
     setChecked(true);
-    const invalid = Object.keys(checkDraft(fields, draft)).length > 0;
+    const invalid = Object.keys(problems()).length > 0;
     if (invalid || thresholdError(extra.threshold) !== undefined) return;
     const body = patch();
     setUnchanged(body === null);
@@ -81,7 +86,7 @@ export function ArticleEditForm(props: ArticleEditFormProps) {
         draft={draft}
         errors={errors}
         onChange={(code, value) => {
-          setDraft((current) => ({ ...current, [code]: value }));
+          setDraft((current) => withChange(current, code, value));
         }}
         extra={<ExtraFields draft={extra} onChange={setExtra} />}
       />

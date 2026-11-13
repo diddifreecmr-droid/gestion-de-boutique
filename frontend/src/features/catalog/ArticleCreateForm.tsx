@@ -7,13 +7,18 @@ import type {
   ArticleResponse,
 } from "../../core/gateways/catalogAdminContract";
 import { useCatalogAdmin } from "../../core/gateways/catalogAdminContext";
-import { AmountField, Button } from "../../shared/ui";
+import { Button } from "../../shared/ui";
 import { ArticleFieldsEditor } from "./ArticleFieldsEditor";
 import { catalogRights, type CatalogRole } from "./catalogRights";
+import { CreatePriceFields } from "./CreatePriceFields";
+import { NO_PRICES } from "./createPrices";
 import { ExtraFields } from "./ExtraFields";
 import { notesValue, thresholdError, thresholdValue } from "./extraValues";
-import { checkDraft, emptyDraft, fieldValues } from "./fieldValues";
+import { checkDraft, emptyDraft, fieldValues, type FieldDraft } from "./fieldValues";
+import { draftName, repeatedNameFix } from "./nameGuard";
+import { RepeatedNameNotice } from "./RepeatedNameNotice";
 import { SubmitFailureNotice } from "./SubmitFailureNotice";
+import { draftPriceLabels, shownFields, textileErrors, withChange } from "./textileFields";
 import { useCatalogSubmit } from "./useCatalogSubmit";
 
 export interface ArticleCreateFormProps {
@@ -25,55 +30,55 @@ export interface ArticleCreateFormProps {
 }
 
 /**
- * Création : champs obligatoires du profil (Motos : marque + modèle), prix de base pour le
- * propriétaire (UC-STK-01, étape 4), le reste sous « Plus de détails ». L'`id` (UUIDv7) est
- * tiré une fois : renvoyer le formulaire après une coupure ne crée pas de second article.
+ * Création : champs obligatoires du profil (Motos : marque + modèle ; Textile : unité, vente à
+ * la pièce, longueur), prix pour le propriétaire (UC-STK-01, étape 4), le reste sous « Plus de
+ * détails ». Un nom qui répète un mot est signalé avant l'envoi (garde-fou, VOC-04). L'`id`
+ * (UUIDv7) est tiré une fois : renvoyer le formulaire après une coupure ne crée pas de doublon.
  */
 export function ArticleCreateForm(props: ArticleCreateFormProps) {
   const { shopId, form } = props;
   const gateway = useCatalogAdmin();
   const submit = useCatalogSubmit();
   const [id] = useState(() => uuidV7());
-  const [draft, setDraft] = useState(() => emptyDraft(form.fields));
+  const [draft, setDraft] = useState<FieldDraft>(() => emptyDraft(form.fields));
   const [extra, setExtra] = useState({ threshold: "", notes: "" });
-  const [base, setBase] = useState<number | null>(null);
-  const [minimum, setMinimum] = useState<number | null>(null);
+  const [prices, setPrices] = useState(NO_PRICES);
   const [checked, setChecked] = useState(false);
-  const errors = checked ? checkDraft(form.fields, draft) : {};
+  /** Nom déjà signalé « mot répété » : un second appui le garde tel quel. */
+  const [warnedName, setWarnedName] = useState<string | null>(null);
+  const fields = shownFields(form.fields, draft);
+  const problems = () => ({ ...checkDraft(fields, draft), ...textileErrors(draft) });
+  const errors = checked ? problems() : {};
   const ownerPrices = catalogRights(props.role).setPrices;
+  const labels = draftPriceLabels(form.fields, draft);
+  const name = draftName(draft);
+  const fixed = repeatedNameFix(name);
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
     setChecked(true);
-    const invalid = Object.keys(checkDraft(form.fields, draft)).length > 0;
-    if (invalid || thresholdError(extra.threshold) !== undefined) return;
+    if (Object.keys(problems()).length > 0 || thresholdError(extra.threshold) !== undefined) return;
+    if (fixed !== null && warnedName !== name) {
+      setWarnedName(name);
+      return;
+    }
     const body: ArticleCreateRequest = {
       id,
-      fields: fieldValues(form.fields, draft),
+      fields: fieldValues(fields, draft),
       alert_threshold: thresholdValue(extra.threshold),
       notes: notesValue(extra.notes),
     };
     // Le comptable n'envoie aucun prix : le serveur le refuserait (PRICE_SET, 403).
     if (ownerPrices) {
-      body.base_price = base;
-      if (form.minPriceEnabled) body.min_price = minimum;
+      body.base_price = prices.base;
+      if (form.minPriceEnabled) body.min_price = prices.minimum;
+      if (labels.piece !== null) {
+        body.base_price_piece = prices.piece;
+        if (form.minPriceEnabled) body.min_price_piece = prices.minimumPiece;
+      }
     }
     void submit.run(() => gateway.createArticle(shopId, body), props.onCreated);
   }
-
-  const prices = ownerPrices && (
-    <>
-      <AmountField
-        label="Prix de base (facultatif)"
-        hint="Vide : le prix sera tapé à chaque vente"
-        value={base}
-        onChange={setBase}
-      />
-      {form.minPriceEnabled && (
-        <AmountField label="Prix minimum (facultatif)" value={minimum} onChange={setMinimum} />
-      )}
-    </>
-  );
 
   return (
     <form
@@ -87,11 +92,33 @@ export function ArticleCreateForm(props: ArticleCreateFormProps) {
         draft={draft}
         errors={errors}
         onChange={(code, value) => {
-          setDraft((current) => ({ ...current, [code]: value }));
+          setDraft((current) => withChange(current, code, value));
         }}
-        main={prices}
+        main={
+          ownerPrices && (
+            <CreatePriceFields
+              labels={labels}
+              minPriceEnabled={form.minPriceEnabled}
+              value={prices}
+              onChange={setPrices}
+            />
+          )
+        }
         extra={<ExtraFields draft={extra} onChange={setExtra} />}
       />
+      {fixed !== null && warnedName === name && (
+        <RepeatedNameNotice
+          name={name}
+          fixed={fixed}
+          {...("name" in draft
+            ? {
+                onUse: () => {
+                  setDraft((current) => ({ ...current, name: fixed }));
+                },
+              }
+            : {})}
+        />
+      )}
       {submit.failure !== null && (
         <SubmitFailureNotice
           failure={submit.failure}

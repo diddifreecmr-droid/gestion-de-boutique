@@ -32,7 +32,7 @@ export function AlertsSection({
     <Section title="Alertes en attente" defaultOpen>
       <ListCard label="Erreurs signalées">
         <ListCardRow
-          title={`Erreurs signalées par les ${roleWord(profile.roleLabel, "seller", true)}`}
+          title={`Erreurs signalées par les ${roleWord(profile.roleLabel("seller"), true)}`}
           subtitle={subtitle}
           {...(typeof errorReports === "number" && errorReports > 0
             ? { badge: <Badge status="warning">À traiter</Badge> }

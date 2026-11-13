@@ -2,6 +2,7 @@ import type { ProfileFieldResponse } from "../../core/gateways/catalogAdminContr
 import { ChoiceChips, TextField } from "../../shared/ui";
 import { fieldKind } from "./fieldValues";
 import { InlineMessage } from "./InlineMessage";
+import { choiceLabel } from "./textileFields";
 
 export interface ProfileFieldInputProps {
   spec: ProfileFieldResponse;
@@ -22,7 +23,7 @@ export function ProfileFieldInput({ spec, value, error, onChange }: ProfileField
     const options =
       kind === "boolean"
         ? YES_NO
-        : spec.choices.map((choice) => ({ value: choice, label: choice }));
+        : spec.choices.map((choice) => ({ value: choice, label: choiceLabel(spec, choice) }));
     return (
       <div className="flex flex-col gap-2">
         <ChoiceChips
