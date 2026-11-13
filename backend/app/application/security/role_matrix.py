@@ -83,6 +83,10 @@ _MATRIX: dict[Permission, Mapping[Role, Access]] = {
     P.SALE_UPDATE: _r(T, N, N, N),
     P.SALE_CANCEL: _r(T, N, N, N),
     P.SALE_RETURN: _r(T, N, N, N),
+    # UC-PAP-01 « Échange » [QC-4] : Propriétaire Tout (délai dépassable, journal sensible) ;
+    # Vendeur Siens **si** le réglage `employee_exchange_allowed` est vrai et dans le délai
+    # `exchange_days` (contrôlés par le cas d'utilisation, `sales/exchange_rights.py`).
+    P.SALE_EXCHANGE: _r(T, S, N, N),
     # [Q-32] « Tout » : le propriétaire peut aussi signaler (aligné sur la recette M15).
     P.SALE_ERROR_REPORT: _r(T, S, N, N),
     # « Vendre au-dessous du prix minimum » : Tout | — | — | —

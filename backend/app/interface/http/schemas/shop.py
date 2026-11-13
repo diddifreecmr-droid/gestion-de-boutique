@@ -74,6 +74,10 @@ class ProfileResponse(_Strict):
     receipt: ReceiptSettingsResponse
     min_price_enabled: bool
     min_price_requires_approval: bool
+    exchange_days: int | None
+    """Délai d'échange (journées) ; `null` = sans limite (UC-PAP-01)."""
+    employee_exchange_allowed: bool
+    """Vrai : le vendeur peut échanger ses ventes dans le délai (QC-4, bouton « Échanger »)."""
     default_location_id: str | None
     entitlements: dict[str, bool]
     """Droits d'offre de la boutique (TR-26) : `{"offline_capture": false}` en V1. Le frontend
@@ -95,6 +99,7 @@ class SettingsResponse(_Strict):
     min_price_enabled: bool
     min_price_requires_approval: bool
     exchange_days: int | None
+    employee_exchange_allowed: bool
     truck_silent_hours: int | None
     transfer_in_transit_days: int | None
     reception_location_id: str | None
@@ -115,6 +120,7 @@ class SettingsPatch(_Strict):
     min_price_enabled: bool | None = None
     min_price_requires_approval: bool | None = None
     exchange_days: int | None = None
+    employee_exchange_allowed: bool | None = None
     truck_silent_hours: int | None = None
     transfer_in_transit_days: int | None = None
     reception_location_id: str | None = Field(default=None, max_length=64)

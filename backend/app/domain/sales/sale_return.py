@@ -144,6 +144,7 @@ class SaleReturn:
         now: datetime,
         exchange_sale_id: SaleId | None = None,
         return_id: SaleReturnId | None = None,
+        late: bool = False,
     ) -> "SaleReturn":
         sale.require_valid()
         kind = ReturnKind.RETURN if exchange_sale_id is None else ReturnKind.EXCHANGE
@@ -163,9 +164,14 @@ class SaleReturn:
         if refund is not None and refund.amount > settled.refund_max:
             raise RefundOverpayment(refund=refund.amount, maximum=settled.refund_max)
         made.refund, made.credit_reduction = refund, settled.credit_reduction
+        if late and exchange_sale_id is None:
+            msg = "Seul un échange peut être hors délai"
+            raise ValueError(msg)
         label = "Échange" if exchange_sale_id is not None else "Retour"
+        label += " hors délai" if late else ""
+        event = ev.SaleExchangedLate if late else ev.SaleReturnRecorded
         made.events.record(
-            ev.SaleReturnRecorded(
+            event(
                 shop_id=sale.shop_id,
                 occurred_at=now,
                 performer=performer,

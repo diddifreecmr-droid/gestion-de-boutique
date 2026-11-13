@@ -110,6 +110,8 @@ def profile_response(view: ShopProfileView) -> ProfileResponse:
         receipt=_receipt(shop, view.settings),
         min_price_enabled=view.settings.min_price_enabled,
         min_price_requires_approval=view.settings.min_price_requires_approval,
+        exchange_days=view.settings.exchange_days,
+        employee_exchange_allowed=view.settings.employee_exchange_allowed,
         default_location_id=None if location is None else str(location),
         entitlements={e.value: e in view.entitlements for e in Entitlement},
     )
@@ -132,6 +134,7 @@ def settings_response(shop: Shop, values: SettingsValues, version: int) -> Setti
         min_price_enabled=values.min_price_enabled,
         min_price_requires_approval=values.min_price_requires_approval,
         exchange_days=values.exchange_days,
+        employee_exchange_allowed=values.employee_exchange_allowed,
         truck_silent_hours=values.truck_silent_hours,
         transfer_in_transit_days=values.transfer_in_transit_days,
         reception_location_id=None if location is None else str(location),

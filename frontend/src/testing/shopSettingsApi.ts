@@ -108,6 +108,7 @@ export function settings(overrides: Partial<ShopSettings> = {}): ShopSettings {
     min_price_enabled: true,
     min_price_requires_approval: false,
     exchange_days: null,
+    employee_exchange_allowed: false,
     truck_silent_hours: null,
     transfer_in_transit_days: 7,
     reception_location_id: "loc-garoua",
