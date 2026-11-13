@@ -5,6 +5,7 @@ Un inventaire est enregistré **d'un bloc** : la ligne `inventory` suit le gabar
 transaction (le verrou de la ligne mère protège ses lignes).
 """
 
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
@@ -158,6 +159,10 @@ class SqlInventoryRepository(SqlListing[InventoryId, Inventory], InventoryReposi
             self.table.c.id, where=self.table.c.open_location_id == location_id.value
         )
         return found[0] if found else None
+
+    def started_since(self, since: datetime) -> list[Inventory]:
+        c = self.table.c
+        return self._select_all(c.started_at, c.id, where=c.started_at >= to_db(since))
 
 
 SQL_STOCK_REPOSITORIES = (

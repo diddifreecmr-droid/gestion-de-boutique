@@ -5,7 +5,8 @@
 - Champs à unicité promus en colonnes : `brand_model_key`, `name_key` (profils sans modèle) et
   `reference_key` (clés pliées, `NULL` = non contraint) portent les contraintes
   `article_brand_model` / `article_name` / `article_reference`, noms des `UniqueKey` du port
-  (`application/catalog/ports.py`).
+  (`application/catalog/ports.py`). Article retiré par l'annulation de son import
+  (`keys_released`, migration 0020, QC-6) : ses trois clés sont écrites `NULL` (libérées).
 - `search_key` (recherche en sous-chaîne) et `sort_key` (ordre et curseur) sont calculés par
   le domaine : index `(shop_id, sort_key, id)` pour la liste paginée.
 - Montants `BIGINT` ≥ 0 (`CHECK`) ; quantités `NUMERIC(12,1)` ; aucune clé étrangère
@@ -43,6 +44,7 @@ article = sa.Table(
     sa.Column("attributes", sa.JSON, nullable=False),
     *(sa.Column(name, sa.BigInteger, nullable=True) for name in _PRICES),
     sa.Column("status", sa.String(16), nullable=False),
+    sa.Column("keys_released", sa.Boolean, nullable=False, server_default=sa.false()),
     sa.Column("created_at", _TS, nullable=False),
     sa.UniqueConstraint("shop_id", "brand_model_key", name="article_brand_model"),
     sa.UniqueConstraint("shop_id", "name_key", name="article_name"),

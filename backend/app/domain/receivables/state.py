@@ -108,5 +108,5 @@ class ReceivableState:
 
     def require_not_cancelled(self) -> None:
         if self.sale_cancellation is not None:
-            msg = "Cette créance est annulée (vente annulée)"
+            msg = "Cette créance est annulée (vente ou import annulé)"
             raise InvalidStateTransition(msg, details={"status": self.status.value})

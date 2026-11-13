@@ -7,7 +7,8 @@
   d'origine, description obligatoire, vendeur responsable facultatif ; elle ne compte ni dans
   les ventes ni dans les marges (aucune vente, aucun mouvement de stock).
 - Statut, total versé, reste, ancienneté : calculés (`state.py`) ; opérations dans
-  `book.py` (versements, perte), `sale_link.py` (vente liée) et `tracking.py` (suivi).
+  `book.py` (versements, perte), `sale_link.py` (vente liée), `import_link.py` (annulation
+  avec son lot d'import, QC-6) et `tracking.py` (suivi).
 """
 
 from dataclasses import dataclass, field
@@ -19,6 +20,7 @@ from app.domain.receivables import events as ev
 from app.domain.receivables.book import InstallmentBook
 from app.domain.receivables.follow_up import Guarantor, Reminder
 from app.domain.receivables.ids import ReceivableId, ReminderId, receivable_id_for_sale
+from app.domain.receivables.import_link import ImportLink
 from app.domain.receivables.installment import Installment
 from app.domain.receivables.sale_link import SaleLink
 from app.domain.receivables.tracking import Tracking
@@ -40,7 +42,7 @@ from app.domain.shops.values import clean_optional, clean_text
 
 
 @dataclass(eq=False, kw_only=True)
-class Receivable(InstallmentBook, SaleLink, Tracking):
+class Receivable(InstallmentBook, SaleLink, ImportLink, Tracking):
     id: ReceivableId
     shop_id: ShopId
     customer_id: CustomerId

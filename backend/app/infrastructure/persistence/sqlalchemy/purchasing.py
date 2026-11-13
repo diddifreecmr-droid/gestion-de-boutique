@@ -35,7 +35,7 @@ class SqlSupplierRepository(SqlListing[SupplierId, Supplier], SupplierRepository
         details = aggregate.details
         return {
             "name": details.name,
-            "name_key": aggregate.name_key,
+            "name_key": aggregate.unique_name,
             "phone": details.phone,
             "city": details.city,
             "country": details.country,
@@ -58,11 +58,13 @@ class SqlSupplierRepository(SqlListing[SupplierId, Supplier], SupplierRepository
             shop_id=ShopId(row["shop_id"]),
             details=details,
             created_at=from_db(row["created_at"]),
+            released=row["name_key"] is None,
             version=int(row["version"]),
         )
 
     def list_all(self) -> list[Supplier]:
-        return self._select_all(self.table.c.name_key, self.table.c.id)
+        suppliers = self._select_all(self.table.c.id)  # clé `NULL` des retirés : tri en mémoire
+        return sorted(suppliers, key=lambda supplier: (supplier.name_key, supplier.id))
 
 
 class SqlPurchaseRepository(SqlListing[PurchaseId, Purchase], PurchaseRepository):
@@ -140,6 +142,10 @@ class SqlPurchaseRepository(SqlListing[PurchaseId, Purchase], PurchaseRepository
         c = self.table.c
         where = sa.and_(c.purchase_date >= first_day, c.purchase_date <= last_day)
         return self._select_all(c.entry_at.desc(), c.id.desc(), where=where)
+
+    def for_supplier(self, supplier_id: SupplierId) -> list[Purchase]:
+        c = self.table.c
+        return self._select_all(c.entry_at, c.id, where=c.supplier_id == supplier_id.value)
 
 
 SQL_PURCHASING_REPOSITORIES = (SqlSupplierRepository, SqlPurchaseRepository)

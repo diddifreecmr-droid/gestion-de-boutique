@@ -1548,10 +1548,62 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** List Imports */
+    get: operations["list_imports"];
     put?: never;
     /** Confirm */
     post: operations["confirm_import"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/imports/{batch_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Import */
+    get: operations["get_import"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/imports/{batch_id}/errors.xlsx": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Download Errors */
+    get: operations["download_import_errors"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/imports/{batch_id}/cancel": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Cancel */
+    post: operations["cancel_import"];
     delete?: never;
     options?: never;
     head?: never;
@@ -2611,6 +2663,52 @@ export interface components {
      * @enum {string}
      */
     IdDocumentType: "national_id" | "passport" | "driving_license" | "residence_permit" | "other";
+    /** ImportAuthor */
+    ImportAuthor: {
+      /** Id */
+      id: string;
+      /** Name */
+      name: string;
+    };
+    /** ImportBatchDetailResponse */
+    ImportBatchDetailResponse: {
+      /** Id */
+      id: string;
+      /** Number */
+      number: string;
+      kind: components["schemas"]["ImportKind"];
+      status: components["schemas"]["ImportStatus"];
+      /** Rows Read */
+      rows_read: number;
+      /** Rows Imported */
+      rows_imported: number;
+      /** Rows Ignored */
+      rows_ignored: number;
+      /** Created */
+      created: components["schemas"]["ImportCreatedCount"][];
+      /**
+       * Imported At
+       * Format: date-time
+       */
+      imported_at: string;
+      /**
+       * Cancellable Until
+       * Format: date
+       */
+      cancellable_until: string;
+      /** Cancelled At */
+      cancelled_at: string | null;
+      imported_by: components["schemas"]["ImportAuthor"];
+      /** Problems Total */
+      problems_total: number;
+      /** Items */
+      items: components["schemas"]["ImportItemResponse"][];
+    };
+    /** ImportBatchListResponse */
+    ImportBatchListResponse: {
+      /** Items */
+      items: components["schemas"]["ImportBatchResponse"][];
+    };
     /** ImportBatchResponse */
     ImportBatchResponse: {
       /** Id */
@@ -2632,6 +2730,13 @@ export interface components {
        * Format: date-time
        */
       imported_at: string;
+      /**
+       * Cancellable Until
+       * Format: date
+       */
+      cancellable_until: string;
+      /** Cancelled At */
+      cancelled_at: string | null;
     };
     /** ImportConfirmRequest */
     ImportConfirmRequest: {
@@ -2643,6 +2748,14 @@ export interface components {
       entity: components["schemas"]["ImportedEntity"];
       /** Count */
       count: number;
+    };
+    /** ImportItemResponse */
+    ImportItemResponse: {
+      /** Line */
+      line: number;
+      entity: components["schemas"]["ImportedEntity"];
+      /** Entity Id */
+      entity_id: string;
     };
     /**
      * ImportKind
@@ -4199,6 +4312,8 @@ export interface components {
       sold_at: string;
       /** Seller Name */
       seller_name: string;
+      /** Seller Role Label */
+      seller_role_label: string;
       customer: components["schemas"]["ReceiptCustomer"] | null;
       /** Lines */
       lines: components["schemas"]["ReceiptLineResponse"][];
@@ -9192,6 +9307,40 @@ export interface operations {
       };
     };
   };
+  list_imports: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ImportBatchListResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   confirm_import: {
     parameters: {
       query?: never;
@@ -9212,6 +9361,111 @@ export interface operations {
     responses: {
       /** @description Successful Response */
       201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ImportBatchResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_import: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        batch_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ImportBatchDetailResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  download_import_errors: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        batch_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": unknown;
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  cancel_import: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        batch_id: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
         headers: {
           [name: string]: unknown;
         };

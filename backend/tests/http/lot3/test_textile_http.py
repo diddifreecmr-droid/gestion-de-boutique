@@ -65,6 +65,7 @@ def test_meter_and_piece_sale_receipt_without_costs(bench: MemoryBench) -> None:
     receipt = shop.call("GET", f"/sales/{sale['id']}/receipt", seller)
     assert receipt.status_code == 200, receipt.text
     lines = receipt.json()["lines"]
+    assert receipt.json()["seller_role_label"] == "Employé"  # profil Textile
     assert [(line["quantity_label"], line["unit_price"]) for line in lines] == [
         ("2,5 m", 2_500),
         ("1 pièce (5,49 m)", 13_000),

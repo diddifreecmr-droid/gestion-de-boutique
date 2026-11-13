@@ -70,6 +70,7 @@ def test_receipt_duplicate_and_cancelled_mentions() -> None:
     first = world.sales.receipt.execute(seller, sale.id)
     assert first.mentions == (Mention.CREDIT_SALE,)
     assert (first.seller_name, first.payments[0].mode_name) == ("Paul", "Espèces")
+    assert first.seller_role_label == "Vendeur"  # profil Motos
     assert first.lines[0].details[0].chassis_number == "LBX9"  # RG-M03
     second = world.sales.receipt.execute(owner, sale.id)
     assert second.mentions == (Mention.CREDIT_SALE, Mention.DUPLICATE)  # RCP-03

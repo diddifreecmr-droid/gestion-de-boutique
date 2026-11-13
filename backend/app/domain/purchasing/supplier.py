@@ -4,17 +4,18 @@
   `supplier_name`, `Duplicate` 409) ; téléphone, ville, pays, note facultatifs.
 - Aucune suppression (RG-T02, aucune route `DELETE`) : un fournisseur, avec ou sans achats,
   ne peut qu'être **désactivé** (`active = False`) ; il garde son historique et sa fiche, mais
-  n'est plus proposé pour un nouvel achat.
+  n'est plus proposé pour un nouvel achat. Créé par un import annulé (QC-6) : désactivé par
+  `withdraw`, son nom est **libéré** (`unique_name` vide) et il ne se réactive plus.
 """
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime
 
 from app.domain.audit.values import EntityRef, Performer, Scalar
 from app.domain.purchasing.events import SupplierChanged, SupplierCreated
 from app.domain.purchasing.ids import SupplierId
 from app.domain.shared.business_day import require_aware
-from app.domain.shared.errors import ValidationFailed
+from app.domain.shared.errors import InvalidStateTransition, ValidationFailed
 from app.domain.shared.events import EventCollector
 from app.domain.shared.ids import ShopId
 from app.domain.shops.events import diff
@@ -53,6 +54,7 @@ class Supplier:
     shop_id: ShopId
     details: SupplierDetails
     created_at: datetime
+    released: bool = False
     version: int = 0
     events: EventCollector = field(default_factory=EventCollector, repr=False)
 
@@ -66,6 +68,11 @@ class Supplier:
     @property
     def name_key(self) -> str:
         return name_key(self.details.name)
+
+    @property
+    def unique_name(self) -> str | None:
+        """Clé de nom occupée dans l'unicité `supplier_name` ; aucune une fois libéré."""
+        return None if self.released else self.name_key
 
     @property
     def active(self) -> bool:
@@ -101,6 +108,9 @@ class Supplier:
 
     def change(self, details: SupplierDetails, *, performer: Performer, now: datetime) -> bool:
         """Nouveaux détails (désactivation comprise) ; `False` si rien ne change."""
+        if self.released and details.active:
+            msg = "Fournisseur retiré par l'annulation de son import : il ne se réactive pas"
+            raise InvalidStateTransition(msg, details={"field": "active"})
         changes = diff(self.details.scalars(), details.scalars())
         if not changes:
             return False
@@ -117,3 +127,11 @@ class Supplier:
             )
         )
         return True
+
+    def withdraw(self, *, performer: Performer, now: datetime) -> None:
+        """Annulation de son import (QC-6) : désactivé, nom libéré (rien d'effacé)."""
+        if self.released:
+            msg = "Fournisseur déjà retiré"
+            raise InvalidStateTransition(msg, details={"id": str(self.id)})
+        self.change(replace(self.details, active=False), performer=performer, now=now)
+        self.released = True

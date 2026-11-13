@@ -33,6 +33,7 @@ def receipt_response(receipt: Receipt) -> r.SaleReceiptResponse:
         else str(sale.provisional_number),
         sold_at=sale.sold_at,
         seller_name=receipt.seller_name,
+        seller_role_label=receipt.seller_role_label,
         customer=None
         if customer is None
         else r.ReceiptCustomer(name=customer.name, phone=customer.details.phone.e164),

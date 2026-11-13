@@ -5,7 +5,8 @@ Colonnes : Nom *, Téléphone, Ville, Pays, Note. Propriétaire et comptable
 
 Doublon = **même nom** (sans casse, espaces réduites, comme l'unicité des fournisseurs) : déjà
 fournisseur de la boutique (actif ou non), ou déjà plus haut dans le fichier → signalé et
-ignoré. Écriture : `Supplier.create` (journal « Créer »), `ImportedEntity.SUPPLIER`.
+ignoré (un fournisseur retiré par l'annulation de son import ne compte plus, QC-6).
+Écriture : `Supplier.create` (journal « Créer »), `ImportedEntity.SUPPLIER`.
 """
 
 from collections.abc import Sequence
@@ -79,7 +80,8 @@ class SuppliersImport(ImportModel):
     def _plan(
         self, uow: UnitOfWork, rows: Sequence[ParsedRow]
     ) -> tuple[Verdict, list[tuple[int, SupplierDetails]]]:
-        known = {s.name_key: s.name for s in SupplierRepository.within(uow).list_all()}
+        suppliers = SupplierRepository.within(uow).list_all()
+        known = {s.name_key: s.name for s in suppliers if s.unique_name is not None}
         verdict, planned, seen = Verdict(), [], dict[str, int]()
         for row in rows:
             try:

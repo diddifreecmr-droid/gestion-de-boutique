@@ -3,7 +3,8 @@
 Journalisés (`ShopAuditedEvent`) : créance ancienne créée (UC-CRE-02), versement enregistré
 (UC-CRE-03), versement annulé (UC-CRE-08, **sensible**), mise en perte (UC-CRE-09,
 **sensible**, SCN-08), créance modifiée (responsable, conditions, pièces), rappel programmé ou
-modifié (UC-CRE-06), garant ajouté (UC-CRE-07).
+modifié (UC-CRE-06), garant ajouté (UC-CRE-07), créance ancienne annulée avec son import
+(QC-6, **sensible**).
 
 Non journalisés (`NotAudited`) : l'ouverture, la révision et l'annulation d'une créance par
 sa vente (la vente est déjà journalisée) et `ReminderDue` (alerte interne du jour, tâche
@@ -62,6 +63,14 @@ class InstallmentRecorded(ReceivableAuditedEvent):
 
 @dataclass(frozen=True, kw_only=True)
 class InstallmentCancelled(ReceivableAuditedEvent):
+    action = AuditAction.CANCEL
+    sensitive = True
+
+
+@dataclass(frozen=True, kw_only=True)
+class LegacyReceivableCancelled(ReceivableAuditedEvent):
+    """Créance ancienne annulée avec son lot d'import (QC-6) ; sensible comme l'annulation."""
+
     action = AuditAction.CANCEL
     sensitive = True
 

@@ -19,6 +19,7 @@ export function saleReceipt(overrides: Partial<Receipt> = {}): Receipt {
     provisional_number: null,
     sold_at: "2026-11-11T10:00:00Z",
     seller_name: "Issa Vendeur",
+    seller_role_label: "Vendeur",
     customer: { name: "Moussa Abdou", phone: "+237690000000" },
     lines: [
       {

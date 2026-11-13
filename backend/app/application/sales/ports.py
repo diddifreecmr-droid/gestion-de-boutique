@@ -61,14 +61,17 @@ class CustomerQuery:
 
 class CustomerRepository(ShopRecordRepository[CustomerId, Customer]):
     def unique_keys(self) -> Sequence[UniqueKey[Customer]]:
-        return (UniqueKey(CUSTOMER_PHONE, lambda customer: customer.phone_key),)
+        return (UniqueKey(CUSTOMER_PHONE, lambda customer: customer.unique_phone),)
 
     @abstractmethod
-    def find_by_phone(self, phone: PhoneNumber) -> Customer | None: ...
+    def find_by_phone(self, phone: PhoneNumber) -> Customer | None:
+        """Client qui **occupe** ce téléphone (`unique_phone`) ; un client désactivé par
+        l'annulation de son import (QC-6) ne l'occupe plus."""
 
     @abstractmethod
     def search(self, query: CustomerQuery) -> list[Customer]:
-        """Clients filtrés, par nom plié puis identifiant (`search_key` de `customer_search`)."""
+        """Clients filtrés, par nom plié puis identifiant (`search_key` de `customer_search`) ;
+        jamais un client désactivé par l'annulation de son import (QC-6)."""
 
     @abstractmethod
     def visible_to(self, customer_id: CustomerId, seller: UserId) -> bool:

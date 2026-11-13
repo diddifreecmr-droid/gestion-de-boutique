@@ -7,7 +7,8 @@
   photo = pièce jointe facultative), plafond de crédit (≥ 0, absent = aucun contrôle), note.
 - `created_by` : qui l'a créé (création rapide depuis une vente comprise) ; il fonde, avec les
   ventes, la portée « ses clients » du vendeur (UC-VEN-11, Q-20).
-- Aucune suppression (RG-T02) : un client se modifie, avant/après au journal.
+- Aucune suppression (RG-T02) : un client se modifie, avant/après au journal. Créé par un
+  import annulé (QC-6) : **désactivé** (`withdraw`), son téléphone est libéré.
 """
 
 from dataclasses import dataclass, field
@@ -21,6 +22,7 @@ from app.domain.identity.phone import PhoneNumber
 from app.domain.sales.events import CustomerChanged, CustomerCreated
 from app.domain.sales.ids import CustomerId
 from app.domain.shared.business_day import require_aware
+from app.domain.shared.errors import InvalidStateTransition
 from app.domain.shared.events import EventCollector
 from app.domain.shared.ids import ShopId, UserId
 from app.domain.shared.money import Money
@@ -97,6 +99,8 @@ class Customer:
     details: CustomerDetails
     created_by: UserId
     created_at: datetime
+    released: bool = False
+    """Désactivé par l'annulation de son import (QC-6) : téléphone libéré, hors recherche."""
     version: int = 0
     events: EventCollector = field(default_factory=EventCollector, repr=False)
 
@@ -110,6 +114,11 @@ class Customer:
     @property
     def phone_key(self) -> str:
         return self.details.phone.e164
+
+    @property
+    def unique_phone(self) -> str | None:
+        """Téléphone qu'il occupe dans l'unicité `customer_phone` ; aucun une fois libéré."""
+        return None if self.released else self.phone_key
 
     @property
     def search_key(self) -> str:
@@ -151,6 +160,18 @@ class Customer:
             )
         )
         return customer
+
+    def withdraw(self, *, performer: Performer, now: datetime) -> None:
+        """Annulation de son import (QC-6) : désactivé, téléphone libéré (rien d'effacé)."""
+        if self.released:
+            msg = "Client déjà désactivé"
+            raise InvalidStateTransition(msg, details={"id": str(self.id)})
+        self.released = True
+        self.events.record(CustomerChanged(
+            shop_id=self.shop_id, occurred_at=now, performer=performer, entity=self.entity,
+            summary=f"Client désactivé (import annulé) : {self.name}",
+            changes=diff({"active": True}, {"active": False}),
+        ))  # fmt: skip
 
     def change(self, details: CustomerDetails, *, performer: Performer, now: datetime) -> bool:
         """Nouveaux détails ; avant/après au journal. `False` si rien ne change."""

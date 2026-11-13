@@ -1,6 +1,7 @@
 """Tables du module Achats (T15, specs § 5.3) : fournisseurs, achats, lignes, frais, paiements.
 
-- `supplier` : nom unique sans casse par boutique (`supplier_name` sur `name_key`).
+- `supplier` : nom unique sans casse par boutique (`supplier_name` sur `name_key`, `NULL` une
+  fois le fournisseur retiré par l'annulation de son import — QC-6, migration 0020).
 - `purchase` : numéro unique (`purchase_number`) ; `purchase_date` indexée (UC-ACH-05) ;
   `entry_at` = date d'opération de ses entrées de stock (ordre des listes) ; totaux recopiés
   pour les rapports (la vérité reste les lignes et les frais).
@@ -24,7 +25,7 @@ supplier = sa.Table(
     sa.Column("shop_id", sa.Uuid, nullable=False),
     sa.Column("version", sa.BigInteger, nullable=False),
     sa.Column("name", sa.String(120), nullable=False),
-    sa.Column("name_key", sa.String(120), nullable=False),
+    sa.Column("name_key", sa.String(120), nullable=True),
     sa.Column("phone", sa.String(120), nullable=True),
     sa.Column("city", sa.String(120), nullable=True),
     sa.Column("country", sa.String(120), nullable=True),

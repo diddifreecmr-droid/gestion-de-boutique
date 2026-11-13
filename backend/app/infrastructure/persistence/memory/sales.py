@@ -91,7 +91,7 @@ class MemoryCustomerRepository(_Listing[CustomerId, Customer], CustomerRepositor
     table = "customers"
 
     def find_by_phone(self, phone: PhoneNumber) -> Customer | None:
-        found = [c for c in self._sorted(key=lambda c: c.id) if c.phone_key == phone.e164]
+        found = [c for c in self._sorted(key=lambda c: c.id) if c.unique_phone == phone.e164]
         return found[0] if found else None
 
     def visible_to(self, customer_id: CustomerId, seller: UserId) -> bool:
@@ -105,7 +105,7 @@ class MemoryCustomerRepository(_Listing[CustomerId, Customer], CustomerRepositor
 
     def search(self, query: CustomerQuery) -> list[Customer]:
         found = self._sorted(key=lambda c: (c.sort_key, c.id))
-        matching = [c for c in found if query.matches(c)]
+        matching = [c for c in found if not c.released and query.matches(c)]
         if query.seller is None:
             return matching
         return [c for c in matching if self.visible_to(c.id, query.seller)]

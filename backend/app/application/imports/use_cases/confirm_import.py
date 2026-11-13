@@ -5,7 +5,8 @@ Ordre : aperçu de l'acteur (404 inconnu ou d'un autre, SEC-I3-01) → lot déj�
 → aperçu de moins de 30 minutes (410 `IMPORT_PREVIEW_EXPIRED`) → modules et droit du modèle
 (403) → relecture du fichier et **nouveau** contrôle des lignes dans la transaction (la boutique
 a pu changer depuis l'aperçu) → aucune ligne valide : 422, rien d'écrit → numéro `IMP-…`,
-écriture des lignes valides par le modèle (`apply`) et enregistrement du lot.
+écriture des lignes valides par le modèle (`apply`), enregistrement du lot et de ses lignes
+refusées (`ImportProblemLog` : rapport `errors.xlsx`, T35).
 
 **Une seule transaction** : tout le lot est écrit, ou rien (une erreur d'écriture annule tout).
 Le journal reçoit « Importer » (`IMP-…`) et la création de chaque élément, dans la même
@@ -17,7 +18,11 @@ from dataclasses import dataclass
 
 from app.application.imports.access import ImportAccess, shop_profile
 from app.application.imports.models import ImportRun
-from app.application.imports.ports import ImportBatchRepository, SpreadsheetReader
+from app.application.imports.ports import (
+    ImportBatchRepository,
+    ImportProblemLog,
+    SpreadsheetReader,
+)
 from app.application.imports.previews import PreviewFiles, preview_key
 from app.application.ports.clock import Clock
 from app.application.ports.repository import not_found
@@ -101,5 +106,6 @@ class ConfirmImport:
                 batch_id=run.batch_id,
             )
             batches.add(batch)
+            ImportProblemLog.within(uow).append(batch, (*read.errors, *check.refused))
             uow.commit()
         return batch, True

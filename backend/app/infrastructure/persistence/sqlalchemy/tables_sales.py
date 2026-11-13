@@ -1,8 +1,10 @@
 """Tables du module Ventes (T16a, specs § 5.4) : clients, ventes, lignes, détails, paiements,
 réservations de châssis, signalements, impressions de reçus.
 
-- `customer` : téléphone E.164 unique par boutique (`customer_phone`) ; `search_key` (nom plié
-  + chiffres du téléphone) et `sort_key` calculés par le domaine (recherche portable).
+- `customer` : téléphone E.164 unique par boutique (`customer_phone`, sur `phone_key` : copie du
+  téléphone, `NULL` une fois le client désactivé par l'annulation de son import — QC-6,
+  migration 0020) ; `search_key` (nom plié + chiffres du téléphone) et `sort_key` calculés par
+  le domaine (recherche portable).
 - `sale` : numéro unique (`sale_number`) ; totaux recopiés pour les rapports (la vérité reste
   les lignes et les paiements) ; `sold_at` = instant de la vente (ordre des listes).
 - `sale_line`, `sold_detail`, `sale_payment` : enfants **réécrits** avec la vente (verrou
@@ -36,6 +38,7 @@ customer = sa.Table(
     *_identity(),
     sa.Column("name", sa.String(120), nullable=False),
     sa.Column("phone", sa.String(16), nullable=False),
+    sa.Column("phone_key", sa.String(16), nullable=True),
     sa.Column("kind", sa.String(16), nullable=False),
     sa.Column("city", sa.String(200), nullable=True),
     sa.Column("address", sa.String(200), nullable=True),
@@ -48,7 +51,7 @@ customer = sa.Table(
     sa.Column("sort_key", sa.String(250), nullable=False),
     sa.Column("created_by", sa.Uuid, nullable=False),
     sa.Column("created_at", _TS, nullable=False),
-    sa.UniqueConstraint("shop_id", "phone", name="customer_phone"),
+    sa.UniqueConstraint("shop_id", "phone_key", name="customer_phone"),
     sa.Index("customer_shop_sort_idx", "shop_id", "sort_key"),
     sa.CheckConstraint("version >= 1", name="version_positive"),
     sa.CheckConstraint("credit_limit >= 0", name="credit_limit_non_negative"),

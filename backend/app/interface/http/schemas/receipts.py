@@ -63,6 +63,9 @@ class SaleReceiptResponse(BaseModel):
     provisional_number: str | None
     sold_at: datetime
     seller_name: str
+    seller_role_label: str
+    """Libellé du rôle du vendeur selon le profil : « Vendeur » (Motos), « Employé »
+    (Prêt-à-porter, Textile) — le reçu affiche « <libellé> : <nom> »."""
     customer: ReceiptCustomer | None
     lines: list[ReceiptLineResponse]
     total: int

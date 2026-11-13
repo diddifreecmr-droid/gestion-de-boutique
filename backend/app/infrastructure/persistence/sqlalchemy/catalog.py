@@ -16,6 +16,7 @@ from app.application.catalog.ports import (
     ARTICLE_REFERENCE,
     ArticleRepository,
     PriceHistoryLog,
+    held_key,
 )
 from app.application.catalog.search import ArticlePage, ArticlePageRequest, ArticleQuery, page_of
 from app.domain.catalog.article import Article
@@ -61,9 +62,7 @@ class SqlArticleRepository(SqlListing[ArticleId, Article], ArticleRepository):
             "brand": fields.brand,
             "model": fields.model,
             "reference": fields.reference,
-            "brand_model_key": details.brand_model_key,
-            "name_key": details.name_key,
-            "reference_key": details.reference_key,
+            **{column: held_key(aggregate, name) for name, column in _KEY_COLUMNS.items()},
             "search_key": details.search_key,
             "sort_key": details.sort_key,
             "stock_unit": fields.stock_unit.value,
@@ -77,6 +76,7 @@ class SqlArticleRepository(SqlListing[ArticleId, Article], ArticleRepository):
             "last_cost": _amount(aggregate.last_cost),
             "wac": _amount(aggregate.wac),
             "status": aggregate.status.value,
+            "keys_released": aggregate.keys_released,
             "created_at": to_db(aggregate.created_at),
         }
 
@@ -107,6 +107,7 @@ class SqlArticleRepository(SqlListing[ArticleId, Article], ArticleRepository):
             status=ArticleStatus(row["status"]),
             last_cost=_money(row["last_cost"]),
             wac=_money(row["wac"]),
+            keys_released=bool(row["keys_released"]),
             version=int(row["version"]),
         )
 

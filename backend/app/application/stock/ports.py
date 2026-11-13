@@ -110,3 +110,8 @@ class InventoryRepository(ShopRecordRepository[InventoryId, Inventory]):
     @abstractmethod
     def find_open(self, location_id: LocationId) -> Inventory | None:
         """Inventaire en cours du lieu, s'il y en a un."""
+
+    @abstractmethod
+    def started_since(self, since: datetime) -> list[Inventory]:
+        """Inventaires lancés à partir de `since` (tous statuts), du plus ancien au plus récent
+        (annulation d'un import : un inventaire qui compte un article du lot la bloque)."""

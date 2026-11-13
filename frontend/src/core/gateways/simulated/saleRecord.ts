@@ -102,6 +102,7 @@ export function receiptOf(sale: SaleResult, sequence: number): Receipt {
     provisional_number: null,
     sold_at: sale.sold_at,
     seller_name: "Vendeur de démonstration",
+    seller_role_label: "Vendeur",
     customer: null,
     lines: sale.lines.map((line) => ({
       article_name: line.article_name,

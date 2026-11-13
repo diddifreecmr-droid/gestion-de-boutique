@@ -6,13 +6,16 @@
 | `IMPORT_TOO_MANY_ROWS` | 422 | `max` (5 000), `rows` (lignes lues) |
 | `IMPORT_PREVIEW_EXPIRED` | 410 | `preview_id` |
 | `IMPORT_CANCEL_TOO_LATE` | 422 | `imported_on`, `last_day` |
+| `IMPORT_CANCEL_BLOCKED` | 422 | `blocking` : `[{type, number}]`, les opérations qui bloquent |
 
 Une erreur **de ligne** (« Ligne 14 : le prix est vide ») n'est pas une exception : elle est
 rapportée dans l'aperçu (`RowError`), la ligne est ignorée et les autres sont importées.
 """
 
+from collections.abc import Sequence
 from datetime import date
 
+from app.domain.imports.blocking import BlockingOperation
 from app.domain.imports.values import MAX_ROWS
 from app.domain.shared.errors import DomainError, ValidationFailed
 
@@ -56,4 +59,21 @@ class ImportCancelTooLate(DomainError):
         super().__init__(
             f"Annulation impossible : possible jusqu'au {last_day.strftime('%d/%m/%Y')}",
             details={"imported_on": imported_on.isoformat(), "last_day": last_day.isoformat()},
+        )
+
+
+class ImportCancelBlocked(DomainError):
+    """Une opération touche un élément du lot : vente, achat, versement… (QC-6, → 422)."""
+
+    code = "IMPORT_CANCEL_BLOCKED"
+
+    def __init__(self, blocking: Sequence[BlockingOperation]) -> None:
+        if not blocking:
+            msg = "Un refus d'annulation cite au moins une opération"
+            raise ValueError(msg)
+        listed = ", ".join(op.number for op in blocking[:5])
+        more = "…" if len(blocking) > 5 else ""
+        super().__init__(
+            f"Annulation impossible : des opérations s'appuient sur ce lot ({listed}{more})",
+            details={"blocking": [op.as_detail() for op in blocking]},
         )

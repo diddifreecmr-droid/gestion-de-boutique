@@ -25,11 +25,11 @@ PURCHASE_NUMBER = "purchase_number"
 
 class SupplierRepository(ShopRecordRepository[SupplierId, Supplier]):
     def unique_keys(self) -> Sequence[UniqueKey[Supplier]]:
-        return (UniqueKey(SUPPLIER_NAME, lambda supplier: supplier.name_key),)
+        return (UniqueKey(SUPPLIER_NAME, lambda supplier: supplier.unique_name),)
 
     @abstractmethod
     def list_all(self) -> list[Supplier]:
-        """Tous les fournisseurs (inactifs compris), par clé de nom puis identifiant."""
+        """Tous les fournisseurs (inactifs et retirés compris), par clé de nom puis id."""
 
 
 class PurchaseRepository(ShopRecordRepository[PurchaseId, Purchase]):
@@ -40,6 +40,10 @@ class PurchaseRepository(ShopRecordRepository[PurchaseId, Purchase]):
     def list_between(self, first_day: date, last_day: date) -> list[Purchase]:
         """Achats dont la date d'achat est dans `[first_day, last_day]`, ordre `position`
         décroissant (plus récent d'abord)."""
+
+    @abstractmethod
+    def for_supplier(self, supplier_id: SupplierId) -> list[Purchase]:
+        """Achats du fournisseur (annulés compris), ordre `position` croissant."""
 
 
 def position(purchase: Purchase) -> Cursor:

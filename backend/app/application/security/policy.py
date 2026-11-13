@@ -39,6 +39,11 @@ class Policy:
             raise PermissionDenied(actor, permission)
         return access
 
+    def allows(self, actor: Actor, permission: Permission) -> bool:
+        """L'acteur a-t-il cette permission (portée quelconque) ? Pour **filtrer** une liste
+        (lots d'import des seuls modèles permis) ; une action se protège par `require`."""
+        return self._access(actor, permission) is not Access.NONE
+
     def scope_filter(self, actor: Actor, permission: Permission) -> Scope:
         """Portée à appliquer dans la requête du dépôt ; lève si la permission est absente."""
         if self.require(actor, permission) is Access.OWN:

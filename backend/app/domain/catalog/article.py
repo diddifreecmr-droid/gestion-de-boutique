@@ -6,8 +6,9 @@
   (`keys.py`), contraintes `article_brand_model` / `article_name` / `article_reference`.
 - Changer le nom ne réécrit rien d'autre : les ventes gardent un instantané (T16, CAT-06).
 - Statut Actif / Archivé : un article archivé sort des listes de vente et d'achat mais reste
-  lisible (historique, rapports). La règle « pas d'archivage avec du stock » regarde le stock :
-  elle est vérifiée par le cas d'utilisation (port `ArticleStock`).
+  lisible (historique, rapports). « Pas d'archivage avec du stock » : vérifié par le cas
+  d'utilisation (port `ArticleStock`). Retiré par l'annulation de son import (`withdraw`,
+  QC-6) : archivé, `keys_released` — ses clés n'occupent plus les unicités, il ne revient pas.
 - `last_cost` et `wac` (dernier coût RG-T11, CMP RG-T12) sont **calculés par le module Achats**
   (T15) : seul `record_costs` les écrit, jamais un cas d'utilisation du catalogue.
 """
@@ -45,6 +46,7 @@ class Article:
     status: ArticleStatus = ArticleStatus.ACTIVE
     last_cost: Money | None = None
     wac: Money | None = None
+    keys_released: bool = False
     version: int = 0
     events: EventCollector = field(default_factory=EventCollector, repr=False)
 
@@ -78,15 +80,10 @@ class Article:
         article = cls(
             id=article_id or ArticleId.new(), shop_id=shop_id, details=details, created_at=now
         )
-        article.events.record(
-            ArticleCreated(
-                shop_id=shop_id,
-                occurred_at=now,
-                performer=performer,
-                entity=article.entity,
-                summary=f"Article créé : {details.display_name}",
-            )
-        )
+        article.events.record(ArticleCreated(
+            shop_id=shop_id, occurred_at=now, performer=performer, entity=article.entity,
+            summary=f"Article créé : {details.display_name}",
+        ))  # fmt: skip
         return article
 
     # ------------------------------------------------------------------ modification
@@ -140,23 +137,25 @@ class Article:
             return []
         changes = diff(self.prices.scalars(), prices.scalars())
         self.prices = prices
-        self.events.record(
-            ArticlePricesSet(
-                shop_id=self.shop_id,
-                occurred_at=now,
-                performer=performer,
-                entity=self.entity,
-                summary=f"Prix modifiés : {self.display_name}",
-                changes=changes,
-            )
-        )
+        self.events.record(ArticlePricesSet(
+            shop_id=self.shop_id, occurred_at=now, performer=performer, entity=self.entity,
+            summary=f"Prix modifiés : {self.display_name}", changes=changes,
+        ))  # fmt: skip
         return changed
 
     def archive(self, *, performer: Performer, now: datetime) -> None:
         """UC-STK-04 (stock vérifié par l'appelant) ; déjà archivé → transition refusée."""
         self._move(ArticleStatus.ACTIVE, ArticleStatus.ARCHIVED, performer, now)
 
+    def withdraw(self, *, performer: Performer, now: datetime) -> None:
+        """Annulation de son import (QC-6) : archivé, nom et référence **libérés**, à jamais."""
+        self.archive(performer=performer, now=now)
+        self.keys_released = True
+
     def reactivate(self, *, performer: Performer, now: datetime) -> None:
+        if self.keys_released:
+            msg = "Article retiré par l'annulation de son import : il ne se réactive pas"
+            raise InvalidStateTransition(msg, details={"status": self.status.value})
         self._move(ArticleStatus.ARCHIVED, ArticleStatus.ACTIVE, performer, now)
 
     def record_costs(self, *, last_cost: Money | None, wac: Money | None) -> None:
