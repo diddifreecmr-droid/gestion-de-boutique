@@ -25,6 +25,7 @@ from app.domain.shops.ids import (
 from app.domain.shops.membership import Membership
 from app.domain.shops.payment_mode import PaymentMode, PaymentModeDetails
 from app.infrastructure.persistence.sqlalchemy import tables_shops as t
+from app.infrastructure.persistence.sqlalchemy.census import SqlShopDataCensus
 from app.infrastructure.persistence.sqlalchemy.columns import from_db, from_db_optional, to_db
 from app.infrastructure.persistence.sqlalchemy.shops import (
     SqlListing,
@@ -179,4 +180,5 @@ SQL_SHOP_REPOSITORIES = (
     SqlExpenseCategoryRepository,
     SqlMembershipRepository,
     SqlAdminGrantRepository,
+    SqlShopDataCensus,
 )

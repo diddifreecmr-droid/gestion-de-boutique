@@ -1,5 +1,6 @@
 """Console plateforme : `POST/GET /platform/shops`, `GET/PATCH /platform/shops/{id}` (TR-23),
-`GET /platform/shops/{id}/access` (droits d'offre en vigueur, délégation du propriétaire).
+`GET /platform/shops/{id}/access` (droits d'offre en vigueur, délégation du propriétaire),
+`POST /platform/shops/{id}/profile` (changer le type d'une boutique vide, QC-1, T27).
 
 Administrateur plateforme seulement (`current_platform_actor` : un membre reçoit 403). Ouvrir
 une boutique renvoie le code provisoire du propriétaire créé, **une seule fois** (PLT-01).
@@ -18,6 +19,7 @@ from app.interface.http.presenters.shops import summary_response
 from app.interface.http.routes.shop_components import ShopsComponents
 from app.interface.http.schemas.platform import (
     AdministerShopRequest,
+    ChangeProfileRequest,
     OpenedShopResponse,
     OpenShopRequest,
     PlatformShopAccessResponse,
@@ -70,6 +72,14 @@ def build_platform_router(shops: ShopsComponents) -> APIRouter:
             modules=body.modules, status=body.status, entitlements=body.entitlements
         )
         return summary_response(shops.platform.administer(actor, ShopId.parse(shop_id), command))
+
+    @router.post("/platform/shops/{shop_id}/profile")
+    def change_profile(
+        actor: Admin, shop_id: str, body: ChangeProfileRequest
+    ) -> ShopSummaryResponse:
+        """Changer le type d'une boutique **vide** (QC-1) ; sinon 422 PROFILE_CHANGE_BLOCKED."""
+        changed = shops.change_profile.execute(actor, ShopId.parse(shop_id), body.profile_code)
+        return summary_response(changed)
 
     @router.get("/platform/shops/{shop_id}/access")
     def shop_access(actor: Admin, shop_id: str) -> PlatformShopAccessResponse:

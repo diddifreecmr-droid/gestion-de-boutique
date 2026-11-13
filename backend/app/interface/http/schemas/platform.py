@@ -54,6 +54,22 @@ class AdministerShopRequest(_Strict):
     entitlements: dict[Entitlement, bool | None] = Field(default_factory=dict)
 
 
+class ChangeProfileRequest(_Strict):
+    """Nouveau type (QC-1) : permis seulement pour une boutique sans données."""
+
+    profile_code: str = Field(
+        min_length=1,
+        max_length=32,
+        examples=["apparel"],
+        description=(
+            "motos, apparel ou textile. 400 UNKNOWN_PROFILE si inconnu ; 422 "
+            "PROFILE_CHANGE_BLOCKED si la boutique a des données (`details.blocking` : nature "
+            "→ nombre, parmi articles, movements, sales, purchases, expenses, receivables, "
+            "members). Même type : rien ne change."
+        ),
+    )
+
+
 class ShopSummaryResponse(_Strict):
     shop_id: str
     name: str
