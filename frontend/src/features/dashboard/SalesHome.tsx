@@ -94,7 +94,7 @@ function TodayFigures({
 
 /** Propriétaire : « Ventes du jour » ouvre le tableau de bord complet si le module est actif. */
 function OwnerFigures({ shopId }: { shopId: string }) {
-  const { loaded } = useDashboardModule(shopId);
+  const { loaded } = useDashboardModule();
   const listPath = shopPath(shopId, SALES_KEY);
   const on = loaded.status === "ready" && loaded.value;
   return (

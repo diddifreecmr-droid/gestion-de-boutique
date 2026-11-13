@@ -113,7 +113,9 @@ describe("écran de connexion (UC-SOC-02)", () => {
     await waitFor(() => {
       expect(router.state.location.pathname).toBe(`/s/${SHOP_A}`);
     });
-    expect(screen.queryByText("Connexion nécessaire")).not.toBeInTheDocument();
+    // L'écran de connexion (et son message) a laissé place à la boutique ; l'accueil peut, lui,
+    // dire « Connexion nécessaire » pour ses propres lectures, non simulées ici.
+    expect(screen.queryByRole("button", { name: "Se connecter" })).not.toBeInTheDocument();
   });
 
   it("motif de fin de session affiché (session révoquée à distance)", async () => {

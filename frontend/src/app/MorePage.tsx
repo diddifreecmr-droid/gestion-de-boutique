@@ -10,7 +10,7 @@ import { useActiveShop } from "./shopContext";
 /** « Tableau de bord » : seulement si le module `dashboard` de la boutique est actif (§ 15.1). */
 function DashboardTile({ shopId }: { shopId: string }) {
   const navigate = useNavigate();
-  const { loaded } = useDashboardModule(shopId);
+  const { loaded } = useDashboardModule();
   if (loaded.status !== "ready" || !loaded.value) return null;
   return (
     <ActionTile

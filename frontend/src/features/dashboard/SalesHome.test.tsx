@@ -94,7 +94,8 @@ describe("page d'accueil minimale (specs § 15.1)", () => {
     expect(total).toHaveTextContent(plain(`6 ventes`));
     expect(screen.getByRole("main").textContent).not.toMatch(/marge|coût|CMP|bénéfice/i);
     const urls = fake.calls.map((call) => call.url);
-    expect(urls.some((url) => /\/(dashboard|home|profile)\b/.test(url))).toBe(false);
+    // Le profil (modules actifs) est lu par la coquille ; il ne porte aucun chiffre.
+    expect(urls.some((url) => /\/(dashboard|home)\b/.test(url))).toBe(false);
     expect(await axeViolations(container)).toEqual([]);
 
     await user.click(first.querySelector("button") ?? first);
@@ -177,9 +178,6 @@ describe("propriétaire : accès au tableau de bord complet (module `dashboard`)
 
     await user.click(screen.getByRole("link", { name: "Plus" }));
     await screen.findByRole("button", { name: "Réglages" });
-    await vi.waitFor(() => {
-      expect(fake.count(PROFILE)).toBeGreaterThanOrEqual(2);
-    });
     expect(screen.queryByRole("button", { name: "Tableau de bord" })).toBeNull();
 
     await router.navigate(`${S}/tableau-de-bord`);

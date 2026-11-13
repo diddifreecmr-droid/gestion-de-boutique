@@ -14,7 +14,7 @@ export const DASHBOARD_OFFLINE = "Connexion nécessaire pour ouvrir le tableau d
  * boutique est actif (specs § 15.1) ; sinon l'écran est introuvable, comme toute section absente.
  */
 export function DashboardSection({ shopId }: { shopId: string }) {
-  const { loaded, retry } = useDashboardModule(shopId);
+  const { loaded, retry } = useDashboardModule();
   if (loaded.status !== "ready") {
     return (
       <FiguresPending
