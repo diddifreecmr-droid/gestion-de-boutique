@@ -6,8 +6,7 @@ import { priceBelowMinimum, type PriceRequestProblem } from "../../core/gateways
 import type { PriceRequest, SaleResult } from "../../core/gateways/salesContract";
 import { asError } from "./asError";
 import { buildCommand } from "./buildCommand";
-import { CREDIT_CHOICE, type SaleDraft } from "./draft";
-import { writeLastPaymentMode } from "./lastPaymentMode";
+import type { SaleDraft } from "./draft";
 import type { ApprovalView } from "./priceRequests/approvalView";
 import { problemMessage } from "./priceRequests/priceRequestText";
 import type { SaleChecks } from "./saleChecks";
@@ -80,13 +79,6 @@ export function useSaleSubmit(options: Options) {
       const accepted = approval.view.kind === "accepted" ? approval.view.requestId : null;
       const command = buildCommand(draft, location.id, checks.total, new Date(), accepted);
       const sale = await sales.recordSale(shopId, command, new Date());
-      const remembered = draft.payment === CREDIT_CHOICE ? draft.depositMode : draft.payment;
-      if (
-        remembered !== null &&
-        (draft.payment !== CREDIT_CHOICE || (command.payments ?? []).length > 0)
-      ) {
-        writeLastPaymentMode(shopId, remembered);
-      }
       onRecorded(sale);
     } catch (error) {
       fail(error);

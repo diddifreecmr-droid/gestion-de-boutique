@@ -14,11 +14,50 @@ type WorldArticle = World["articles"] extends Map<string, infer A> ? A : never;
 
 const decimal = (value: number) => `${String(value)}.000`;
 
+/** Champs de vente du profil Motos (`GET /profile`) : couleur, châssis, moteur. */
+const MOTOS_SALE_FIELDS = [
+  ["color", "Couleur"],
+  ["chassis_number", "Numéro de châssis"],
+  ["engine_number", "Numéro de moteur"],
+] as const;
+
 export function saleProfile(role: "owner" | "seller", requiresApproval = false) {
   return {
     ...profileBody(role),
     default_location_id: role === "seller" ? GAROUA.id : null,
     min_price_requires_approval: requiresApproval,
+    sale_fields: MOTOS_SALE_FIELDS.map(([code, label]) => ({
+      code,
+      label,
+      kind: "text",
+      required: false,
+      unique: code === "chassis_number",
+      choices: [],
+    })),
+  };
+}
+
+/** Profil « Prêt-à-porter » vu par l'écran de vente : ni modèle ni châssis. */
+export function apparelSaleProfile(role: "owner" | "seller") {
+  const field = (code: string, label: string) => ({
+    code,
+    label,
+    kind: "text",
+    required: code === "name",
+    unique: false,
+    choices: [],
+  });
+  return {
+    ...saleProfile(role),
+    profile_code: "apparel",
+    profile_label: "Prêt-à-porter",
+    article_fields: [
+      field("name", "Nom"),
+      field("reference", "Référence"),
+      field("type", "Type"),
+      field("brand", "Marque"),
+    ],
+    sale_fields: [field("size", "Taille"), field("color", "Couleur")],
   };
 }
 

@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2, CirclePlus, Printer } from "lucide-react";
 import { useGateways } from "../../core/gateways/gateways";
 import type { SaleResult } from "../../core/gateways/salesContract";
 import { formatMoney, formatQuantity } from "../../shared/format";
+import { articleTitle } from "./articleTitle";
 import { CreditIdPhoto } from "./CreditIdPhoto";
 import { ShareButton } from "./ShareButton";
 import { warningText } from "./warningText";
@@ -58,7 +59,7 @@ export function SaleConfirmation({ shopId, sale, onPrint, onNewSale }: SaleConfi
         {sale.lines.map((line, index) => (
           <ListCardRow
             key={index}
-            title={line.article_name}
+            title={articleTitle(line.article_name)}
             subtitle={`${formatQuantity(line.quantity)} × ${formatMoney(line.unit_price)}`}
             amount={line.line_total}
           />

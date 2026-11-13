@@ -1,10 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { ApiError, NetworkError } from "../../core/api/errors";
 import type { CatalogArticle } from "../../core/gateways/catalogContract";
 import { priceBelowMinimum, stockInsufficient } from "../../core/gateways/saleErrors";
 import { businessDay } from "./buildCommand";
 import { newLine, unitStock, withQuantity } from "./draft";
-import { readLastPaymentMode, writeLastPaymentMode } from "./lastPaymentMode";
 import { normalizePhone } from "./phone";
 import { OFFLINE_MESSAGE, saleErrorMessage } from "./saleErrorMessage";
 
@@ -17,34 +16,6 @@ const ARTICLE: CatalogArticle = {
   min_price: null,
   available: "4",
 };
-
-function brokenStorage(): Storage {
-  const fail = () => {
-    throw new DOMException("refusé", "SecurityError");
-  };
-  return { getItem: fail, setItem: fail } as unknown as Storage;
-}
-
-describe("dernier mode de paiement", () => {
-  it("lit et écrit par boutique", () => {
-    writeLastPaymentMode("s1", "pm-orange");
-    expect(readLastPaymentMode("s1")).toBe("pm-orange");
-    expect(readLastPaymentMode("s2")).toBeNull();
-  });
-
-  it("stockage indisponible : signalé en console, la vente continue", () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    expect(readLastPaymentMode("s1", brokenStorage())).toBeNull();
-    expect(() => {
-      writeLastPaymentMode("s1", "pm-cash", brokenStorage());
-    }).not.toThrow();
-    expect(warn).toHaveBeenCalledTimes(2);
-  });
-
-  it("refuse une boutique vide", () => {
-    expect(() => readLastPaymentMode("")).toThrow("identifiant de boutique vide");
-  });
-});
 
 describe("téléphone (H20)", () => {
   it.each([

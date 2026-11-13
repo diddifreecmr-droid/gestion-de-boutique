@@ -4,6 +4,7 @@
  */
 import type { CatalogGateway } from "../../core/gateways/catalogContract";
 import type { SaleMember, SalesGateway } from "../../core/gateways/salesContract";
+import { searchesChassis } from "./profileLabels";
 import type { SaleRole } from "./salesNav";
 
 export interface SaleRefs {
@@ -13,6 +14,8 @@ export interface SaleRefs {
   modes: readonly { id: string; name: string }[];
   /** Vide pour le vendeur (il ne voit que ses ventes). */
   members: readonly SaleMember[];
+  /** Le profil saisit un n° de châssis : la recherche le propose (Motos seulement). */
+  searchChassis: boolean;
 }
 
 export async function loadSaleRefs(
@@ -24,7 +27,13 @@ export async function loadSaleRefs(
     gateways.catalog.saleSetup(shopId),
     who.role === "owner" ? gateways.sales.members(shopId) : Promise.resolve([]),
   ]);
-  return { ...who, locations: setup.locations, modes: setup.payment_modes, members };
+  return {
+    ...who,
+    locations: setup.locations,
+    modes: setup.payment_modes,
+    members,
+    searchChassis: searchesChassis(setup.sale_fields),
+  };
 }
 
 function nameIn(items: readonly { id: string; name: string }[], id: string, what: string) {

@@ -86,6 +86,8 @@ export function createHttpCatalog({ api, session, offline }: AppServices): Catal
         payment_modes: modes
           .filter((mode) => mode.active)
           .sort((a, b) => a.display_order - b.display_order),
+        article_fields: profile.article_fields.map(({ code, label }) => ({ code, label })),
+        sale_fields: profile.sale_fields.map((field) => field.code),
       };
     },
     searchArticles: async (shopId, { location_id, query, limit }) => {

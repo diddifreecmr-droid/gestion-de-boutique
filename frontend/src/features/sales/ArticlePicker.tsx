@@ -12,7 +12,10 @@ import {
   SearchField,
   Skeleton,
 } from "../../shared/ui";
+import { sellableFirst } from "./articleOrder";
+import { articleTitle } from "./articleTitle";
 import { unitStock } from "./draft";
+import { articleSearchHint } from "./profileLabels";
 import { useLookup } from "./useLookup";
 
 /** Nombre d'articles proposés (plus vendus ou résultats). */
@@ -22,6 +25,8 @@ export interface ArticlePickerProps {
   shopId: string;
   locationId: string;
   locationName: string;
+  /** Aide du champ, selon les champs du profil (« Cherchez par marque ou modèle ») ; neutre par défaut. */
+  hint?: string;
   /** Articles déjà dans la vente : non proposés (une ligne par article). */
   excluded: readonly string[];
   onPick: (article: CatalogArticle) => void;
@@ -32,6 +37,7 @@ export interface ArticlePickerProps {
 /** Recherche d'article dès la 1re lettre ; champ vide = les plus vendus (CDC § 1.3). */
 export function ArticlePicker(props: ArticlePickerProps) {
   const { shopId, locationId, locationName, excluded, onPick, onClose } = props;
+  const hint = props.hint ?? articleSearchHint([]);
   const { catalog } = useGateways();
   const [query, setQuery] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -42,12 +48,7 @@ export function ArticlePicker(props: ArticlePickerProps) {
 
   return (
     <section aria-label="Choisir un article" className="flex flex-col gap-4">
-      <SearchField
-        label="Article"
-        hint="Tapez les premières lettres du modèle"
-        value={query}
-        onChange={setQuery}
-      />
+      <SearchField label="Article" hint={hint} value={query} onChange={setQuery} />
       {lookup.status === "loading" && <Skeleton lines={3} label="Recherche des articles…" />}
       {lookup.status === "offline" && (
         <EmptyState
@@ -69,7 +70,9 @@ export function ArticlePicker(props: ArticlePickerProps) {
         <Results
           label={listLabel}
           query={query}
-          items={lookup.value.items.filter((article) => !excluded.includes(article.id))}
+          items={sellableFirst(
+            lookup.value.items.filter((article) => !excluded.includes(article.id)),
+          )}
           locationName={locationName}
           onPick={onPick}
         />
@@ -126,7 +129,7 @@ function Results({
       {items.map((article) => (
         <ListCardRow
           key={article.id}
-          title={article.name}
+          title={articleTitle(article.name)}
           subtitle={`Stock à ${locationName} : ${formatQuantity(article.available)}`}
           {...(article.base_price === null ? {} : { amount: article.base_price })}
           {...pickState(article, onPick)}
