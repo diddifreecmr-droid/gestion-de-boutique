@@ -72,7 +72,7 @@ describe("calculs Textile au dixième (QC-3, SCN-L3-02)", () => {
     expect(resolveShortcut(shortcut("piece"), WX)).toEqual({ mode: "piece", pieces: 1 });
     expect(resolveShortcut(shortcut("half_piece"), WX)).toEqual({ mode: "meter", tenths: 27 });
     expect(resolveShortcut(shortcut("2m"), WX)).toEqual({ mode: "meter", tenths: 20 });
-    const byMeter: CatalogArticle = { ...WX, piece: undefined } as CatalogArticle;
+    const byMeter: CatalogArticle = { ...WX };
     delete byMeter.piece;
     expect(resolveShortcut(shortcut("piece"), byMeter)).toEqual({ mode: "meter", tenths: 55 });
     const noLength = { ...byMeter };

@@ -64,15 +64,16 @@ export function saleResult(
   });
   const total = lines.reduce((sum, line) => sum + line.line_total, 0);
   const at = "2026-11-13T10:00:00Z";
+  const id = body.id ?? `sale-${String(rank)}`;
   return {
-    id: body.id,
+    id,
     number: `V-${String(rank).padStart(6, "0")}`,
     provisional_number: null,
     status: "valid",
-    kind: body.kind,
-    sold_on: body.sold_on,
+    kind: body.kind ?? "cash",
+    sold_on: body.sold_on ?? "2026-11-13",
     sold_at: at,
-    location_id: body.location_id,
+    location_id: body.location_id ?? "loc-boutique",
     seller_id: "seller",
     customer_id: null,
     total,
@@ -80,8 +81,8 @@ export function saleResult(
     remaining: 0,
     receivable: null,
     lines,
-    payments: body.payments.map((payment, index) => ({
-      id: `${body.id}-p${String(index)}`,
+    payments: (body.payments ?? []).map((payment, index) => ({
+      id: `${id}-p${String(index)}`,
       mode_id: payment.mode_id,
       amount: payment.amount,
       reference: payment.reference ?? null,

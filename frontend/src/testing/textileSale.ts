@@ -96,7 +96,7 @@ function matrix(articles: readonly TextileArticle[]): Schemas["StockMatrixRespon
       incoming: "0.0",
       total: article.stock,
       stock_status: "ok" as const,
-      alert_threshold: null,
+      alert_threshold: "1.0",
       base_price: article.base_price,
     })),
   };
