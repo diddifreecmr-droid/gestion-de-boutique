@@ -11,10 +11,10 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
+from app.application.identity.ports import RefreshSecrets, TokenService
 from app.application.identity.sessions import IssuedSession, SessionIssuer, SessionPolicy
 from app.application.identity.uow import IdentityUnitOfWork
 from app.application.identity.use_cases.refresh_session import RefreshSession
-from app.application.identity.ports import RefreshSecrets, TokenService
 from app.domain.identity.errors import SessionRevoked
 from app.domain.identity.phone import PhoneNumber
 from app.domain.identity.refresh_rotation import REFRESH_REPLAY_GRACE
