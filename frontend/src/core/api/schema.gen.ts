@@ -1590,7 +1590,7 @@ export interface components {
     AdministerShopRequest: {
       /**
        * Modules
-       * @description Liste **complète** des modules actifs voulus, obligatoires compris (core, audit, catalog, sales). 422 MODULE_MANDATORY si l'un manque, MODULE_DEPENDENCY si transport sans transfers, MODULE_NOT_AVAILABLE hors profil.
+       * @description Liste **complète** des modules actifs voulus, obligatoires compris (core, audit, catalog, sales). 422 MODULE_MANDATORY si l'un manque, MODULE_DEPENDENCY si transport sans transfers, MODULE_NOT_AVAILABLE hors profil, MODULE_NOT_YET_AVAILABLE pour un module à venir (transfers, transport, import).
        */
       modules?: components["schemas"]["Module"][] | null;
       status?: components["schemas"]["ShopStatus"] | null;

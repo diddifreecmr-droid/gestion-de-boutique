@@ -1,6 +1,7 @@
 /**
- * Refus `422` d'un enregistrement de modules (specs § 4.5) : `MODULE_MANDATORY`
- * (`details.module`) et `MODULE_DEPENDENCY` (`details.module`, `details.requires`), dits en
+ * Refus `422` d'un enregistrement de modules (specs § 4.5) : `MODULE_MANDATORY` et
+ * `MODULE_NOT_YET_AVAILABLE` (`details.module`), `MODULE_DEPENDENCY` (`details.module`,
+ * `details.requires`), dits en
  * français avec le nom des modules tel qu'il est écrit dans la console.
  */
 import type { ApiError } from "../../core/api/errors";
@@ -9,6 +10,7 @@ import { MODULE_LABELS } from "./moduleTexts";
 
 export const MODULE_MANDATORY = "MODULE_MANDATORY";
 export const MODULE_DEPENDENCY = "MODULE_DEPENDENCY";
+export const MODULE_NOT_YET_AVAILABLE = "MODULE_NOT_YET_AVAILABLE";
 
 /** Nom affiché d'un module reçu dans `details`, ou `undefined` si le code est absent/inconnu. */
 function labelOf(code: unknown): string | undefined {
@@ -23,6 +25,12 @@ export function moduleRefusal(error: ApiError): string | undefined {
     return module === undefined
       ? "Un module toujours actif manque : la boutique ne peut pas s'en passer. Rien n'a été enregistré."
       : `Le module ${module} est toujours actif : il ne peut pas être retiré. Rien n'a été enregistré.`;
+  }
+  if (error.code === MODULE_NOT_YET_AVAILABLE) {
+    const module = labelOf(error.details["module"]);
+    return module === undefined
+      ? "Un module n'est pas encore disponible : il ne peut pas être activé. Rien n'a été enregistré."
+      : `Le module ${module} n'est pas encore disponible : il ne peut pas être activé. Rien n'a été enregistré.`;
   }
   if (error.code === MODULE_DEPENDENCY) {
     const module = labelOf(error.details["module"]);

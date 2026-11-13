@@ -7,6 +7,7 @@ import { setClock } from "../../testing/expensesApi";
 import { SHOP_A } from "../../testing/fakeApi";
 import { renderApp } from "../../testing/renderApp";
 import { plain } from "../../testing/renderSale";
+import { DRIVER_NOTHING } from "./DriverHome";
 import { homeBlock } from "./useHome";
 
 beforeAll(preloadDashboard);
@@ -24,18 +25,16 @@ const day = async () => within(await screen.findByRole("list", { name: "Ma journ
 const noDashboardCall = (urls: string[]) => urls.every((url) => !url.includes("/dashboard"));
 
 describe("accueils du comptable et du chauffeur (UC-TDB-05)", () => {
-  it("comptable : Achat, Dépense, Inventaire, « Déplacer du stock » au Lot 2 ; aucune vente", async () => {
+  it("comptable : Achat, Dépense, Inventaire ; ni « Déplacer du stock » ni « Lot 2 » ; aucune vente", async () => {
     const { user, router, fake, container } = renderApp(HOME_PATH, homeRoutes("accountant"));
     const list = await day();
-    expect(list.getByText("Disponible au Lot 2")).toBeVisible();
+    expect(screen.queryByText(/Disponible au Lot/)).toBeNull(); // transferts : module à venir
     expect(list.getByText("3 articles sous le seuil")).toBeVisible();
     expect(list.getByRole("button", { name: /Valeur du stock/ })).toHaveTextContent(
       money(12_500_000),
     );
     expect(list.getByRole("button", { name: /Dépenses du jour/ })).toHaveTextContent(money(45_000));
-    const move = main().getByRole("button", { name: "Déplacer du stock" });
-    expect(move).toHaveAttribute("aria-disabled", "true");
-    expect(move).toHaveAccessibleDescription("Disponible au Lot 2");
+    expect(main().queryByRole("button", { name: "Déplacer du stock" })).toBeNull();
     expect(screen.getByRole("main").textContent).not.toMatch(/vente|chiffre d'affaires|marge/i);
     expect(noDashboardCall(fake.calls.map((call) => call.url))).toBe(true);
     expect(await axeViolations(container)).toEqual([]);
@@ -56,10 +55,11 @@ describe("accueils du comptable et du chauffeur (UC-TDB-05)", () => {
     expect(`${router.state.location.pathname}${router.state.location.search}`).toBe(path);
   });
 
-  it("chauffeur : accueil « Disponible au Lot 2 », sans faux zéro", async () => {
+  it("chauffeur : ni voyage ni « Disponible au Lot 2 » (transport à venir), sans faux zéro", async () => {
     const { container } = renderApp(HOME_PATH, homeRoutes("driver"));
-    const list = within(await screen.findByRole("list", { name: "Mon voyage" }));
-    expect(list.getAllByText("Disponible au Lot 2")).toHaveLength(2);
+    expect(await screen.findByText(DRIVER_NOTHING)).toBeVisible();
+    expect(screen.queryByRole("list", { name: "Mon voyage" })).toBeNull();
+    expect(screen.queryByText(/Disponible au Lot/)).toBeNull();
     expect(screen.getByRole("main").textContent).not.toMatch(/0 FCFA/);
     expect(await axeViolations(container)).toEqual([]);
   });

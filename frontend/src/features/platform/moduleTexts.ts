@@ -1,9 +1,10 @@
 /**
- * Mots de la console pour les modules d'une boutique (décision client du 12/11/2026) : nom,
- * dépendance et effet d'un changement, dits avant d'enregistrer.
+ * Mots de la console pour les modules d'une boutique (décisions client des 12 et 13/11/2026) :
+ * nom, dépendance et effet d'un changement, dits avant d'enregistrer.
  */
 import {
   ALWAYS_ON,
+  isUpcoming,
   OPTIONAL_MODULES,
   REQUIRES,
   type ModuleCode,
@@ -36,6 +37,17 @@ const LOSSES: Readonly<Record<OptionalModule, string>> = {
 };
 
 const KEPT = "Les données sont gardées.";
+
+/** Noms courts des modules toujours actifs, réunis sur une seule ligne compacte de la fiche. */
+const ALWAYS_ON_SHORT: Readonly<Record<(typeof ALWAYS_ON)[number], string>> = {
+  core: "Socle",
+  audit: "Journal",
+  catalog: "Catalogue et stock",
+  sales: "Ventes",
+};
+
+/** « Toujours actifs : Socle, Journal, Catalogue et stock, Ventes ». */
+export const ALWAYS_ON_LINE = `Toujours actifs : ${ALWAYS_ON.map((m) => ALWAYS_ON_SHORT[m]).join(", ")}`;
 
 /** Modules facultatifs qui ont besoin de `module` (ex. Transport a besoin de Transferts). */
 export function dependentsOf(module: OptionalModule): OptionalModule[] {
@@ -85,7 +97,10 @@ export function changeSummary(
   ];
 }
 
-/** Liste envoyée au serveur (`PATCH … { modules }`) : le jeu complet, dans l'ordre du contrat. */
+/**
+ * Liste envoyée au serveur (`PATCH … { modules }`) : le jeu complet, dans l'ordre du contrat ;
+ * jamais un module à venir (le serveur le refuserait : 422 `MODULE_NOT_YET_AVAILABLE`).
+ */
 export function modulesBody(enabled: ReadonlySet<ModuleCode>): ModuleCode[] {
-  return [...ALWAYS_ON, ...OPTIONAL_MODULES].filter((m) => enabled.has(m));
+  return [...ALWAYS_ON, ...OPTIONAL_MODULES].filter((m) => enabled.has(m) && !isUpcoming(m));
 }

@@ -33,9 +33,10 @@ afterEach(() => {
 
 describe("coquille — menus par rôle (CDC § 17.4)", () => {
   it.each([
-    ["owner", ["Accueil", "Ventes", "Stock", "Camions", "Plus"]],
-    ["accountant", ["Accueil", "Achats", "Stock", "Déplacements", "Dépenses"]],
-    ["driver", ["Mon voyage", "Mes dépenses", "Mes voyages"]],
+    // Modules à venir (transfers, transport) : leurs entrées n'apparaissent jamais (13/11/2026).
+    ["owner", ["Accueil", "Ventes", "Stock", "Plus"]],
+    ["accountant", ["Accueil", "Achats", "Stock", "Dépenses"]],
+    ["driver", ["Mon voyage"]],
   ])("%s : barre du bas et titre de l'accueil", async (role, labels) => {
     openAs(role);
     const [home = ""] = labels;
@@ -47,30 +48,25 @@ describe("coquille — menus par rôle (CDC § 17.4)", () => {
     ).toEqual(labels);
   });
 
-  it("une entrée ouvre sa page provisoire « à venir » et devient active", async () => {
-    // « Créances » du vendeur est livrée (T21) : « Déplacements » du comptable reste à venir.
-    const { user, router } = openAs("accountant");
-    await user.click(await screen.findByRole("link", { name: "Déplacements" }));
-    expect(router.state.location.pathname).toBe(`/s/${SHOP_A}/deplacements`);
-    expect(screen.getByRole("heading", { name: "Déplacements" })).toBeVisible();
-    expect(screen.getByText("Cet écran arrive bientôt.")).toBeVisible();
-    expect(nav().getByRole("link", { name: "Déplacements" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
+  it("l'adresse d'un écran à venir donne « Page introuvable », jamais « arrive bientôt »", async () => {
+    openAs("accountant", `/s/${SHOP_A}/deplacements`);
+    expect(await screen.findByRole("heading", { name: "Page introuvable" })).toBeVisible();
+    expect(screen.queryByText(/arrive bientôt|Disponible au Lot/)).toBeNull();
   });
 
-  it("« Plus » du propriétaire, puis Réglages → Mon compte : version et « Recharger la dernière version »", async () => {
+  it("« Plus » du propriétaire sans « Mon compte » ni « Paie » ; « Compte » (barre du haut) : version et « Recharger »", async () => {
     const { user } = openAs("owner");
     await user.click(await screen.findByRole("link", { name: "Plus" }));
-    const tiles = screen.getAllByRole("button").map((b) => b.textContent);
-    expect(tiles).toEqual(
-      expect.arrayContaining(["Créances", "Paie", "Journal", "Réglages", "Mon compte"]),
-    );
-    await user.click(screen.getByRole("button", { name: "Réglages" }));
+    const main = within(screen.getByRole("main"));
+    const tiles = main.getAllByRole("button").map((b) => b.textContent);
+    expect(tiles).toEqual(expect.arrayContaining(["Créances", "Journal", "Réglages"]));
+    expect(tiles).not.toContain("Mon compte");
+    expect(tiles).not.toContain("Paie");
+    await user.click(main.getByRole("button", { name: "Réglages" }));
     expect(await screen.findByRole("heading", { name: "Réglages" })).toBeVisible();
     expect(nav().getByRole("link", { name: "Plus" })).toHaveAttribute("aria-current", "page");
-    await user.click(within(screen.getByRole("list", { name: "Mon compte" })).getByRole("button"));
+    expect(screen.queryByRole("list", { name: "Mon compte" })).toBeNull();
+    await user.click(topBar().getByRole("button", { name: "Mon compte" }));
     expect(await screen.findByText("0.0.0-test")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Recharger la dernière version" }));
     expect(reloadLatestVersion).toHaveBeenCalledOnce();

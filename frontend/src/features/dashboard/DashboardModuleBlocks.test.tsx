@@ -1,7 +1,8 @@
 /**
  * Tableau de bord : le bloc d'un module éteint vaut `null` (specs § 15.1) — il n'apparaît pas,
  * ni à zéro ; présent sinon. Cohérence avec `useModules()` : module éteint pour la coquille,
- * bloc caché même s'il est reçu.
+ * bloc caché même s'il est reçu. Modules à venir (`transfers`, `transport`, 13/11/2026) :
+ * « Déplacements en route » et « Camions » n'apparaissent jamais, même reçus.
  */
 import { screen } from "@testing-library/react";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -33,14 +34,12 @@ afterEach(() => {
 });
 
 const base = dashboardBody();
-const blocks = ["expenses", "receivables", "transfers", "transport"] as const;
+const blocks = ["expenses", "receivables"] as const;
 type Block = (typeof blocks)[number];
 
 const nulled: Record<Block, Partial<Dashboard>> = {
   expenses: { summary: { ...base.summary, expenses: null } },
   receivables: { receivables: null },
-  transfers: { stock: { ...base.stock, in_transit: null } },
-  transport: { trucks: null },
 };
 
 function open(body: Dashboard, modules: readonly ModuleCode[] = ALL_MODULES) {
@@ -57,14 +56,11 @@ const ready = () => screen.findByRole("list", { name: "Stock" });
 const expensesCard = () => screen.queryByRole("button", { name: /^Dépenses du jour/ });
 const result = () => screen.queryByText(/^Résultat simple du jour/);
 const list = (name: string) => screen.queryByRole("list", { name });
-const inTransit = () => screen.queryByText("Déplacements en route");
 
 /** Le bloc du module est-il à l'écran ? */
 const visible: Record<Block, () => boolean> = {
   expenses: () => expensesCard() !== null && result() !== null,
   receivables: () => list("Créances") !== null,
-  transfers: () => inTransit() !== null,
-  transport: () => list("Camions") !== null,
 };
 
 describe("tableau de bord — blocs des modules facultatifs", () => {
@@ -76,8 +72,7 @@ describe("tableau de bord — blocs des modules facultatifs", () => {
   });
 
   it.each(blocks)("« %s » reçu, module éteint pour la coquille : caché aussi", async (module) => {
-    // Transport dépend de Transferts : éteindre Transferts éteint aussi Transport.
-    open(dashboardBody(), module === "transfers" ? without(module, "transport") : without(module));
+    open(dashboardBody(), without(module));
     await ready();
     expect(visible[module]()).toBe(false);
   });
@@ -98,12 +93,16 @@ describe("tableau de bord — blocs des modules facultatifs", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("tous les modules : chaque bloc est là, « hors stock abîmé et en route »", async () => {
-    open(dashboardBody());
+  it("tous les modules : chaque bloc est là ; jamais « Déplacements en route » ni « Camions » ; axe", async () => {
+    const { container } = open(dashboardBody()); // blocs `in_transit` et `trucks` reçus
     await ready();
     for (const module of blocks) expect(visible[module]()).toBe(true);
+    expect(screen.queryByText("Déplacements en route")).toBeNull();
+    expect(list("Camions")).toBeNull();
+    expect(screen.queryByText(/Dépenses de transport|Disponible au Lot/)).toBeNull();
     expect(screen.getByRole("button", { name: /Valeur du stock/ })).toHaveTextContent(
-      "hors stock abîmé et en route",
+      "Au CMP, hors stock abîmé",
     );
+    expect(await axeViolations(container)).toEqual([]);
   });
 });

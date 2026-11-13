@@ -58,8 +58,8 @@ describe("tableau de bord du propriétaire (UC-TDB-01, design-system § 7.2)", (
     );
     expect(list("Stock").getByText("3 articles sous le seuil")).toBeVisible();
     expect(list("Stock").getByText("1 quantité négative")).toBeVisible();
-    expect(list("Stock").getByText("Disponible au Lot 2")).toBeVisible();
-    expect(list("Camions").getAllByText("Disponible au Lot 2")).toHaveLength(2);
+    expect(screen.queryByText("Disponible au Lot 2")).toBeNull(); // modules à venir
+    expect(screen.queryByRole("list", { name: "Camions" })).toBeNull();
     expect(list("Erreurs signalées").getByText("2 erreurs à traiter")).toBeVisible();
     expect(
       await within(await screen.findByRole("list", { name: "Alertes en attente" })).findByText(

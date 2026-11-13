@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { useParams } from "react-router";
-import { findSection, shopPath } from "../core/profile/shopProfile";
+import { findSection } from "../core/profile/shopProfile";
 import { MORE_KEY } from "../core/profile/types";
 import {
   MY_SALES_KEY,
@@ -18,7 +18,6 @@ import { STOCK_ROLES } from "../features/stock/stockRoles";
 import { PURCHASE_ROLES, PURCHASES_KEY } from "../features/purchasing/purchasingNav";
 import { RECEIVABLE_ROLES, RECEIVABLES_KEY } from "../features/receivables/receivablesNav";
 import { DASHBOARD_KEY } from "../features/dashboard/dashboardNav";
-import { ComingSoon } from "./ComingSoon";
 import { DashboardSection } from "./DashboardSection";
 import { NotFoundPage } from "./NotFoundPage";
 import { MorePage } from "./MorePage";
@@ -86,12 +85,7 @@ export function SectionPage() {
   if (entry.key === SETTINGS_KEY && SETTINGS_ROLES.includes(role)) {
     return (
       <Suspense fallback={<Skeleton lines={4} label="Ouverture des réglages…" />}>
-        <ShopSettingsRoute
-          shopId={shopId}
-          role={role}
-          title={entry.label}
-          accountPath={shopPath(shopId, ACCOUNT_KEY)}
-        />
+        <ShopSettingsRoute shopId={shopId} role={role} title={entry.label} />
       </Suspense>
     );
   }
@@ -150,5 +144,7 @@ export function SectionPage() {
       </Suspense>
     );
   }
-  return <ComingSoon title={entry.label} />;
+  // Aucune entrée de menu sans écran (audit UX du 13/11/2026) : celles des modules à venir
+  // n'apparaissent jamais (`shopModules`), une autre serait un oubli de câblage (fail-fast).
+  throw new Error(`Section « ${entry.key} » au menu sans écran (SectionPage)`);
 }

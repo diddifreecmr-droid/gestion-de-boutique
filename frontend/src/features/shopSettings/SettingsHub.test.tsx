@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 
 describe("Réglages de la boutique — sommaire et droits (CDC § 4.2, E3)", () => {
-  it("propriétaire : quatre écrans et « Mon compte », sans violation axe", async () => {
+  it("propriétaire : quatre écrans, sans « Mon compte » (barre du haut), sans violation axe", async () => {
     const { user, router, container } = renderApp(SETTINGS_PATH, settingsRoutes("owner"));
     expect(await screen.findByRole("heading", { name: "Réglages" })).toBeVisible();
     const list = screen.getByRole("list", { name: "Réglages de la boutique" });
@@ -26,6 +26,8 @@ describe("Réglages de la boutique — sommaire et droits (CDC § 4.2, E3)", () 
       .getAllByRole("button")
       .map((button) => button.querySelector(".text-lead")?.textContent);
     expect(titles).toEqual(["Membres", "Lieux", "Modes de paiement", "Réglages de la boutique"]);
+    expect(screen.queryByRole("list", { name: "Mon compte" })).toBeNull();
+    expect(within(screen.getByRole("main")).queryByText("Mon compte")).toBeNull();
     expect(await axeViolations(container)).toEqual([]);
 
     await user.click(within(list).getByRole("button", { name: /^Membres/ }));
@@ -33,9 +35,6 @@ describe("Réglages de la boutique — sommaire et droits (CDC § 4.2, E3)", () 
     expect(await screen.findByRole("heading", { name: "Membres" })).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Retour aux réglages" }));
     expect(router.state.location.search).toBe("");
-
-    await user.click(within(screen.getByRole("list", { name: "Mon compte" })).getByRole("button"));
-    expect(router.state.location.pathname).toMatch(/\/compte$/);
   });
 
   it.each(["seller", "accountant", "driver"] as const)(

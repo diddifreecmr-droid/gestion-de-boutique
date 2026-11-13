@@ -1,9 +1,9 @@
 import type { LucideIcon } from "lucide-react";
-import { AlertTriangle, CheckCircle2, Clock, WifiOff, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, Hourglass, WifiOff, XCircle } from "lucide-react";
 import { requireText } from "./controlClasses";
 
 /** Statuts de § 6.4. */
-export type BadgeStatus = "credit" | "success" | "warning" | "danger" | "offline";
+export type BadgeStatus = "credit" | "success" | "warning" | "danger" | "offline" | "upcoming";
 
 const STATUSES: Record<BadgeStatus, { icon: LucideIcon; classes: string }> = {
   credit: { icon: Clock, classes: "bg-credit-soft text-credit-text" },
@@ -11,6 +11,11 @@ const STATUSES: Record<BadgeStatus, { icon: LucideIcon; classes: string }> = {
   warning: { icon: AlertTriangle, classes: "bg-warning-soft text-warning-text" },
   danger: { icon: XCircle, classes: "bg-danger-soft text-danger-text" },
   offline: { icon: WifiOff, classes: "border border-border-strong bg-bg text-text-muted" },
+  /** « Bientôt » : module pas encore construit (console, specs § 15.1). */
+  upcoming: {
+    icon: Hourglass,
+    classes: "border border-dashed border-border-strong bg-bg text-text-muted",
+  },
 };
 
 export interface BadgeProps {

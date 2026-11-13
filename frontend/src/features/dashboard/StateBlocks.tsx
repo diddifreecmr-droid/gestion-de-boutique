@@ -4,9 +4,9 @@ import { shopPath } from "../../core/profile/shopProfile";
 import { ListCard, ListCardRow } from "../../shared/ui";
 import { STOCK_KEY } from "../catalog/catalogRights";
 import { stockViewPath, VIEW as STOCK_VIEW } from "../stock/stockNav";
-import { count, laterLot, valueRow } from "./homeText";
+import { count, valueRow } from "./homeText";
 import { useShownBlock } from "./moduleBlock";
-import { ReceivablesSection, TrucksSection } from "./ModuleSections";
+import { ReceivablesSection } from "./ModuleSections";
 import { Section } from "./Section";
 import { warn } from "./warnBadge";
 
@@ -16,11 +16,12 @@ interface Props {
   open: (metric: DetailMetric) => void;
 }
 
-/** Stock (module `catalog`, toujours actif) ; « Déplacements en route » : module `transfers`. */
+/**
+ * Stock (module `catalog`, toujours actif). Pas de ligne « Déplacements en route » : le module
+ * `transfers` est à venir (décision du 13/11/2026 : on ne montre jamais ce qui n'existe pas).
+ */
 function StockSection({ shopId, stock, open }: Props & { stock: Dashboard["stock"] }) {
   const navigate = useNavigate();
-  const shown = useShownBlock();
-  const inTransit = shown(stock.in_transit, "transfers");
   const value = valueRow(stock.value);
   const damaged = valueRow(stock.damaged);
   return (
@@ -28,7 +29,7 @@ function StockSection({ shopId, stock, open }: Props & { stock: Dashboard["stock
       <ListCard label="Stock">
         <ListCardRow
           title="Valeur du stock"
-          subtitle={`${value.note}, hors stock abîmé${inTransit === null ? "" : " et en route"}`}
+          subtitle={`${value.note}, hors stock abîmé`}
           {...(value.amount === undefined ? {} : { amount: value.amount })}
           onOpen={() => void navigate(stockViewPath(shopId, STOCK_VIEW.value))}
         />
@@ -52,22 +53,18 @@ function StockSection({ shopId, stock, open }: Props & { stock: Dashboard["stock
           {...warn(stock.to_verify, "À vérifier")}
           onOpen={() => void navigate(shopPath(shopId, STOCK_KEY))}
         />
-        {inTransit !== null && (
-          <ListCardRow title="Déplacements en route" subtitle={laterLot(inTransit)} />
-        )}
       </ListCard>
     </Section>
   );
 }
 
 /**
- * UC-TDB-01 points 3 à 5 : créances, stock, camions (états actuels ; Lot 2 annoncé). Le bloc
- * d'un module éteint (`null`, specs § 15.1) n'apparaît pas, ni à zéro.
+ * UC-TDB-01 points 3 et 4 : créances, stock (états actuels). Le bloc d'un module éteint (`null`,
+ * specs § 15.1) n'apparaît pas, ni à zéro. Pas de « Camions » : `transport` est à venir.
  */
 export function StateBlocks({ shopId, dashboard, open }: Props) {
   const shown = useShownBlock();
   const receivables = shown(dashboard.receivables, "receivables");
-  const trucks = shown(dashboard.trucks, "transport");
   return (
     <>
       {receivables !== null && (
@@ -79,7 +76,6 @@ export function StateBlocks({ shopId, dashboard, open }: Props) {
         />
       )}
       <StockSection shopId={shopId} dashboard={dashboard} stock={dashboard.stock} open={open} />
-      {trucks !== null && <TrucksSection trucks={trucks} />}
     </>
   );
 }

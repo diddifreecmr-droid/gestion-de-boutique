@@ -1,11 +1,8 @@
-import { useNavigate } from "react-router";
 import { ListCard, ListCardRow } from "../../shared/ui";
 import { VIEW, type SettingsView } from "./settingsNav";
 
 export interface SettingsHubProps {
   title: string;
-  /** Adresse de « Mon compte » (version, code, déconnexion), commune à tous les rôles. */
-  accountPath: string;
   onOpen: (view: SettingsView) => void;
 }
 
@@ -28,9 +25,11 @@ const ENTRIES: readonly { view: SettingsView; title: string; subtitle: string }[
   },
 ];
 
-/** Sommaire des Réglages (propriétaire) : une entrée par écran, puis « Mon compte ». */
-export function SettingsHub({ title, accountPath, onOpen }: SettingsHubProps) {
-  const navigate = useNavigate();
+/**
+ * Sommaire des Réglages (propriétaire) : une entrée par écran. « Mon compte » n'y est pas : son
+ * seul accès est le bouton « Compte » de la barre du haut (audit UX du 13/11/2026).
+ */
+export function SettingsHub({ title, onOpen }: SettingsHubProps) {
   return (
     <div className="flex flex-col gap-5">
       <h1 className="m-0 text-title font-bold text-text">{title}</h1>
@@ -45,13 +44,6 @@ export function SettingsHub({ title, accountPath, onOpen }: SettingsHubProps) {
             }}
           />
         ))}
-      </ListCard>
-      <ListCard label="Mon compte">
-        <ListCardRow
-          title="Mon compte"
-          subtitle="Version de l'application, changer mon code, se déconnecter"
-          onOpen={() => void navigate(accountPath)}
-        />
       </ListCard>
     </div>
   );

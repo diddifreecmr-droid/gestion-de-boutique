@@ -75,7 +75,7 @@ describe("boutique active (UC-SOC-03)", () => {
     expect(await screen.findByRole("heading", { name: "Choisir une boutique" })).toBeVisible();
     await user.click(screen.getByRole("button", { name: /Motos Ngaoundéré/ }));
     expect(router.state.location.pathname).toBe(`/s/${SHOP_B}`);
-    expect(navLabels()).toEqual(["Mon voyage", "Mes dépenses", "Mes voyages"]);
+    expect(navLabels()).toEqual(["Mon voyage"]); // transport : module à venir
     await user.click(screen.getByRole("button", { name: "Motos Ngaoundéré" }));
     expect(router.state.location.pathname).toBe("/boutiques");
   });

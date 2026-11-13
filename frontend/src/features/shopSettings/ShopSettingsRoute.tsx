@@ -12,18 +12,16 @@ export default function ShopSettingsRoute({
   shopId,
   role,
   title,
-  accountPath,
 }: {
   shopId: string;
   role: Role;
   title: string;
-  accountPath: string;
 }) {
   const services = useServices();
   const gateway = useMemo(() => createHttpShopAdmin(services), [services]);
   return (
     <ShopAdminContext.Provider value={gateway}>
-      <ShopSettingsPage shopId={shopId} role={role} title={title} accountPath={accountPath} />
+      <ShopSettingsPage shopId={shopId} role={role} title={title} />
     </ShopAdminContext.Provider>
   );
 }

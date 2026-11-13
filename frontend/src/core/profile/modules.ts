@@ -1,8 +1,10 @@
 /**
- * Modules d'une boutique (décision client du 12/11/2026, specs § 15.1) : seul l'administrateur
- * plateforme les active. Toujours actifs : `core`, `audit`, `catalog`, `sales`. Facultatifs :
- * les sept autres, avec la dépendance `transport` ⇒ `transfers`. Un module éteint : **tous** ses
- * points d'entrée disparaissent ; ses données sont gardées.
+ * Modules d'une boutique (décisions client des 12 et 13/11/2026, specs § 15.1) : seul
+ * l'administrateur plateforme les active. Toujours actifs : `core`, `audit`, `catalog`, `sales`.
+ * Facultatifs disponibles : `purchases`, `receivables`, `expenses`, `dashboard`. **À venir**
+ * (pas encore construits, Lot 2/3) : `transfers`, `transport`, `import` — jamais activables,
+ * jamais montrés comme actifs (on ne montre jamais ce qui n'existe pas). Un module éteint :
+ * **tous** ses points d'entrée disparaissent ; ses données sont gardées.
  */
 import type { components } from "../api/schema.gen";
 import { ApiError } from "../api/errors";
@@ -17,19 +19,32 @@ export const ALWAYS_ON = [
 ] as const satisfies readonly ModuleCode[];
 export type OptionalModule = Exclude<ModuleCode, (typeof ALWAYS_ON)[number]>;
 
-/** Ordre d'affichage dans la console. */
-export const OPTIONAL_MODULES = [
+/** Pas encore construits (miroir de `UPCOMING_MODULES` du serveur : 422 `MODULE_NOT_YET_AVAILABLE`). */
+export const UPCOMING_MODULES = [
+  "transfers",
+  "transport",
+  "import",
+] as const satisfies readonly OptionalModule[];
+export type UpcomingModule = (typeof UPCOMING_MODULES)[number];
+
+/** Facultatifs construits, activables par interrupteur ; ordre d'affichage dans la console. */
+export const AVAILABLE_OPTIONAL_MODULES = [
   "purchases",
   "receivables",
   "expenses",
-  "transfers",
-  "transport",
   "dashboard",
-  "import",
-] as const satisfies readonly OptionalModule[];
+] as const satisfies readonly Exclude<OptionalModule, UpcomingModule>[];
 
-/** Vérifié à la compilation : chaque module du contrat est classé (toujours actif ou facultatif). */
-type Unclassified = Exclude<OptionalModule, (typeof OPTIONAL_MODULES)[number]>;
+export const OPTIONAL_MODULES: readonly OptionalModule[] = [
+  ...AVAILABLE_OPTIONAL_MODULES,
+  ...UPCOMING_MODULES,
+];
+
+/** Vérifié à la compilation : chaque module du contrat est classé (toujours actif, facultatif, à venir). */
+type Unclassified = Exclude<
+  OptionalModule,
+  (typeof AVAILABLE_OPTIONAL_MODULES)[number] | UpcomingModule
+>;
 type AssertNever<T extends never> = T;
 export type ModulesAreClassified = AssertNever<Unclassified>;
 
@@ -39,6 +54,10 @@ export const ALL_MODULES: readonly ModuleCode[] = [...ALWAYS_ON, ...OPTIONAL_MOD
 export const REQUIRES: Readonly<Partial<Record<OptionalModule, OptionalModule>>> = {
   transport: "transfers",
 };
+
+export function isUpcoming(module: ModuleCode): module is UpcomingModule {
+  return UPCOMING_MODULES.some((upcoming) => upcoming === module);
+}
 
 export interface ShopModules {
   readonly enabled: ReadonlySet<ModuleCode>;
@@ -52,6 +71,8 @@ function isModule(code: string): code is ModuleCode {
 /**
  * Modules actifs lus du serveur (`enabled_modules`). Un code inconnu est une rupture de contrat
  * (fail-fast). Les modules toujours actifs sont ajoutés : sans eux l'application ne tourne pas.
+ * Un module à venir n'est **jamais** actif côté client, même porté par une ancienne réponse
+ * gardée hors connexion (avant la migration `0016_upcoming_modules`) : il est écarté, par règle.
  */
 export function shopModules(codes: readonly string[]): ShopModules {
   const enabled = new Set<ModuleCode>(ALWAYS_ON);
@@ -61,7 +82,7 @@ export function shopModules(codes: readonly string[]): ShopModules {
         `Module inconnu reçu de l'API : « ${code} » (attendu ${ALL_MODULES.join(", ")})`,
       );
     }
-    enabled.add(code);
+    if (!isUpcoming(code)) enabled.add(code);
   }
   return { enabled, has: (module) => enabled.has(module) };
 }

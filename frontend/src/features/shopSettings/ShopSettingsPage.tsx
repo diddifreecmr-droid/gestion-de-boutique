@@ -12,7 +12,6 @@ export interface ShopSettingsPageProps {
   shopId: string;
   role: Role;
   title: string;
-  accountPath: string;
 }
 
 /**
@@ -20,7 +19,7 @@ export interface ShopSettingsPageProps {
  * réglages de la boutique. Propriétaire seulement (CDC § 4.2 « Gérer les utilisateurs et les
  * réglages de la boutique ») : la garde de route ne l'ouvre qu'à lui.
  */
-export function ShopSettingsPage({ shopId, role, title, accountPath }: ShopSettingsPageProps) {
+export function ShopSettingsPage({ shopId, role, title }: ShopSettingsPageProps) {
   if (!SETTINGS_ROLES.includes(role)) {
     throw new Error(`Le rôle « ${role} » n'accède pas aux réglages (garde de route manquante)`);
   }
@@ -46,6 +45,6 @@ export function ShopSettingsPage({ shopId, role, title, accountPath }: ShopSetti
     case VIEW.shop:
       return <ShopSettingsScreen {...common} />;
     default:
-      return <SettingsHub title={title} accountPath={accountPath} onOpen={open} />;
+      return <SettingsHub title={title} onOpen={open} />;
   }
 }
