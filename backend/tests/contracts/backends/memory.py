@@ -13,6 +13,7 @@ from app.application.shops.ports import ShopCatalog
 from app.domain.shared.ids import ShopId
 from app.infrastructure.persistence.memory.alerts import MemoryAlertRepository
 from app.infrastructure.persistence.memory.attachments import MEMORY_ATTACHMENT_REPOSITORIES
+from app.infrastructure.persistence.memory.imports import MEMORY_IMPORT_REPOSITORIES
 from app.infrastructure.persistence.memory.audit_log import MemoryAuditLog
 from app.infrastructure.persistence.memory.catalog import MEMORY_CATALOG_REPOSITORIES
 from app.infrastructure.persistence.memory.database import MemoryDatabase
@@ -60,6 +61,7 @@ REGISTRY: RepositoryRegistry = (
     *MEMORY_REPORTING_ADAPTERS,
     *MEMORY_SYNC_REPOSITORIES,
     *MEMORY_ATTACHMENT_REPOSITORIES,
+    *MEMORY_IMPORT_REPOSITORIES,
 )
 
 

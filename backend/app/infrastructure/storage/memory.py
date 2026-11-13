@@ -7,19 +7,18 @@ l'envoi échoue explicitement et n'inscrit rien en base.
 import threading
 
 from app.application.attachments.ports import FileStorage, MissingFile, StorageUnavailable
-from app.domain.attachments.values import FileFormat
 
 
 class MemoryFileStorage(FileStorage):
     def __init__(self) -> None:
-        self._objects: dict[str, tuple[bytes, FileFormat]] = {}
+        self._objects: dict[str, tuple[bytes, str]] = {}
         self._lock = threading.Lock()
         self.available = True
 
-    def put(self, key: str, content: bytes, file_format: FileFormat) -> None:
+    def put(self, key: str, content: bytes, media_type: str) -> None:
         self._require_available()
         with self._lock:
-            self._objects[key] = (bytes(content), FileFormat(file_format))
+            self._objects[key] = (bytes(content), str(media_type))
 
     def get(self, key: str) -> bytes:
         self._require_available()

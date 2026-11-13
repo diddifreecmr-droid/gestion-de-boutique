@@ -4,10 +4,11 @@ Les tables métier rejoignent `metadata` (`schema.py`) avec leur module : `table
 (comptes, sessions, comptes commerçants), `tables_shops` (socle des boutiques) depuis T10,
 `tables_catalog`, `tables_expenses`, `tables_stock`, `tables_purchasing`, `tables_sales` et
 `tables_sales_returns`, `tables_receivables`, `tables_sync` (T13 à T23), `tables_attachments`,
-importés ici pour que ce module expose **tout** le schéma ; chaque ajout s'accompagne d'une
-migration. Conventions (specs § 5.1) : identifiants UUIDv7 fournis par l'application
-(`sa.Uuid`, natif sur PostgreSQL, `CHAR(32)` ailleurs), `shop_id` en tête des index, `version`
-pour le verrou optimiste, `BIGINT` pour les compteurs et montants. Aucun trigger ni procédure.
+`tables_imports` (T32), importés ici pour que ce module expose **tout** le schéma ; chaque
+ajout s'accompagne d'une migration. Conventions (specs § 5.1) : identifiants UUIDv7 fournis
+par l'application (`sa.Uuid`, natif sur PostgreSQL, `CHAR(32)` ailleurs), `shop_id` en tête
+des index, `version` pour le verrou optimiste, `BIGINT` pour les compteurs et montants. Aucun
+trigger ni procédure.
 """
 
 import sqlalchemy as sa
@@ -18,6 +19,7 @@ from app.infrastructure.persistence.sqlalchemy import (
 from app.infrastructure.persistence.sqlalchemy import tables_catalog as tables_catalog
 from app.infrastructure.persistence.sqlalchemy import tables_expenses as tables_expenses
 from app.infrastructure.persistence.sqlalchemy import tables_identity as tables_identity
+from app.infrastructure.persistence.sqlalchemy import tables_imports as tables_imports
 from app.infrastructure.persistence.sqlalchemy import tables_purchasing as tables_purchasing
 from app.infrastructure.persistence.sqlalchemy import (
     tables_receivables as tables_receivables,

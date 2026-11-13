@@ -25,6 +25,7 @@ from app.bootstrap.container import http_config_from
 from app.bootstrap.core import build_core
 from app.bootstrap.expenses import build_expenses
 from app.bootstrap.identity import build_identity
+from app.bootstrap.imports import build_imports
 from app.bootstrap.journal import build_journal
 from app.bootstrap.purchasing import build_purchasing
 from app.bootstrap.receivables import build_receivables
@@ -62,6 +63,7 @@ def build_openapi_document() -> str:
     receivables = build_receivables(identity)
     reporting = build_reporting(identity)
     sync = build_sync(identity, journal, sales, expenses)
+    attachments = build_attachments(settings, identity)
     app = create_app(
         http_config_from(settings),
         identity.auth,
@@ -75,7 +77,8 @@ def build_openapi_document() -> str:
         receivables=receivables.http,
         reporting=reporting.http,
         sync=sync.http,
-        attachments=build_attachments(settings, identity).http,
+        attachments=attachments.http,
+        imports=build_imports(identity, attachments.storage).http,
     )
     schema = app.openapi()
     if not schema.get("paths"):

@@ -7,6 +7,7 @@ dependencies = [
     "argon2-cffi>=25.1.0",
     "fastapi>=0.162.4",
     "minio>=7.2",
+    "openpyxl>=3.1.5",
     "psycopg[binary]>=3.3.8",
     "pydantic>=2.14.3",
     "pydantic-settings>=2.16.2",
@@ -27,6 +28,7 @@ dev = [
     "pytest-cov>=7.1.0",
     "pyyaml>=6.0.3",
     "ruff>=0.17.4",
+    "types-openpyxl>=3.1.5",
     "types-pyyaml>=6.0.12.20261111",
 ]
 
