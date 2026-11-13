@@ -46,6 +46,12 @@ export function createSimulatedCatalog(world: World): CatalogGateway {
         default_location_id: GAROUA.id,
         min_price_requires_approval: world.settings.minPriceRequiresApproval,
         payment_modes: PAYMENT_MODES.map((mode) => ({ ...mode })),
+        // Profil « Motos » de la démonstration (champs de `GET /profile`).
+        article_fields: [
+          { code: "brand", label: "Marque" },
+          { code: "model", label: "Modèle" },
+        ],
+        sale_fields: ["color", "chassis_number", "engine_number"],
       };
     },
     async searchArticles(_shopId, search) {

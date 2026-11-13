@@ -24,8 +24,9 @@ function periodTitle(first: string, last: string, today: string): string {
 }
 
 /**
- * Liste des dépenses (UC-DEP-03) : jour par défaut, total de la période en haut (annulées
- * exclues, calculé par le serveur), répartition par catégorie, filtres, puis les lignes.
+ * Liste des dépenses (UC-DEP-03) : jour par défaut ; période et filtres sur une ligne, puis le
+ * total de la période (annulées exclues, calculé par le serveur) et les lignes, visibles dès le
+ * premier écran (audit UX du 13/11/2026) ; la répartition par catégorie et les réglages suivent.
  */
 export function ExpenseList({ shopId, refs, nav }: ScreenProps) {
   const { gateway, now } = useExpensesDeps();
@@ -75,11 +76,6 @@ export function ExpenseList({ shopId, refs, nav }: ScreenProps) {
       >
         Nouvelle dépense
       </Button>
-      {refs.me.role === "owner" && (
-        <Button variant="ghost" icon={Settings} onClick={nav.settings}>
-          Catégories et tags
-        </Button>
-      )}
       <ExpenseFiltersPanel
         shopId={shopId}
         refs={refs}
@@ -99,7 +95,6 @@ export function ExpenseList({ shopId, refs, nav }: ScreenProps) {
             amount={ready.totals.amount}
             detail={`${countText(ready.totals.count)} (annulées non comptées)`}
           />
-          <CategoryBars refs={refs} totals={ready.totals} />
           {items.length === 0 ? (
             <EmptyState icon={Receipt} message="Aucune dépense sur cette période." />
           ) : (
@@ -123,7 +118,13 @@ export function ExpenseList({ shopId, refs, nav }: ScreenProps) {
               Voir plus
             </Button>
           )}
+          <CategoryBars refs={refs} totals={ready.totals} />
         </>
+      )}
+      {refs.me.role === "owner" && (
+        <Button variant="ghost" icon={Settings} onClick={nav.settings}>
+          Catégories et tags
+        </Button>
       )}
     </>
   );

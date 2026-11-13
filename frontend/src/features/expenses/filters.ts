@@ -67,3 +67,14 @@ export function periodProblem(filters: ListFilters): string | undefined {
   if (filters.from > filters.to) return "La date de début est après la date de fin";
   return undefined;
 }
+
+/** Filtres actifs (hors période), lus dans « Filtres (n) » : catégorie, tag, lieu, auteur, mode. */
+export function activeExpenseFilters(value: ListFilters): number {
+  return [
+    value.categoryId !== ALL,
+    value.tag !== null,
+    value.locationId !== ALL,
+    value.userId !== ALL,
+    value.modeId !== ALL,
+  ].filter(Boolean).length;
+}

@@ -1,4 +1,5 @@
-import { Banknote, Split } from "lucide-react";
+import { useState } from "react";
+import { Banknote, Ellipsis, Split } from "lucide-react";
 import type { PaymentMode } from "../../core/gateways/catalogContract";
 import { useModules } from "../../core/profile/modulesContext";
 import { formatMoney } from "../../shared/format";
@@ -7,6 +8,7 @@ import { CREDIT_CHOICE, type SaleDraft } from "./draft";
 import type { SaleChecks } from "./saleChecks";
 import { splitSum } from "./saleChecks";
 import { FieldMessage } from "./FieldMessage";
+import { groupModes } from "./paymentChoices";
 
 export interface PaymentSectionProps {
   modes: readonly PaymentMode[];
@@ -16,17 +18,28 @@ export interface PaymentSectionProps {
   update: (patch: Partial<SaleDraft>) => void;
 }
 
+const toOption = (mode: PaymentMode): ChoiceOption<string> => ({
+  value: mode.id,
+  label: mode.name,
+});
+
 /**
- * Mode de paiement en grosses pastilles, « À crédit » compris quand le module Créances est
- * actif (specs § 15.1) ; répartition facultative.
+ * Mode de paiement en grosses pastilles : « Espèces » et les 2 premiers autres modes, puis
+ * « À crédit » quand le module Créances est actif (specs § 15.1) ; les autres modes et la
+ * répartition sont derrière « Autre mode » (audit UX du 13/11/2026). Un mode choisi parmi
+ * les autres reste affiché quand on referme.
  */
 export function PaymentSection({ modes, draft, checks, showErrors, update }: PaymentSectionProps) {
   const credit = useModules().has("receivables");
+  const { visible, hidden } = groupModes(modes);
+  const [more, setMore] = useState(false);
   const options: ChoiceOption<string>[] = [
-    ...modes.map((mode) => ({ value: mode.id, label: mode.name })),
+    ...visible.map(toOption),
     ...(credit ? [{ value: CREDIT_CHOICE, label: "À crédit" }] : []),
+    ...hidden.filter((mode) => more || mode.id === draft.payment).map(toOption),
   ];
   const cash = draft.payment !== null && draft.payment !== CREDIT_CHOICE;
+  const extended = more || hidden.length === 0;
   return (
     <section aria-label="Paiement" className="flex flex-col gap-4">
       <ChoiceChips
@@ -38,7 +51,20 @@ export function PaymentSection({ modes, draft, checks, showErrors, update }: Pay
         }}
       />
       {showErrors && checks.payment !== undefined && <FieldMessage text={checks.payment} />}
-      {cash && draft.split === null && (
+      {hidden.length > 0 && (
+        <Button
+          variant="ghost"
+          icon={Ellipsis}
+          fullWidth
+          aria-expanded={more}
+          onClick={() => {
+            setMore((open) => !open);
+          }}
+        >
+          Autre mode
+        </Button>
+      )}
+      {extended && cash && draft.split === null && (
         <Button
           variant="ghost"
           icon={Split}

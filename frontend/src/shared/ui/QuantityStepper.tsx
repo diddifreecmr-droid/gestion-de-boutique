@@ -17,6 +17,8 @@ export interface QuantityStepperProps {
   hint?: string | undefined;
   error?: string | undefined;
   id?: string | undefined;
+  /** Libellé et boutons sur une ligne (« Quantité  [−] 1 [+] », § 7.1) ; faux par défaut. */
+  inline?: boolean;
 }
 
 function assertInteger(name: string, value: number): void {
@@ -68,6 +70,7 @@ export function QuantityStepper({
   hint,
   error,
   id,
+  inline = false,
 }: QuantityStepperProps) {
   assertInteger("value", value);
   assertInteger("min", min);
@@ -95,7 +98,7 @@ export function QuantityStepper({
     );
 
   return (
-    <Field label={label} hint={hint} error={error} id={id} footer={footer}>
+    <Field label={label} hint={hint} error={error} id={id} footer={footer} inline={inline}>
       {(control) => (
         <div className="flex items-center gap-4">
           <StepButton

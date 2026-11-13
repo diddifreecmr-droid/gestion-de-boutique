@@ -1,15 +1,10 @@
 /** Filtres de la liste des ventes (UC-VEN-05) : période, mode, comptant/crédit, vendeur. */
 import type { SaleFilters, SaleKind } from "../../core/gateways/salesContract";
 import { addDays, monthStart } from "../expenses/businessDay";
+import type { Period } from "../expenses/filters";
 
-export type Period = "today" | "week" | "month" | "custom";
-
-export const PERIOD_LABELS: Readonly<Record<Period, string>> = {
-  today: "Aujourd'hui",
-  week: "7 derniers jours",
-  month: "Ce mois-ci",
-  custom: "Autres dates",
-};
+/** Mêmes périodes que les dépenses : un seul sélecteur (`PeriodBar`) pour les deux listes. */
+export type { Period };
 
 /** Valeur « tous » des choix exclusifs. */
 export const ALL = "tous";
@@ -42,6 +37,12 @@ export function periodProblem(filters: ListFilters): string | undefined {
   if (filters.from === "" || filters.to === "") return "Choisissez les deux dates";
   if (filters.from > filters.to) return "La date de début est après la date de fin";
   return undefined;
+}
+
+/** Filtres actifs (hors période et recherche), lus dans « Filtres (n) » : type, mode, vendeur. */
+export function activeSaleFilters(filters: ListFilters): number {
+  return [filters.kind !== ALL, filters.modeId !== ALL, filters.sellerId !== ALL].filter(Boolean)
+    .length;
 }
 
 /** Requête de `GET /sales` ; une recherche (`q`) ignore la période (toutes dates). */

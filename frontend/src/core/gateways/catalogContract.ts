@@ -16,6 +16,12 @@ export interface SaleLocation {
   name: string;
 }
 
+/** Champ du profil de la boutique (`GET /profile`) : code stable et libellé affiché. */
+export interface ProfileFieldLabel {
+  code: string;
+  label: string;
+}
+
 /** Mode de paiement de la boutique (RG-T19, liste réglable). */
 export type PaymentMode = components["schemas"]["PaymentModeResponse"];
 
@@ -54,6 +60,10 @@ export interface SaleSetup {
   min_price_requires_approval: boolean;
   /** Modes de paiement **actifs**, dans l'ordre d'affichage. */
   payment_modes: PaymentMode[];
+  /** Champs d'article du profil, dans l'ordre (libellé de la recherche d'article). */
+  article_fields: ProfileFieldLabel[];
+  /** Codes des champs de vente du profil (`chassis_number` : recherche par châssis). */
+  sale_fields: string[];
 }
 
 export interface CatalogGateway {

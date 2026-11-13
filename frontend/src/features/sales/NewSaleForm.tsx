@@ -8,7 +8,7 @@ import { FormAlert } from "../auth/FormAlert";
 import { ArticlePicker } from "./ArticlePicker";
 import { CreditSection } from "./CreditSection";
 import { CREDIT_CHOICE, newDraft, newLine, type SaleDraft } from "./draft";
-import { readLastPaymentMode } from "./lastPaymentMode";
+import { defaultPayment } from "./paymentChoices";
 import { PaymentSection } from "./PaymentSection";
 import { SaleActionBar } from "./SaleActionBar";
 import { checkSale } from "./saleChecks";
@@ -27,20 +27,14 @@ export interface NewSaleFormProps {
   onRecorded: (sale: SaleResult) => void;
   /** Mention sous le titre (ex. « Démonstration » tant que la passerelle est simulée). */
   notice?: ReactNode;
-}
-
-/** Le dernier mode utilisé s'il existe encore, sinon le premier (jamais « À crédit »). */
-function initialPayment(shopId: string, modes: readonly PaymentMode[]): string {
-  const [first] = modes;
-  if (first === undefined) throw new Error("La boutique n'a aucun mode de paiement actif");
-  const last = readLastPaymentMode(shopId);
-  return modes.some((mode) => mode.id === last) && last !== null ? last : first.id;
+  /** Aide de la recherche d'article, selon les champs du profil (`articleSearchHint`). */
+  searchHint: string;
 }
 
 /** Formulaire « Nouvelle vente » (design-system § 7.1) : article, prix, paiement, valider. */
 export function NewSaleForm(props: NewSaleFormProps) {
-  const { shopId, role, location, modes, requiresApproval, onRecorded, notice } = props;
-  const [draft, setDraft] = useState<SaleDraft>(() => newDraft(initialPayment(shopId, modes)));
+  const { shopId, role, location, modes, requiresApproval, onRecorded, notice, searchHint } = props;
+  const [draft, setDraft] = useState<SaleDraft>(() => newDraft(defaultPayment(modes)));
   const [picking, setPicking] = useState(false);
   const update = (patch: Partial<SaleDraft>) => {
     setDraft((current) => ({ ...current, ...patch }));
@@ -78,6 +72,7 @@ export function NewSaleForm(props: NewSaleFormProps) {
           shopId={shopId}
           locationId={location.id}
           locationName={location.name}
+          hint={searchHint}
           excluded={draft.lines.map((line) => line.article.id)}
           onPick={(article) => {
             update({ lines: [...draft.lines, newLine(article)] });

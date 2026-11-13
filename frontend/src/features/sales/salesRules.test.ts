@@ -18,6 +18,8 @@ const setup = (overrides: Partial<SaleSetup> = {}): SaleSetup => ({
   default_location_id: "n",
   min_price_requires_approval: false,
   payment_modes: [],
+  article_fields: [],
+  sale_fields: [],
   ...overrides,
 });
 

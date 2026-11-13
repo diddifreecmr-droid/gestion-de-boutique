@@ -2,6 +2,7 @@ import { useId } from "react";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { formatMoney, formatQuantity } from "../../shared/format";
 import { AmountField, Button, Disclosure, QuantityStepper, TextField } from "../../shared/ui";
+import { articleTitle } from "./articleTitle";
 import { withQuantity, type LineDraft, type UnitDetail } from "./draft";
 import type { LineIssues } from "./saleChecks";
 
@@ -28,6 +29,7 @@ export function SaleLineCard({
   const titleId = useId();
   const unit = line.article.unit_label;
   const priceError = showErrors ? issues?.price : undefined;
+  const title = articleTitle(line.article.name);
   return (
     <section
       aria-labelledby={titleId}
@@ -35,13 +37,14 @@ export function SaleLineCard({
     >
       <div className="flex flex-col gap-1">
         <h2 id={titleId} className="m-0 text-title-sm font-semibold text-text">
-          {line.article.name}
+          {title}
         </h2>
         <p className="m-0 text-body text-text-muted">
           Stock disponible à {locationName} : {formatQuantity(line.available)}
         </p>
       </div>
       <QuantityStepper
+        inline
         label="Quantité"
         value={line.quantity}
         max={line.available}
@@ -67,7 +70,7 @@ export function SaleLineCard({
           </span>
         </p>
       )}
-      <Disclosure label="Plus de détails : couleur, châssis, moteur">
+      <Disclosure label="Détails de l'article">
         {line.units.map((detail, index) => (
           <UnitFields
             key={index}
@@ -82,7 +85,7 @@ export function SaleLineCard({
       </Disclosure>
       {onRemove !== undefined && (
         <Button variant="ghost" icon={Trash2} onClick={onRemove}>
-          Retirer {line.article.name}
+          Retirer {title}
         </Button>
       )}
     </section>

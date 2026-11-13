@@ -3,6 +3,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 import { axeViolations } from "../../testing/axe";
 import { json, SHOP_A } from "../../testing/fakeApi";
 import { money, plain, preloadSales, renderSale } from "../../testing/renderSale";
+import { apparelSaleProfile } from "../../testing/salesCatalog";
 import { cancelled, NOW, page, saleCommand } from "../../testing/salesFixtures";
 import { addSale, API, saleServer } from "../../testing/salesServer";
 
@@ -94,12 +95,15 @@ describe("liste des ventes (UC-VEN-05)", () => {
     expect(plain(within(list).getByRole("listitem").textContent)).toContain("par vous");
 
     const { user } = view;
+    await user.click(screen.getByRole("button", { name: "Période : Aujourd'hui" }));
     await user.click(screen.getByRole("radio", { name: "7 derniers jours" }));
+    expect(screen.getByRole("button", { name: "Période : 7 derniers jours" })).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Filtres" }));
     await user.click(screen.getByRole("radio", { name: "Crédit" }));
     await user.click(screen.getByRole("radio", { name: "MTN MoMo" }));
     await user.click(screen.getByRole("radio", { name: "Issa Vendeur" }));
-    await user.type(screen.getByLabelText("Chercher une vente"), "lbx");
+    expect(screen.getByRole("button", { name: "Filtres (3)" })).toBeVisible();
+    await user.type(screen.getByLabelText("Chercher un n° de vente ou de châssis"), "lbx");
     await screen.findByRole("list", { name: "Liste des ventes" });
     const urls = listCalls(view.fake.calls);
     expect(urls).toContain(`${API}/sales?from=2026-11-05&to=2026-11-11`);
@@ -107,6 +111,23 @@ describe("liste des ventes (UC-VEN-05)", () => {
       `${API}/sales?q=lbx&kind=credit&payment_mode_id=pm-mtn&seller_id=01890a5d-ac96-774b-bcce-b302099a8010`,
     );
     expect(screen.queryByRole("radiogroup", { name: "Période" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Période/ })).toBeNull(); // recherche : toutes dates
+  });
+
+  it("premier écran compact : période sur une ligne, total avant la liste ; « châssis » seulement pour Motos", async () => {
+    const view = renderSale("seller", {
+      path: MY_SALES,
+      extra: { [`GET ${API}/profile`]: json(200, apparelSaleProfile("seller")) },
+    });
+    await addSale(view.server, saleCommand());
+    const list = await salesList();
+    expect(screen.getByLabelText("Chercher un n° de vente")).not.toHaveAccessibleDescription();
+    expect(view.container.textContent).not.toMatch(/châssis/i);
+    expect(screen.getByRole("button", { name: "Période : Aujourd'hui" })).toBeVisible();
+    expect(screen.queryByRole("radiogroup", { name: "Période" })).toBeNull();
+    const total = screen.getByText("Ventes du 11/11/2026");
+    expect(total.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(await axeViolations(view.container)).toEqual([]);
   });
 
   it("aucune vente : message et « Nouvelle vente »", async () => {

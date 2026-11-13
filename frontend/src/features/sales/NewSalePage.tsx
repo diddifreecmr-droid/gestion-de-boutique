@@ -6,6 +6,7 @@ import { useGateways } from "../../core/gateways/gateways";
 import type { SaleResult } from "../../core/gateways/salesContract";
 import { Button, ChoiceChips, EmptyState, Skeleton } from "../../shared/ui";
 import { NewSaleForm } from "./NewSaleForm";
+import { articleSearchHint } from "./profileLabels";
 import { ReceiptPrint } from "./ReceiptPrint";
 import { locationChoice } from "./saleLocation";
 import { SALE_ROLES } from "./saleRoles";
@@ -128,6 +129,7 @@ function SaleFlow({ shopId, role, setup }: NewSalePageProps & { setup: SaleSetup
       requiresApproval={setup.min_price_requires_approval}
       onRecorded={setRecorded}
       notice={notice}
+      searchHint={articleSearchHint(setup.article_fields)}
     />
   );
 }
