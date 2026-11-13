@@ -1,5 +1,6 @@
 """Adaptateurs : Argon2id, JWT HS256 (expiré, signature, secret court), secrets opaques."""
 
+import re
 from datetime import UTC, datetime, timedelta
 
 import jwt
@@ -13,7 +14,11 @@ from app.domain.identity.events import SessionId
 from app.domain.shared.ids import UserId
 from app.infrastructure.auth.argon2_hasher import Argon2PasswordHasher
 from app.infrastructure.auth.jwt_tokens import JwtTokenService
-from app.infrastructure.auth.opaque_tokens import RandomPinGenerator, RandomRefreshSecrets
+from app.infrastructure.auth.opaque_tokens import (
+    RandomPinGenerator,
+    RandomRefreshSecrets,
+    rotation_key_from,
+)
 from app.infrastructure.persistence.memory.clock import FixedClock
 from app.infrastructure.system_clock import SystemClock
 
@@ -116,13 +121,33 @@ def test_access_claims_require_utc_and_a_positive_lifetime() -> None:
 
 
 def test_refresh_secrets_are_random_and_only_their_digest_is_comparable() -> None:
-    secrets = RandomRefreshSecrets()
+    secrets = RandomRefreshSecrets(rotation_key_from("k" * 32))
     first, second = secrets.generate(), secrets.generate()
     assert first != second
     assert len(first) >= 43  # 32 octets en base64 URL
     assert secrets.digest(first) == secrets.digest(first)
     assert len(secrets.digest(first)) == 64
     assert first not in secrets.digest(first)
+
+
+def test_successor_is_deterministic_keyed_and_cookie_safe() -> None:
+    secrets = RandomRefreshSecrets(rotation_key_from("k" * 32))
+    other_key = RandomRefreshSecrets(rotation_key_from("z" * 32))
+    secret = secrets.generate()
+    successor = secrets.successor(secret)
+    assert successor == secrets.successor(secret)  # rejeu : même successeur
+    assert successor not in (secret, other_key.successor(secret))  # dépend de la clé
+    assert secrets.successor(successor) != successor
+    assert len(successor) == 43
+    assert re.fullmatch(r"[A-Za-z0-9_-]+", successor)
+
+
+def test_rotation_key_must_be_long_enough() -> None:
+    with pytest.raises(ValueError, match="32 octets"):
+        rotation_key_from("court")
+    with pytest.raises(ValueError, match="32 octets"):
+        RandomRefreshSecrets(b"court")
+    assert rotation_key_from("k" * 32) != b"k" * 32
 
 
 def test_temporary_pins_have_six_digits() -> None:

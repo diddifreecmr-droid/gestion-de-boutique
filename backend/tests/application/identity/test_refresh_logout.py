@@ -10,6 +10,7 @@ from app.application.identity.use_cases.logout import Logout
 from app.application.identity.use_cases.refresh_session import RefreshSession
 from app.domain.identity.errors import AccountDisabled, SessionRevoked, Unauthenticated
 from app.domain.identity.events import RevocationReason, SessionId, SessionRevokedEvent
+from app.domain.identity.refresh_rotation import REFRESH_REPLAY_GRACE
 from app.domain.shared.ids import DeviceId, UserId
 from tests.application.identity.support import PASSWORD, T0, World
 
@@ -44,6 +45,7 @@ def test_reusing_a_rotated_token_revokes_only_that_session() -> None:
     first, other = world.login(device=d1), world.login(device=d2)
     second = refresh_uc(world).execute(first.refresh_token, d1)
     world.recorder.received.clear()
+    world.clock.advance(REFRESH_REPLAY_GRACE + timedelta(seconds=1))  # hors fenêtre de rejeu
     with pytest.raises(SessionRevoked):
         refresh_uc(world).execute(first.refresh_token, d1)  # jeton déjà tourné
     with pytest.raises(SessionRevoked):
@@ -136,10 +138,24 @@ def test_logout_with_a_stale_token_records_a_reuse() -> None:
     first = world.login(device=device)
     refresh_uc(world).execute(first.refresh_token, device)
     world.recorder.received.clear()
+    world.clock.advance(REFRESH_REPLAY_GRACE + timedelta(seconds=1))
     logout_uc(world).execute(first.refresh_token, device)
     (event,) = world.recorder.received
     assert isinstance(event, SessionRevokedEvent)
     assert event.reason is RevocationReason.REFRESH_REUSE
+
+
+def test_logout_with_the_just_replaced_token_is_a_plain_logout() -> None:
+    world = World()
+    world.register()
+    device = DeviceId.new()
+    first = world.login(device=device)
+    refresh_uc(world).execute(first.refresh_token, device)  # réponse perdue
+    world.recorder.received.clear()
+    logout_uc(world).execute(first.refresh_token, device)
+    (event,) = world.recorder.received
+    assert isinstance(event, SessionRevokedEvent)
+    assert event.reason is RevocationReason.LOGOUT
 
 
 def test_logout_of_an_unknown_session_is_unauthenticated() -> None:

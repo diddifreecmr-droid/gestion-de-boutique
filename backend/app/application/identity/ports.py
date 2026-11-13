@@ -89,6 +89,15 @@ class RefreshSecrets(ABC):
     def digest(self, secret: str) -> str:
         """Empreinte déterministe, comparable à celle stockée dans la session."""
 
+    @abstractmethod
+    def successor(self, secret: str) -> str:
+        """Secret qui remplace `secret` à la rotation, déduit de lui et d'une clé serveur.
+
+        Déterministe : rejouer le même jeton donne le même successeur, si bien qu'une réponse
+        perdue ou deux rafraîchissements simultanés aboutissent au **même** jeton (specs § 8.1).
+        Sans la clé, un jeton volé ne permet pas de calculer son successeur.
+        """
+
 
 class TemporaryPinGenerator(ABC):
     """Codes provisoires remis par le propriétaire (UC-SOC-04, `ResetPin`)."""

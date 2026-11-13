@@ -27,7 +27,7 @@ from app.bootstrap.config import Environment, Settings
 from app.bootstrap.core import Core, build_core
 from app.infrastructure.auth.argon2_hasher import Argon2PasswordHasher
 from app.infrastructure.auth.jwt_tokens import JwtTokenService
-from app.infrastructure.auth.opaque_tokens import RandomRefreshSecrets
+from app.infrastructure.auth.opaque_tokens import RandomRefreshSecrets, rotation_key_from
 from app.infrastructure.rate_limit import InMemoryRateLimiter
 from app.infrastructure.system_clock import SystemClock
 from app.interface.http.routes.auth import AuthComponents
@@ -92,8 +92,9 @@ def build_identity(
         raise ValueError(msg)
     clock, hasher = core.clock, hasher or Argon2PasswordHasher()
     uow_factory, memberships = core.platform_uow_factory, core.memberships
-    tokens = JwtTokenService(settings.JWT_SECRET.get_secret_value(), clock)
-    secrets = RandomRefreshSecrets()
+    server_secret = settings.JWT_SECRET.get_secret_value()
+    tokens = JwtTokenService(server_secret, clock)
+    secrets = RandomRefreshSecrets(rotation_key_from(server_secret))
     issuer = SessionIssuer(tokens, secrets, session_policy_from(settings))
     delegations = Delegations(
         directory=core.delegations, journal=AuditDelegatedAccess(core.shop_uow_factory, clock)

@@ -20,9 +20,18 @@ export class SessionEndedError extends Error {
 
 export const SESSION_EXPIRED_NOTICE = "Votre session a expiré : reconnectez-vous.";
 
+/**
+ * Verdict de **notre** API : l'erreur porte l'enveloppe `{"error": {"code"…}}`. Un 401 sans
+ * enveloppe (`HTTP_401` : portail captif, proxy d'opérateur, page d'erreur intermédiaire) est
+ * un incident de réseau transitoire, pas un refus de l'identité.
+ */
+export function isServerVerdict(error: unknown): error is ApiError {
+  return error instanceof ApiError && !error.code.startsWith("HTTP_");
+}
+
 /** Le serveur a refusé l'identité (jeton, cookie, compte) : la session doit se terminer. */
 export function endsSession(error: unknown): error is ApiError {
-  if (!(error instanceof ApiError)) return false;
+  if (!isServerVerdict(error)) return false;
   return error.status === 401 || error.code === "ACCOUNT_DISABLED";
 }
 

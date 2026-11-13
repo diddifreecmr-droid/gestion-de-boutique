@@ -3,7 +3,8 @@
 - `app_user` (`USER` de specs § 5.2 ; `user` est un mot réservé de PostgreSQL) : téléphone
   E.164 unique sur la plateforme (`user_phone`), deux compteurs d'essais **indépendants**
   (connexion ; changement de code, décision du 11/11/2026).
-- `device_session` : une session par appareil ; seule l'empreinte du jeton de rafraîchissement.
+- `device_session` : une session par appareil ; seule l'empreinte du jeton de rafraîchissement,
+  et celle du jeton tout juste remplacé avec l'instant de la rotation (rejeu toléré, § 8.1).
 - `merchant_account` : offre (`plan`) du compte et noms de ses boutiques (unicité du nom de
   boutique dans le compte, gardée par l'agrégat et son verrou optimiste).
 """
@@ -52,6 +53,8 @@ device_session = sa.Table(
     sa.Column("sliding", sa.Boolean, nullable=False),
     sa.Column("revoked", sa.Boolean, nullable=False),
     sa.Column("revoked_at", _TS, nullable=True),
+    sa.Column("previous_refresh_hash", sa.String(128), nullable=True),
+    sa.Column("rotated_at", _TS, nullable=True),
     sa.CheckConstraint("version >= 1", name="version_positive"),
     sa.Index("device_session_user_device_idx", "user_id", "device_id"),
 )

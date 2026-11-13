@@ -112,13 +112,24 @@ class SessionIssuer:
         return self._issue(session, user, secret, now)
 
     def rotate(
-        self, uow: IdentityUnitOfWork, session: DeviceSession, user: User, now: datetime
+        self,
+        uow: IdentityUnitOfWork,
+        session: DeviceSession,
+        user: User,
+        presented: str,
+        now: datetime,
     ) -> IssuedSession:
-        """Rafraîchissement : nouveau secret, l'ancien devient une réutilisation."""
-        secret = self._secrets.generate()
+        """Rafraîchissement : le successeur (déduit de `presented`) remplace le secret actuel."""
+        secret = self._secrets.successor(presented)
         session.rotate(self._secrets.digest(secret), now, self.policy.session_lifetime(user))
         uow.sessions.update(session)
         return self._issue(session, user, secret, now)
+
+    def replay(
+        self, session: DeviceSession, user: User, presented: str, now: datetime
+    ) -> IssuedSession:
+        """Rejeu toléré : renvoie le successeur **actuel** de `presented`, sans rien écrire."""
+        return self._issue(session, user, self._secrets.successor(presented), now)
 
     def _issue(
         self, session: DeviceSession, user: User, secret: str, now: datetime

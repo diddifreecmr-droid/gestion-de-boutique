@@ -7,6 +7,7 @@ from app.application.identity.use_cases.revoke_user_devices import RevokeUserDev
 from app.application.security.actor import Actor
 from app.application.security.policy import Policy
 from app.application.security.roles import Role
+from app.domain.identity.refresh_rotation import REFRESH_REPLAY_GRACE
 from app.domain.shared.ids import DeviceId, ShopId, UserId
 from tests.application.identity.support import PIN
 from tests.http.auth.support import PREFIX, SHOP, Api
@@ -26,6 +27,7 @@ def test_refresh_rotates_and_reuse_revokes(api: Api) -> None:
     second = rotated.cookies["refresh_token"]
     assert second != first
     assert "HttpOnly" in rotated.headers["set-cookie"]
+    api.clock.advance(REFRESH_REPLAY_GRACE + timedelta(seconds=1))  # hors fenêtre de rejeu
     reused = api.with_cookie("/auth/refresh", device, first)
     assert (reused.status_code, reused.json()["error"]["code"]) == (401, "SESSION_REVOKED")
     after = api.with_cookie("/auth/refresh", device, second)
