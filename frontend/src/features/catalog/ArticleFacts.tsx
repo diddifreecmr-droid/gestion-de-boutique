@@ -2,6 +2,7 @@ import type { ProfileFieldResponse } from "../../core/gateways/catalogAdminContr
 import { costsOf, pricesOf, type ArticleView } from "./articleView";
 import { FactsCard, type Fact } from "./FactsCard";
 import { moneyOr, NOT_COMPUTABLE, NOT_SET } from "./money";
+import { articlePriceLabels, choiceLabel } from "./textileFields";
 
 const EMPTY = "—";
 
@@ -20,8 +21,15 @@ export function ArticleFacts({
   view: ArticleView;
   fields: readonly ProfileFieldResponse[];
 }) {
+  const labels = articlePriceLabels(fields, view.values);
+  const valueOf = (spec: ProfileFieldResponse) => {
+    const value = view.values[spec.code];
+    return spec.kind === "choice" && typeof value === "string"
+      ? choiceLabel(spec, value)
+      : shown(value);
+  };
   const details: Fact[] = [
-    ...fields.map((spec) => ({ label: spec.label, value: shown(view.values[spec.code]) })),
+    ...fields.map((spec) => ({ label: spec.label, value: valueOf(spec) })),
     {
       label: "Seuil d'alerte",
       value:
@@ -40,10 +48,23 @@ export function ArticleFacts({
         <FactsCard
           title="Prix de vente"
           facts={[
-            { label: "Prix de base", value: moneyOr(prices.basePrice, NOT_SET) },
+            { label: labels.base, value: moneyOr(prices.basePrice, NOT_SET) },
             ...(prices.minPriceActive || prices.minPrice !== null
               ? [{ label: "Prix minimum", value: moneyOr(prices.minPrice, NOT_SET) }]
               : []),
+            ...(labels.piece === null
+              ? []
+              : [
+                  { label: labels.piece, value: moneyOr(prices.basePricePiece, NOT_SET) },
+                  ...(prices.minPriceActive || prices.minPricePiece !== null
+                    ? [
+                        {
+                          label: "Minimum à la pièce",
+                          value: moneyOr(prices.minPricePiece, NOT_SET),
+                        },
+                      ]
+                    : []),
+                ]),
           ]}
         />
       )}

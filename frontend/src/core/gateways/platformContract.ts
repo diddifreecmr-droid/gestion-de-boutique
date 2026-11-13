@@ -27,4 +27,9 @@ export interface PlatformGateway {
   administer(shopId: string, change: AdministerShop): Promise<ShopSummary>;
   /** Droits d'offre en vigueur et fin de la délégation du propriétaire (ou `null`). */
   access(shopId: string): Promise<ShopAccess>;
+  /**
+   * Changer le type d'une boutique **vide** (QC-1, T27) ; sinon `422 PROFILE_CHANGE_BLOCKED`
+   * (`details.blocking` : nature → nombre).
+   */
+  changeProfile(shopId: string, profileCode: string): Promise<ShopSummary>;
 }

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { MatrixOrder, StockColumn } from "../../core/gateways/stockContract";
 import { useStockGateway } from "../../core/gateways/httpStock";
+import { useActiveProfile } from "../../core/profile/activeProfile";
+import { listSearchHint } from "../../core/profile/vocabulary";
 import { EmptyState, ListCard, SearchField } from "../../shared/ui";
 import { LoadPending, ScreenTitle } from "./Notice";
 import { StockItem } from "./StockItem";
@@ -25,6 +27,7 @@ export interface StockMatrixPageProps {
 export function StockMatrixPage({ shopId, role }: StockMatrixPageProps) {
   const gateway = useStockGateway();
   const nav = useStockNav();
+  const profile = useActiveProfile();
   const [text, setText] = useState("");
   const [locationId, setLocationId] = useState(ALL_LOCATIONS);
   const [sort, setSort] = useState<MatrixOrder>("name");
@@ -44,7 +47,7 @@ export function StockMatrixPage({ shopId, role }: StockMatrixPageProps) {
       <ScreenTitle>Stock</ScreenTitle>
       <SearchField
         label="Rechercher un article"
-        hint="Nom, marque, modèle ou référence"
+        hint={listSearchHint(profile.articleFields)}
         value={text}
         onChange={setText}
       />

@@ -3,6 +3,7 @@ import type { ProfileFieldResponse } from "../../core/gateways/catalogAdminContr
 import { Disclosure } from "../../shared/ui";
 import type { FieldDraft, FieldErrors } from "./fieldValues";
 import { ProfileFieldInput } from "./ProfileFieldInput";
+import { shownFields, TEXTILE_MAIN } from "./textileFields";
 
 export interface ArticleFieldsEditorProps {
   fields: readonly ProfileFieldResponse[];
@@ -17,10 +18,12 @@ export interface ArticleFieldsEditorProps {
 
 /**
  * Champs d'article du profil (CDC § 17.2) : obligatoires visibles, facultatifs repliés sous
- * « Plus de détails » (P4) — ouvert d'emblée si l'un d'eux est rempli ou en erreur.
+ * « Plus de détails » (P4) — ouvert d'emblée si l'un d'eux est rempli ou en erreur. Textile :
+ * unité, vente à la pièce et longueur restent visibles, chacun seulement quand il a un sens.
  */
 export function ArticleFieldsEditor(props: ArticleFieldsEditorProps) {
-  const { fields, draft, errors, onChange, main, extra } = props;
+  const { draft, errors, onChange, main, extra } = props;
+  const fields = shownFields(props.fields, draft);
   const input = (spec: ProfileFieldResponse) => (
     <ProfileFieldInput
       key={spec.code}
@@ -32,13 +35,14 @@ export function ArticleFieldsEditor(props: ArticleFieldsEditorProps) {
       }}
     />
   );
-  const optional = fields.filter((spec) => !spec.required);
+  const visible = (spec: ProfileFieldResponse) => spec.required || TEXTILE_MAIN.has(spec.code);
+  const optional = fields.filter((spec) => !visible(spec));
   const openAtStart = optional.some(
     (spec) => (draft[spec.code] ?? "") !== "" || errors[spec.code] !== undefined,
   );
   return (
     <>
-      {fields.filter((spec) => spec.required).map(input)}
+      {fields.filter(visible).map(input)}
       {main}
       <Disclosure defaultOpen={openAtStart}>
         <div className="flex flex-col gap-4">

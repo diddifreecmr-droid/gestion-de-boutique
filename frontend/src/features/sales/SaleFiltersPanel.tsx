@@ -1,4 +1,6 @@
+import { useActiveProfile } from "../../core/profile/activeProfile";
 import { useModules } from "../../core/profile/modulesContext";
+import { roleWord } from "../../core/profile/vocabulary";
 import { ChoiceChips, SearchField, TextField } from "../../shared/ui";
 import { PeriodBar } from "../expenses/PeriodBar";
 import { saleSearchLabel } from "./profileLabels";
@@ -31,6 +33,7 @@ export interface SaleFiltersPanelProps {
  */
 export function SaleFiltersPanel({ refs, value, onChange }: SaleFiltersPanelProps) {
   const credit = useModules().has("receivables");
+  const profile = useActiveProfile();
   const problem = periodProblem(value);
   const searching = value.text.trim() !== "";
   const sellers = refs.members.filter((m) => m.role === "seller" || m.role === "owner");
@@ -94,10 +97,10 @@ export function SaleFiltersPanel({ refs, value, onChange }: SaleFiltersPanelProp
         />
         {refs.role === "owner" && (
           <ChoiceChips
-            label="Vendeur"
+            label={profile.roleLabel("seller")}
             options={withAll(
               sellers.map((m) => ({ id: m.user_id, name: m.name })),
-              "Tous les vendeurs",
+              `Tous les ${roleWord(profile.roleLabel("seller"), true)}`,
             )}
             value={value.sellerId}
             onChange={(sellerId) => {

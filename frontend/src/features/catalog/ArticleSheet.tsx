@@ -10,6 +10,7 @@ import { articleView } from "./articleView";
 import { catalogRights, type CatalogRole } from "./catalogRights";
 import { PriceHistoryList } from "./PriceHistoryList";
 import { PricesForm } from "./PricesForm";
+import { articlePriceLabels } from "./textileFields";
 
 export interface ArticleSheetProps {
   shopId: string;
@@ -59,6 +60,7 @@ export function ArticleSheet(props: ArticleSheetProps) {
         <PricesForm
           shopId={shopId}
           article={view}
+          labels={articlePriceLabels(form.fields, view.values)}
           minPriceEnabled={form.minPriceEnabled}
           onSaved={saved("Prix enregistrés")}
           onCancel={back}

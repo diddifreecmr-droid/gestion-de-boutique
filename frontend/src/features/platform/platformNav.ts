@@ -6,6 +6,7 @@
 import { ApiError, NetworkError } from "../../core/api/errors";
 import { OFFLINE_MESSAGE } from "../expenses/expenseErrors";
 import { moduleRefusal } from "./moduleRefusals";
+import { blockingText } from "./profileBlocking";
 
 export const VIEW = { create: "nouvelle" } as const;
 
@@ -29,8 +30,21 @@ export function platformNav(set: (params: Record<string, string>) => void): Plat
   };
 }
 
-/** Profils proposés à l'ouverture : seul « Motos » est livré au Lot 1 (Prêt-à-porter, Textile : Lot 3). */
-export const PROFILES = [{ value: "motos", label: "Motos et camions" }] as const;
+/** Types de boutique (profils du serveur, CDC § 15, § 18, § 19) : ouverture et changement de type. */
+export const PROFILES = [
+  { value: "motos", label: "Motos et camions" },
+  { value: "apparel", label: "Prêt-à-porter" },
+  { value: "textile", label: "Textile" },
+] as const;
+
+export type ProfileCode = (typeof PROFILES)[number]["value"];
+
+/** Libellé d'un type de boutique ; un code inconnu est une rupture de contrat (fail-fast). */
+export function profileLabel(code: string): string {
+  const found = PROFILES.find((profile) => profile.value === code);
+  if (found === undefined) throw new Error(`Type de boutique inconnu : « ${code} »`);
+  return found.label;
+}
 
 export const STATUS_LABELS: Readonly<Record<string, string>> = {
   active: "Ouverte",
@@ -54,6 +68,8 @@ export function platformErrorMessage(error: unknown): string {
       return fieldsText(error);
     case "DUPLICATE":
       return "Une boutique de ce compte porte déjà ce nom.";
+    case "PROFILE_CHANGE_BLOCKED":
+      return blockingText(error.details["blocking"]);
     case "UNKNOWN_PROFILE":
       return "Ce type de boutique n'existe pas.";
     case "MODULE_NOT_AVAILABLE":

@@ -2,10 +2,10 @@ import { useState } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 import type { OpenedShop, OpenShopInput } from "../../core/gateways/platformContract";
 import { usePlatformGateway } from "../../core/gateways/httpPlatform";
-import { ActionBar, Button, Disclosure, TextField } from "../../shared/ui";
+import { ActionBar, Button, ChoiceChips, Disclosure, TextField } from "../../shared/ui";
 import { FormMessage } from "../expenses/FormMessage";
 import { asError } from "../expenses/useLoad";
-import { platformErrorMessage, PROFILES, type PlatformNav } from "./platformNav";
+import { platformErrorMessage, PROFILES, type PlatformNav, type ProfileCode } from "./platformNav";
 
 interface Fields {
   name: string;
@@ -26,10 +26,10 @@ const REQUIRED: readonly { key: keyof Fields; label: string; tel?: boolean }[] =
   { key: "ownerPhone", label: "Téléphone du propriétaire", tel: true },
 ];
 
-function body(fields: Fields): OpenShopInput {
+function body(profile: ProfileCode, fields: Fields): OpenShopInput {
   const address = fields.address.trim();
   return {
-    profile_code: PROFILES[0].value,
+    profile_code: profile,
     name: fields.name.trim(),
     city: fields.city.trim(),
     phone: fields.phone.trim(),
@@ -51,6 +51,9 @@ export function OpenShopForm({
 }) {
   const gateway = usePlatformGateway();
   const [fields, setFields] = useState(EMPTY);
+  // Aucun type d'avance : une boutique ouverte sur le mauvais type ne se corrige plus dès
+  // qu'elle a des données (QC-1).
+  const [profile, setProfile] = useState<ProfileCode | null>(null);
   const [checked, setChecked] = useState(false);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -60,11 +63,11 @@ export function OpenShopForm({
 
   const submit = async () => {
     setChecked(true);
-    if (pending || missing.length > 0) return;
+    if (pending || missing.length > 0 || profile === null) return;
     setPending(true);
     setMessage(null);
     try {
-      onOpened(await gateway.open(body(fields)), fields.ownerPhone.trim());
+      onOpened(await gateway.open(body(profile, fields)), fields.ownerPhone.trim());
     } catch (error) {
       try {
         setMessage(platformErrorMessage(error));
@@ -85,7 +88,13 @@ export function OpenShopForm({
         Retour aux boutiques
       </Button>
       <h1 className="m-0 text-title font-bold text-text">Ouvrir une boutique</h1>
-      <p className="m-0 text-body text-text-muted">Type de boutique : {PROFILES[0].label}</p>
+      <ChoiceChips
+        label="Type de boutique"
+        options={PROFILES}
+        value={profile}
+        onChange={setProfile}
+      />
+      {checked && profile === null && <FormMessage text="Type de boutique : à choisir" />}
       {REQUIRED.map(({ key, label, tel }) => (
         <TextField
           key={key}

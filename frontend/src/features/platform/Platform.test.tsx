@@ -51,7 +51,9 @@ describe("Console plateforme (TR-23, UC-SOC-01)", () => {
     });
     await user.click(await screen.findByRole("button", { name: "Ouvrir la boutique" }));
     expect(screen.getByText("Nom de la boutique : obligatoire")).toBeVisible();
+    expect(screen.getByText("Type de boutique : à choisir")).toBeVisible();
     expect(fake.count(`POST ${PLATFORM}`)).toBe(0);
+    await user.click(screen.getByRole("radio", { name: "Motos et camions" }));
     await user.type(screen.getByLabelText(/Nom de la boutique/), "Motos Ngaoundéré");
     await user.type(screen.getByLabelText(/^Ville/), "Ngaoundéré");
     await user.type(screen.getByLabelText(/Téléphone de la boutique/), "222000000");

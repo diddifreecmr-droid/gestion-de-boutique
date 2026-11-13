@@ -25,10 +25,13 @@ export function unitWord(profileCode: string): string {
   return UNIT_WORDS[profileCode] ?? "unité";
 }
 
-/** `stock_unit` de l'API (« UNIT », « METER ») → mode de vente de la ligne. */
+/**
+ * `stock_unit` de l'API (« UNIT », « PIECE », « METER ») → mode de vente par défaut de la ligne
+ * (serveur, `application/sales/lines.py` : « à l'unité » pour Unité et Pièce).
+ */
 export function saleModeOf(stockUnit: string): SaleMode {
   const unit = stockUnit.toLowerCase();
-  if (unit === "unit") return "unit";
+  if (unit === "unit" || unit === "piece") return "unit";
   if (unit === "meter") return "meter";
   throw new Error(`Unité de stock inconnue : « ${stockUnit} »`);
 }

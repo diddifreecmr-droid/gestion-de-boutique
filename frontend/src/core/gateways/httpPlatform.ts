@@ -19,6 +19,14 @@ export function createHttpPlatform({ api, session }: AppServices): PlatformGatew
       session.authorized((token) => api.patch(SHOP, { token, params: one(shopId), body })),
     access: (shopId) =>
       session.authorized((token) => api.get(`${SHOP}/access`, { token, params: one(shopId) })),
+    changeProfile: (shopId, profileCode) =>
+      session.authorized((token) =>
+        api.post(`${SHOP}/profile`, {
+          token,
+          params: one(shopId),
+          body: { profile_code: profileCode },
+        }),
+      ),
   };
 }
 
