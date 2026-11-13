@@ -1,3 +1,4 @@
+import { useModules } from "../../../core/profile/modulesContext";
 import { AmountField, ChoiceChips, SummaryCard } from "../../../shared/ui";
 import { FieldMessage } from "../FieldMessage";
 import type { ExchangeKind, ReturnChecks, ReturnDraft } from "./returnDraft";
@@ -17,7 +18,8 @@ const KINDS: { value: ExchangeKind; label: string }[] = [
 /**
  * Nouvelle vente de l'échange au comptant ou **à crédit** (décision client specs § 15.1) :
  * à crédit, le client est celui de la vente d'origine (imposé), un acompte facultatif est
- * versé dans le mode de l'échange, le reste devient une créance.
+ * versé dans le mode de l'échange, le reste devient une créance. Sans le module Créances, le
+ * choix n'est pas proposé : l'échange est au comptant.
  */
 export function ExchangeCreditFields({
   draft,
@@ -26,6 +28,7 @@ export function ExchangeCreditFields({
   update,
 }: ExchangeCreditFieldsProps) {
   const credit = draft.exchangeKind === "credit";
+  if (!useModules().has("receivables")) return null;
   return (
     <>
       <ChoiceChips

@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { RefreshCw } from "lucide-react";
 import { Outlet, useNavigate, useParams } from "react-router";
 import type { ShopMembership } from "../core/auth/me";
 import { ModulesContext } from "../core/profile/modulesContext";
@@ -12,7 +11,7 @@ import {
 } from "../core/profile/shopProfile";
 import { useShopModules } from "../core/profile/useShopModules";
 import { useSignedIn } from "../core/services/servicesContext";
-import { BottomNav, Button, EmptyState, Skeleton, TopBar } from "../shared/ui";
+import { BottomNav, Skeleton, TopBar } from "../shared/ui";
 import { AppBanners } from "./AppBanners";
 import { NotFoundPage } from "./NotFoundPage";
 import { SHOP_PICKER_PATH } from "./paths";
@@ -36,7 +35,7 @@ function ShopFrame({ membership, several }: { membership: ShopMembership; severa
   const navigate = useNavigate();
   const { section = "" } = useParams();
   const { shopId, role } = membership;
-  const { state, retry } = useShopModules(shopId);
+  const state = useShopModules(shopId);
 
   const frame = (content: ReactNode, nav?: ReactNode) => (
     <div className="min-h-screen pb-24">
@@ -59,18 +58,6 @@ function ShopFrame({ membership, several }: { membership: ShopMembership; severa
       <main className="mx-auto flex w-full max-w-150 flex-col gap-4 p-4">
         <Skeleton lines={4} label="Ouverture de la boutique…" />
       </main>
-    );
-  }
-  if (state.status === "offline") {
-    return frame(
-      <EmptyState
-        message="Connexion nécessaire pour ouvrir la boutique la première fois."
-        action={
-          <Button variant="secondary" icon={RefreshCw} onClick={retry}>
-            Réessayer
-          </Button>
-        }
-      />,
     );
   }
   const { modules } = state;

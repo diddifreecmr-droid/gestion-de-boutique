@@ -5,5 +5,5 @@ import { afterEach } from "vitest";
 afterEach(() => {
   cleanup();
   // Modules gardés d'une boutique (src/core/profile/useShopModules.ts) : propres à chaque test.
-  window.localStorage.removeItem("boutique.shop-modules");
+  if (typeof window !== "undefined") window.localStorage.removeItem("boutique.shop-modules");
 });

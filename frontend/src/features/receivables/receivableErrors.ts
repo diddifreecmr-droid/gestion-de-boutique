@@ -4,6 +4,7 @@
  */
 import { ApiError, NetworkError } from "../../core/api/errors";
 import { formatMoney } from "../../shared/format";
+import { MODULE_DISABLED, MODULE_DISABLED_MESSAGE } from "../../core/profile/modules";
 
 export const OFFLINE_MESSAGE =
   "Connexion nécessaire : rien n'est enregistré. Votre saisie est conservée ; réessayez quand le réseau revient.";
@@ -37,6 +38,8 @@ export function receivableErrorMessage(error: unknown): string {
       return `${error.message} : choisissez une autre date.`;
     case "FORBIDDEN":
       return "Vous n'avez pas le droit de faire cette action.";
+    case MODULE_DISABLED:
+      return MODULE_DISABLED_MESSAGE;
     case "NOT_FOUND":
       return "Cette créance n'existe pas ou ne vous est pas confiée.";
     default:

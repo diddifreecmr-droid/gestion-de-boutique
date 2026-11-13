@@ -9,7 +9,12 @@ import { ApiError } from "../api/errors";
 
 export type ModuleCode = components["schemas"]["Module"];
 
-export const ALWAYS_ON = ["core", "audit", "catalog", "sales"] as const satisfies readonly ModuleCode[];
+export const ALWAYS_ON = [
+  "core",
+  "audit",
+  "catalog",
+  "sales",
+] as const satisfies readonly ModuleCode[];
 export type OptionalModule = Exclude<ModuleCode, (typeof ALWAYS_ON)[number]>;
 
 /** Ordre d'affichage dans la console. */
@@ -52,7 +57,9 @@ export function shopModules(codes: readonly string[]): ShopModules {
   const enabled = new Set<ModuleCode>(ALWAYS_ON);
   for (const code of codes) {
     if (!isModule(code)) {
-      throw new Error(`Module inconnu reçu de l'API : « ${code} » (attendu ${ALL_MODULES.join(", ")})`);
+      throw new Error(
+        `Module inconnu reçu de l'API : « ${code} » (attendu ${ALL_MODULES.join(", ")})`,
+      );
     }
     enabled.add(code);
   }

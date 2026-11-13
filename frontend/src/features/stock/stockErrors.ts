@@ -5,6 +5,7 @@
  */
 import { ApiError, NetworkError } from "../../core/api/errors";
 import { formatQuantity } from "../../shared/format";
+import { MODULE_DISABLED, MODULE_DISABLED_MESSAGE } from "../../core/profile/modules";
 
 export const OFFLINE_SAVE =
   "Connexion nécessaire : rien n'a été enregistré. Réessayez quand le réseau revient.";
@@ -86,6 +87,8 @@ export function stockFailure(error: unknown, locationName = ""): StockFailure {
       return { kind: "message", text: insufficientMessage(error, locationName) };
     case "FORBIDDEN":
       return { kind: "message", text: FORBIDDEN_MESSAGE };
+    case MODULE_DISABLED:
+      return { kind: "message", text: MODULE_DISABLED_MESSAGE };
     case "VALIDATION_ERROR":
       if (error.details["field"] === "reasons") {
         return { kind: "reasons", articleIds: articleList(error) };
@@ -101,6 +104,7 @@ export function stockFailure(error: unknown, locationName = ""): StockFailure {
 export function loadFailureMessage(error: ApiError): string {
   if (error.code === "NOT_FOUND") return "Élément introuvable dans cette boutique.";
   if (error.code === "FORBIDDEN") return FORBIDDEN_MESSAGE;
+  if (error.code === MODULE_DISABLED) return MODULE_DISABLED_MESSAGE;
   return error.message;
 }
 

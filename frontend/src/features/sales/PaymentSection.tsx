@@ -1,5 +1,6 @@
 import { Banknote, Split } from "lucide-react";
 import type { PaymentMode } from "../../core/gateways/catalogContract";
+import { useModules } from "../../core/profile/modulesContext";
 import { formatMoney } from "../../shared/format";
 import { AmountField, Button, ChoiceChips, type ChoiceOption } from "../../shared/ui";
 import { CREDIT_CHOICE, type SaleDraft } from "./draft";
@@ -15,11 +16,15 @@ export interface PaymentSectionProps {
   update: (patch: Partial<SaleDraft>) => void;
 }
 
-/** Mode de paiement en grosses pastilles, « À crédit » compris ; répartition facultative. */
+/**
+ * Mode de paiement en grosses pastilles, « À crédit » compris quand le module Créances est
+ * actif (specs § 15.1) ; répartition facultative.
+ */
 export function PaymentSection({ modes, draft, checks, showErrors, update }: PaymentSectionProps) {
+  const credit = useModules().has("receivables");
   const options: ChoiceOption<string>[] = [
     ...modes.map((mode) => ({ value: mode.id, label: mode.name })),
-    { value: CREDIT_CHOICE, label: "À crédit" },
+    ...(credit ? [{ value: CREDIT_CHOICE, label: "À crédit" }] : []),
   ];
   const cash = draft.payment !== null && draft.payment !== CREDIT_CHOICE;
   return (

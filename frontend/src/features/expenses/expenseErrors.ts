@@ -4,6 +4,7 @@
  */
 import { ApiError, NetworkError } from "../../core/api/errors";
 import { formatDate, formatTime } from "../../shared/format";
+import { MODULE_DISABLED, MODULE_DISABLED_MESSAGE } from "../../core/profile/modules";
 
 export const OFFLINE_MESSAGE =
   "Connexion nécessaire : rien n'est enregistré. Votre saisie est conservée ; réessayez quand le réseau revient.";
@@ -46,6 +47,8 @@ export function expenseErrorMessage(error: unknown): string {
       return "Fusion impossible : choisissez deux tags différents.";
     case "FORBIDDEN":
       return "Vous n'avez pas le droit de faire cette action.";
+    case MODULE_DISABLED:
+      return MODULE_DISABLED_MESSAGE;
     default:
       return `L'action n'a pas abouti : ${error.message} (${error.code}).`;
   }

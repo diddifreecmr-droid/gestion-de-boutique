@@ -11,6 +11,7 @@ export const ModulesContext = createContext<ShopModules | null>(null);
  */
 export function useModules(): ShopModules {
   const modules = useContext(ModulesContext);
-  if (modules === null) throw new Error("useModules doit être appelé sous la coquille d'une boutique");
+  if (modules === null)
+    throw new Error("useModules doit être appelé sous la coquille d'une boutique");
   return modules;
 }

@@ -6,6 +6,7 @@ import { ApiError, NetworkError } from "../../core/api/errors";
 import { duplicate, paymentIncomplete, stockInsufficient } from "../../core/gateways/saleErrors";
 import { formatMoney, formatQuantity } from "../../shared/format";
 import type { LineDraft } from "./draft";
+import { MODULE_DISABLED, MODULE_DISABLED_MESSAGE } from "../../core/profile/modules";
 
 export const OFFLINE_MESSAGE =
   "Connexion nécessaire : la vente n'est pas enregistrée. Votre saisie est conservée ; " +
@@ -54,6 +55,8 @@ export function saleErrorMessage(
       return `${locationName} n'est plus un point de vente actif : rouvrez « Nouvelle vente » et choisissez un autre lieu.`;
     case "FORBIDDEN":
       return "Vous n'avez pas le droit d'enregistrer cette vente.";
+    case MODULE_DISABLED:
+      return MODULE_DISABLED_MESSAGE;
     default:
       return `La vente n'a pas été enregistrée : ${error.message} (${error.code}).`;
   }
@@ -69,5 +72,6 @@ export function actionErrorMessage(error: unknown, action: string): string {
   if (!(error instanceof ApiError)) throw error;
   if (error.code === "FORBIDDEN")
     return `Vous n'avez pas le droit de faire cette action (${action}).`;
+  if (error.code === MODULE_DISABLED) return MODULE_DISABLED_MESSAGE;
   return `${action} refusé : ${error.message} (${error.code}).`;
 }

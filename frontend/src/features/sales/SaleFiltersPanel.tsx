@@ -1,3 +1,4 @@
+import { useModules } from "../../core/profile/modulesContext";
 import { ChoiceChips, Disclosure, SearchField, TextField } from "../../shared/ui";
 import { ALL, PERIOD_LABELS, periodProblem, type ListFilters, type Period } from "./saleFilters";
 import type { SaleRefs } from "./saleRefs";
@@ -31,6 +32,7 @@ export interface SaleFiltersPanelProps {
  * et vendeur (propriétaire seulement) sous « Filtres » (P4).
  */
 export function SaleFiltersPanel({ refs, value, onChange }: SaleFiltersPanelProps) {
+  const credit = useModules().has("receivables");
   const problem = periodProblem(value);
   const searching = value.text.trim() !== "";
   const sellers = refs.members.filter((m) => m.role === "seller" || m.role === "owner");
@@ -76,14 +78,16 @@ export function SaleFiltersPanel({ refs, value, onChange }: SaleFiltersPanelProp
         </div>
       )}
       <Disclosure label="Filtres">
-        <ChoiceChips
-          label="Comptant ou crédit"
-          options={KINDS}
-          value={value.kind}
-          onChange={(kind) => {
-            onChange({ kind });
-          }}
-        />
+        {credit && (
+          <ChoiceChips
+            label="Comptant ou crédit"
+            options={KINDS}
+            value={value.kind}
+            onChange={(kind) => {
+              onChange({ kind });
+            }}
+          />
+        )}
         <ChoiceChips
           label="Mode de paiement"
           options={withAll(refs.modes, "Tous les modes")}

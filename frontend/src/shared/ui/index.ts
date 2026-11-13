@@ -18,6 +18,8 @@ export type { ChoiceChipsProps, ChoiceOption } from "./ChoiceChips";
 export { Disclosure } from "./Disclosure";
 export type { DisclosureProps } from "./Disclosure";
 export { SearchField } from "./SearchField";
+export { Switch } from "./Switch";
+export type { SwitchProps } from "./Switch";
 export type { SearchFieldProps } from "./SearchField";
 
 export { KpiCard } from "./KpiCard";

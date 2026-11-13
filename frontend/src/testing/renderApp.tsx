@@ -22,7 +22,14 @@ function withShopProfiles(routes: Routes): Routes {
       json(200, { ...profileBody("owner"), shop_id: shopId }),
     ]),
   );
-  return { ...defaults, ...routes };
+  // Pas de copie : certains faux serveurs sont des `Proxy` qui servent toute route de la boutique.
+  return new Proxy(routes, {
+    get: (target, key): Reply | Reply[] | undefined => {
+      const own: unknown = Reflect.get(target, key);
+      if (own !== undefined) return own as Reply | Reply[];
+      return typeof key === "string" ? defaults[key] : undefined;
+    },
+  });
 }
 
 export function renderApp(path: string, routes: Routes) {

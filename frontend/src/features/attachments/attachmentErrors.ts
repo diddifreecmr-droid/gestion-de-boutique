@@ -4,6 +4,7 @@
  */
 import { ApiError, NetworkError } from "../../core/api/errors";
 import { FileRejected } from "./prepareFile";
+import { MODULE_DISABLED, MODULE_DISABLED_MESSAGE } from "../../core/profile/modules";
 
 export const STORAGE_DOWN =
   "Stockage des fichiers indisponible : la photo est gardée, réessayez dans un instant.";
@@ -21,6 +22,8 @@ export function attachmentErrorMessage(error: unknown): string {
       return "Fichier refusé : photo JPG ou PNG, ou PDF, 5 Mo au plus.";
     case "FORBIDDEN":
       return "Vous n'avez pas le droit de voir ou d'ajouter cette pièce.";
+    case MODULE_DISABLED:
+      return MODULE_DISABLED_MESSAGE;
     case "NOT_FOUND":
       return "Pièce introuvable, ou réservée au propriétaire et au vendeur responsable.";
     default:
