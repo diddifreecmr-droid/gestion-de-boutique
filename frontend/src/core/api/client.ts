@@ -89,7 +89,7 @@ export interface ApiClient {
     options: CallOptions<never> & { form: FormData },
   ): Promise<ResponseOf<P, "post">>;
   /** Fichier binaire (modèle `.xlsx`) : contenu et nom donné par `Content-Disposition`. */
-  getFile<P extends PathsWith<"get">>(path: P, options?: CallOptions<never>): Promise<FetchedFile>;
+  getFile(path: PathsWith<"get">, options?: CallOptions<never>): Promise<FetchedFile>;
   /** URL navigateur d'un chemin du contrat (ex. lien signé d'une pièce jointe). */
   href(path: string): string;
 }

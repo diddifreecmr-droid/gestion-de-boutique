@@ -66,14 +66,25 @@ export function ImportsPage({ shopId, models, save }: ImportsPageProps) {
   return (
     <>
       {stage.step > 1 && stage.step < 4 && (
-        <Button variant="ghost" icon={ArrowLeft} onClick={() => go({ step: 1 })}>
+        <Button
+          variant="ghost"
+          icon={ArrowLeft}
+          onClick={() => {
+            go({ step: 1 });
+          }}
+        >
           Changer de modèle
         </Button>
       )}
       <h1 className="m-0 text-title font-bold text-text">{title}</h1>
       <p className="m-0 text-body text-text-muted">Étape {stage.step} sur 4</p>
       {stage.step === 1 && (
-        <ModelChoice models={models} onChoose={(model) => go({ step: 2, model })} />
+        <ModelChoice
+          models={models}
+          onChoose={(model) => {
+            go({ step: 2, model });
+          }}
+        />
       )}
       {stage.step === 2 && (
         <FileStep
@@ -83,7 +94,13 @@ export function ImportsPage({ shopId, models, save }: ImportsPageProps) {
           failure={failure}
           onDownload={() => {
             const { model } = stage;
-            void run("download", async () => save(await gateway.template(shopId, model.kind)), model);
+            void run(
+              "download",
+              async () => {
+                save(await gateway.template(shopId, model.kind));
+              },
+              model,
+            );
           }}
           onFile={(file) => {
             const { model } = stage;
@@ -104,7 +121,9 @@ export function ImportsPage({ shopId, models, save }: ImportsPageProps) {
           fileName={stage.fileName}
           confirming={busy === "confirm"}
           failure={failure}
-          onOtherFile={() => go({ step: 2, model: stage.model })}
+          onOtherFile={() => {
+            go({ step: 2, model: stage.model });
+          }}
           onConfirm={() => {
             const { model, preview } = stage;
             void run(
@@ -118,7 +137,14 @@ export function ImportsPage({ shopId, models, save }: ImportsPageProps) {
           }}
         />
       )}
-      {stage.step === 4 && <ReportStep batch={stage.batch} onAgain={() => go({ step: 1 })} />}
+      {stage.step === 4 && (
+        <ReportStep
+          batch={stage.batch}
+          onAgain={() => {
+            go({ step: 1 });
+          }}
+        />
+      )}
     </>
   );
 }
