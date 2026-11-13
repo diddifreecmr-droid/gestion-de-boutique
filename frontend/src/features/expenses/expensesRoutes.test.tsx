@@ -53,7 +53,8 @@ describe("emplacement des Dépenses (CDC § 17.4) et droits par rôle (§ 4.2)",
     async (role) => {
       const { fake } = renderApp(EXPENSES_PATH, expenseRoutes(role));
       expect(await screen.findByRole("heading", { name: "Page introuvable" })).toBeVisible();
-      expect(within(nav()).queryByRole("link", { name: "Dépenses" })).toBeNull();
+      // Le chauffeur n'a pas de barre du bas (menu servi vide) : aucun lien nulle part.
+      expect(screen.queryByRole("link", { name: "Dépenses" })).toBeNull();
       expect(fake.calls.some((call) => call.url.includes("/expense"))).toBe(false);
     },
   );
