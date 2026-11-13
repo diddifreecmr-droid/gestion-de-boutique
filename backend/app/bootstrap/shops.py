@@ -14,6 +14,7 @@ from app.application.identity.use_cases.unlock_user import UnlockUser
 from app.application.security.policy import Policy
 from app.application.shops.stock_probe import LocationStock
 from app.application.shops.use_cases.admin_access import GrantAdminAccess, RevokeAdminAccess
+from app.application.shops.use_cases.change_profile import ChangeShopProfile
 from app.application.shops.use_cases.get_shop_profile import GetShopProfile
 from app.application.shops.use_cases.manage_locations import ManageLocations
 from app.application.shops.use_cases.manage_members import ManageMembers
@@ -73,6 +74,7 @@ def build_shops(
         grant_admin=GrantAdminAccess(shop_uows, policy, clock),
         revoke_admin=RevokeAdminAccess(shop_uows, policy, clock),
         platform_access=PlatformShopAccess(platform_ports(core), policy, clock),
+        change_profile=ChangeShopProfile(shop_uows, core.catalog, policy, clock),
         guard=identity.auth.guard,
     )
     return ShopsModule(http=http)

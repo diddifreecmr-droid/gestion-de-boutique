@@ -1,7 +1,8 @@
 """Agrégat `Shop` : un espace séparé, d'un type donné (CDC § 20.1 « Boutique », UC-SOC-01).
 
 - Son identifiant **est** la boutique (`shop_id == id`) : il vit dans les tables de boutique.
-- Le type (`profile_code`) ne change plus après la création : aucun mutateur ne le touche.
+- Le type (`profile_code`) ne change que par `change_profile` (console, QC-1, T27) : le cas
+  d'utilisation `ChangeShopProfile` vérifie d'abord que la boutique n'a aucune donnée.
 - Les modules actifs sont fixés par le profil et modifiables par l'administrateur seul, dans
   les limites du profil (`checked_modules`) : obligatoires toujours compris, dépendances
   respectées (`transport` ⇒ `transfers`), à l'ouverture comme au réglage (`administer`).
@@ -14,44 +15,26 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from app.domain.audit.values import EntityRef, Performer
-from app.domain.identity.phone import PhoneNumber
 from app.domain.profiles.modules import MANDATORY_MODULES, Module, upcoming_among
-from app.domain.profiles.profile import ProfileCode
+from app.domain.profiles.profile import ProfileCode, ShopProfile
 from app.domain.shared.business_day import require_aware
 from app.domain.shared.errors import ValidationFailed
 from app.domain.shared.events import EventCollector
 from app.domain.shared.ids import ShopId
 from app.domain.shops.errors import ModuleDisabled
-from app.domain.shops.events import SettingsChanged, ShopAdministered, ShopOpened, diff
+from app.domain.shops.events import (
+    SettingsChanged,
+    ShopAdministered,
+    ShopOpened,
+    ShopProfileChanged,
+    diff,
+)
+from app.domain.shops.identity import ShopIdentity
 from app.domain.shops.ids import MerchantAccountId
 from app.domain.shops.modules import checked_modules
-from app.domain.shops.values import ShopStatus, clean_optional, clean_text
+from app.domain.shops.values import ShopStatus
 
-NIU_MAX_LENGTH = 32
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class ShopIdentity:
-    """En-tête imprimé sur le reçu (UC-SOC-01 étape 2) : ville et téléphone obligatoires."""
-
-    name: str
-    city: str
-    phone: PhoneNumber
-    address: str | None = None
-    niu: str | None = None
-    rccm: str | None = None
-
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "name", clean_text(self.name, "name"))
-        object.__setattr__(self, "city", clean_text(self.city, "city"))
-        if not isinstance(self.phone, PhoneNumber):
-            msg = "ShopIdentity.phone doit être un PhoneNumber"
-            raise TypeError(msg)
-        object.__setattr__(self, "address", clean_optional(self.address, "address"))
-        object.__setattr__(self, "niu", clean_optional(self.niu, "niu", max_length=NIU_MAX_LENGTH))
-        object.__setattr__(
-            self, "rccm", clean_optional(self.rccm, "rccm", max_length=NIU_MAX_LENGTH)
-        )
+__all__ = ["Shop", "ShopIdentity"]
 
 
 @dataclass(eq=False, kw_only=True)
@@ -160,6 +143,27 @@ class Shop:
             )
         return bool(changes)
 
+    def change_profile(self, profile: ShopProfile, *, performer: Performer, now: datetime) -> bool:
+        """Nouveau type (QC-1) : son code et ses modules de départ. `False` si c'est le même."""
+        if profile.code is self.profile_code:
+            return False
+        before = self._snapshot()
+        self.profile_code = profile.code
+        self.enabled_modules = checked_modules(
+            profile.modules, available=profile.available_modules, profile=profile.code
+        )
+        self.events.record(
+            ShopProfileChanged(
+                shop_id=self.id,
+                occurred_at=now,
+                performer=performer,
+                entity=self.entity,
+                summary=f"Type de boutique changé : {profile.label}",
+                changes=diff(before, self._snapshot()),
+            )
+        )
+        return True
+
     def update_identity(
         self, identity: ShopIdentity, *, performer: Performer, now: datetime
     ) -> bool:
@@ -167,7 +171,7 @@ class Shop:
         if identity.name != self.identity.name:
             msg = "Le nom de la boutique se change depuis la console plateforme"
             raise ValidationFailed(msg, details={"field": "name"})
-        changes = diff(_header(self.identity), _header(identity))
+        changes = diff(self.identity.header(), identity.header())
         if not changes:
             return False
         self.identity = identity
@@ -185,16 +189,7 @@ class Shop:
 
     def _snapshot(self) -> dict[str, str]:
         return {
+            "profile_code": self.profile_code.value,
             "modules": ",".join(sorted(m.value for m in self.enabled_modules)),
             "status": self.status.value,
         }
-
-
-def _header(identity: ShopIdentity) -> dict[str, str | None]:
-    return {
-        "city": identity.city,
-        "phone": identity.phone.e164,
-        "address": identity.address,
-        "niu": identity.niu,
-        "rccm": identity.rccm,
-    }

@@ -74,6 +74,15 @@ class ShopAdministered(ShopAuditedEvent):
 
 
 @dataclass(frozen=True, kw_only=True)
+class ShopProfileChanged(ShopAuditedEvent):
+    """Type de boutique changé par l'administrateur (QC-1, T27) : boutique sans données."""
+
+    action = AuditAction.CONFIGURE
+    module = "platform"
+    sensitive = True
+
+
+@dataclass(frozen=True, kw_only=True)
 class SettingsChanged(ShopAuditedEvent):
     action = AuditAction.CONFIGURE
 

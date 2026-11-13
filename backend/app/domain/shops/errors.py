@@ -14,7 +14,10 @@
 | `ModuleDependency` | `MODULE_DEPENDENCY` | `transport` sans `transfers` (§ 15.1) |
 | `ModuleDisabled` | `MODULE_DISABLED` | **403** : fonction d'un module désactivé de la boutique |
 | `UnknownProfile` | `UNKNOWN_PROFILE` | 400 : code de profil inconnu |
+| `ProfileChangeBlocked` | `PROFILE_CHANGE_BLOCKED` | changer le type d'une boutique non vide |
 """
+
+from collections.abc import Mapping
 
 from app.domain.shared.errors import DomainError, Forbidden, ValidationFailed
 
@@ -131,4 +134,16 @@ class UnknownProfile(ValidationFailed):
     def __init__(self, code: str) -> None:
         super().__init__(
             "Type de boutique inconnu", details={"field": "profile_code", "value": code[:32]}
+        )
+
+
+class ProfileChangeBlocked(DomainError):
+    """QC-1 : la boutique a des données ; `details.blocking` = nature → nombre (non nuls)."""
+
+    code = "PROFILE_CHANGE_BLOCKED"
+
+    def __init__(self, blocking: Mapping[str, int], profile: str) -> None:
+        super().__init__(
+            "Le type ne se change que pour une boutique sans données : recréez-la",
+            details={"blocking": dict(blocking), "profile": profile},
         )

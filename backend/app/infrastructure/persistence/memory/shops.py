@@ -35,6 +35,7 @@ from app.domain.shops.membership import Membership
 from app.domain.shops.payment_mode import PaymentMode
 from app.domain.shops.settings import ShopSettings
 from app.domain.shops.shop import Shop
+from app.infrastructure.persistence.memory.census import MemoryShopDataCensus
 from app.infrastructure.persistence.memory.repository import MemoryRepository
 
 SHOPS_TABLE = "shops"
@@ -116,4 +117,5 @@ SHOP_REPOSITORIES = (
     MemoryExpenseCategoryRepository,
     MemoryMembershipRepository,
     MemoryAdminGrantRepository,
+    MemoryShopDataCensus,
 )

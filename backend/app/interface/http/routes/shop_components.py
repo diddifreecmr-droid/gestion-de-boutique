@@ -6,6 +6,7 @@ from app.application.identity.use_cases.reset_pin import ResetPin
 from app.application.identity.use_cases.revoke_user_devices import RevokeUserDevices
 from app.application.identity.use_cases.unlock_user import UnlockUser
 from app.application.shops.use_cases.admin_access import GrantAdminAccess, RevokeAdminAccess
+from app.application.shops.use_cases.change_profile import ChangeShopProfile
 from app.application.shops.use_cases.get_shop_profile import GetShopProfile
 from app.application.shops.use_cases.manage_locations import ManageLocations
 from app.application.shops.use_cases.manage_members import ManageMembers
@@ -32,4 +33,5 @@ class ShopsComponents:
     grant_admin: GrantAdminAccess
     revoke_admin: RevokeAdminAccess
     platform_access: PlatformShopAccess
+    change_profile: ChangeShopProfile
     guard: AuthGuard
