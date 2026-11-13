@@ -29,7 +29,7 @@ describe("prix sous le minimum (UC-VEN-03)", () => {
     });
     await user.click(await articleButton("Haojue HJ125-8"));
     await replaceText(user, priceField(), "700000");
-    expect(screen.getByText(/Prix inférieur au minimum \(720 000 FCFA\)/)).toBeVisible();
+    expect(screen.getByText(/Sous le prix minimum \(720 000 FCFA\)/)).toBeVisible();
     expect(screen.queryByRole("button", { name: "Valider la vente" })).toBeNull();
     expect(await axeViolations(container)).toEqual([]);
 
@@ -69,7 +69,7 @@ describe("prix sous le minimum (UC-VEN-03)", () => {
     await user.click(validateButton());
     expect(await saleAlert()).toHaveTextContent(BELOW_MINIMUM);
     expect(screen.getByRole("button", { name: ASK })).toBeVisible();
-    expect(screen.getByText(/Prix inférieur au minimum \(680 000 FCFA\)/)).toBeVisible();
+    expect(screen.getByText(/Sous le prix minimum \(680 000 FCFA\)/)).toBeVisible();
   });
 });
 

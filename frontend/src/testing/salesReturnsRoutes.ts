@@ -12,6 +12,7 @@ import type {
   SaleReturns,
 } from "../core/gateways/returnsContract";
 import type { SaleResult } from "../core/gateways/salesContract";
+import { businessDay } from "../features/sales/buildCommand";
 import { apiError, json, type Call } from "./fakeApi";
 import { NOW, TODAY } from "./salesFixtures";
 import { addSale, type SaleServer } from "./salesServer";
@@ -100,14 +101,43 @@ function settle(server: SaleServer, sale: SaleResult, value: number) {
   return { reduction, max: Math.max(0, Math.min(value - reduction, sale.paid - refunded)) };
 }
 
+/**
+ * Droits de l'échange (T29, QC-4) : retour simple = propriétaire ; échange de l'employé si le
+ * réglage est actif (403 `details.setting` sinon), dans le délai (422 `EXCHANGE_PERIOD_OVER`).
+ */
+function exchangeRefusal(server: SaleServer, sale: SaleResult, body: SaleReturnCommand) {
+  if (server.role === "owner") return null;
+  if (body.exchange === null || body.exchange === undefined) {
+    return apiError(403, "FORBIDDEN", "Réservé au propriétaire", { permission: "sale.return" });
+  }
+  if (!server.exchange.employeeAllowed) {
+    return apiError(403, "FORBIDDEN", "Échange de l'employé non autorisé", {
+      permission: "sale.exchange",
+      setting: "employee_exchange_allowed",
+    });
+  }
+  const days = server.exchange.days;
+  if (days === null) return null;
+  const deadline = new Date(`${sale.sold_on}T00:00:00Z`);
+  deadline.setUTCDate(deadline.getUTCDate() + days);
+  const last = deadline.toISOString().slice(0, 10);
+  if (businessDay() <= last) return null;
+  return apiError(422, "EXCHANGE_PERIOD_OVER", "Délai d'échange dépassé", {
+    sold_on: sale.sold_on,
+    exchange_days: days,
+    deadline: last,
+  });
+}
+
 export async function recordReturn(
   server: SaleServer,
   sale: SaleResult,
   call: Call,
 ): Promise<Response> {
-  if (server.role !== "owner") return apiError(403, "FORBIDDEN", "Réservé au propriétaire");
   const body = call.body as SaleReturnCommand;
   server.recordReturn(sale.id, body);
+  const denied = exchangeRefusal(server, sale, body);
+  if (denied !== null) return denied;
   if (sale.status !== "valid") {
     return apiError(409, "INVALID_STATE_TRANSITION", "Vente annulée", { status: sale.status });
   }
@@ -152,9 +182,8 @@ export async function recordReturn(
     returned_at: NOW,
     returned_on: TODAY,
     created_by: server.userId,
-    // Seul le propriétaire enregistre un retour : la réponse porte la marge (TR-05).
-    margin,
-    margin_wac: margin,
+    // La marge seulement pour le propriétaire (TR-05) ; l'employé qui échange ne la voit pas.
+    ...(server.role === "owner" ? { margin, margin_wac: margin } : {}),
   };
   server.returns.set(sale.id, [...previous(server, sale.id), made]);
   return json(201, exchangeSale === null ? made : { ...made, exchange_sale: exchangeSale });

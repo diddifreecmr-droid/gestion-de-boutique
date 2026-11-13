@@ -4,7 +4,7 @@ import type { RecordSaleCommand } from "../core/gateways/salesContract";
 import { SHOP_A } from "./fakeApi";
 import { renderSale } from "./renderSale";
 import { saleCommand } from "./salesFixtures";
-import { addSale, type Routes, type SaleRole } from "./salesServer";
+import { addSale, type Routes, type SaleRole, type SaleServer } from "./salesServer";
 
 /** Deux Haojue HJ125-8 à 780 000 au comptant, châssis LBX0001 et LBX0002. */
 export const TWO_MOTOS = saleCommand({
@@ -50,10 +50,12 @@ export async function openSaleSheet(
   role: SaleRole,
   command: RecordSaleCommand = TWO_MOTOS,
   extra: Routes = {},
+  exchange?: SaleServer["exchange"],
 ) {
   const view = renderSale(role, {
     path: `/s/${SHOP_A}/${role === "owner" ? "ventes" : "mes-ventes"}`,
     extra,
+    ...(exchange === undefined ? {} : { exchange }),
   });
   const sale = await addSale(view.server, command);
   await view.router.navigate(`?id=${sale.id}`);

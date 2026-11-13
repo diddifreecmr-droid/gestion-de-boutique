@@ -31,8 +31,10 @@ describe("prix sous le minimum, accord non exigé (défaut)", () => {
     const { user, recordSale, requestPriceApproval, container } = renderSale();
     await user.click(await articleButton("Haojue HJ125-8"));
     await replaceText(user, priceField(), "700000");
-    const warning = screen.getByText(/Prix inférieur au minimum de/);
-    expect(plain(warning.textContent)).toBe("Prix inférieur au minimum de 720 000 FCFA");
+    const warning = screen.getByText(/Sous le prix minimum \(/);
+    expect(plain(warning.textContent)).toBe(
+      "Sous le prix minimum (720 000 FCFA) : la vente sera notée au journal",
+    );
     expect(screen.queryByRole("button", { name: ASK })).toBeNull();
     expect(validateButton()).not.toHaveAttribute("aria-disabled");
     expect(await axeViolations(container)).toEqual([]);
@@ -55,7 +57,7 @@ describe("prix sous le minimum, accord non exigé (défaut)", () => {
     await user.click(validateButton());
     expect(await saleAlert()).toHaveTextContent(BELOW_MINIMUM);
     expect(screen.getByRole("button", { name: ASK })).toBeVisible();
-    const line = screen.getByText(/Prix inférieur au minimum \(720 000 FCFA\)/);
+    const line = screen.getByText(/Sous le prix minimum \(720 000 FCFA\)/);
     expect(line).toHaveTextContent("validation du propriétaire nécessaire");
   });
 });
