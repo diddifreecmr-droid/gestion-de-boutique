@@ -4,7 +4,7 @@ import type { RecordSaleCommand } from "../core/gateways/salesContract";
 import { SHOP_A } from "./fakeApi";
 import { renderSale } from "./renderSale";
 import { saleCommand } from "./salesFixtures";
-import { addSale, type SaleRole } from "./salesServer";
+import { addSale, type Routes, type SaleRole } from "./salesServer";
 
 /** Deux Haojue HJ125-8 à 780 000 au comptant, châssis LBX0001 et LBX0002. */
 export const TWO_MOTOS = saleCommand({
@@ -46,9 +46,14 @@ export const ONE_SANYA = saleCommand({
 });
 
 /** Fiche d'une vente enregistrée avant l'ouverture, pour le rôle donné. */
-export async function openSaleSheet(role: SaleRole, command: RecordSaleCommand = TWO_MOTOS) {
+export async function openSaleSheet(
+  role: SaleRole,
+  command: RecordSaleCommand = TWO_MOTOS,
+  extra: Routes = {},
+) {
   const view = renderSale(role, {
     path: `/s/${SHOP_A}/${role === "owner" ? "ventes" : "mes-ventes"}`,
+    extra,
   });
   const sale = await addSale(view.server, command);
   await view.router.navigate(`?id=${sale.id}`);
@@ -57,8 +62,8 @@ export async function openSaleSheet(role: SaleRole, command: RecordSaleCommand =
 }
 
 /** Propriétaire : fiche puis « Retour ou échange ». */
-export async function openReturn(command: RecordSaleCommand = TWO_MOTOS) {
-  const view = await openSaleSheet("owner", command);
+export async function openReturn(command: RecordSaleCommand = TWO_MOTOS, extra: Routes = {}) {
+  const view = await openSaleSheet("owner", command, extra);
   await view.user.click(await screen.findByRole("button", { name: "Retour ou échange" }));
   await screen.findByRole("heading", { name: /Retour ou échange/ });
   return view;
