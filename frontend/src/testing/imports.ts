@@ -42,6 +42,8 @@ export function importBatch(overrides: Partial<ImportBatch> = {}): ImportBatch {
     rows_ignored: 2,
     created: [{ entity: "article", count: 2 }],
     imported_at: "2026-11-13T10:05:00Z",
+    cancellable_until: "2026-11-20",
+    cancelled_at: null,
     ...overrides,
   };
 }
