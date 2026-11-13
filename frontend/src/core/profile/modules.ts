@@ -68,6 +68,16 @@ function isModule(code: string): code is ModuleCode {
   return ALL_MODULES.some((known) => known === code);
 }
 
+/** Code de module lu de l'API ; un code inconnu est une rupture de contrat (fail-fast). */
+export function parseModule(code: string): ModuleCode {
+  if (!isModule(code)) {
+    throw new Error(
+      `Module inconnu reçu de l'API : « ${code} » (attendu ${ALL_MODULES.join(", ")})`,
+    );
+  }
+  return code;
+}
+
 /**
  * Modules actifs lus du serveur (`enabled_modules`). Un code inconnu est une rupture de contrat
  * (fail-fast). Les modules toujours actifs sont ajoutés : sans eux l'application ne tourne pas.
@@ -76,12 +86,7 @@ function isModule(code: string): code is ModuleCode {
  */
 export function shopModules(codes: readonly string[]): ShopModules {
   const enabled = new Set<ModuleCode>(ALWAYS_ON);
-  for (const code of codes) {
-    if (!isModule(code)) {
-      throw new Error(
-        `Module inconnu reçu de l'API : « ${code} » (attendu ${ALL_MODULES.join(", ")})`,
-      );
-    }
+  for (const code of codes.map(parseModule)) {
     if (!isUpcoming(code)) enabled.add(code);
   }
   return { enabled, has: (module) => enabled.has(module) };

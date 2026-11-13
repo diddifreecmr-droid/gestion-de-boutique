@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { homeEntry } from "../core/profile/shopProfile";
 import { useSignedIn } from "../core/services/servicesContext";
 import { SALE_ROLES } from "../features/sales/saleRoles";
 import { Skeleton } from "../shared/ui";
@@ -18,7 +19,7 @@ const HomeRoute = lazy(() => import("../features/dashboard/HomeRoute"));
 export function RoleHome() {
   const me = useSignedIn();
   const { shopId, role, profile } = useActiveShop();
-  const [home] = profile.menu(role);
+  const home = homeEntry(profile);
   const title = home?.label ?? "Accueil";
   const content = (
     <Suspense fallback={<Skeleton lines={4} label="Ouverture de l'accueil…" />}>

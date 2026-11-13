@@ -1,7 +1,19 @@
 import { useNavigate } from "react-router";
-import { profileForShop, shopPath } from "../core/profile/shopProfile";
+import type { ShopMembership } from "../core/auth/me";
+import { savedProfile } from "../core/profile/savedProfiles";
+import { shopPath } from "../core/profile/shopProfile";
 import { useSignedIn } from "../core/services/servicesContext";
 import { ListCard, ListCardRow } from "../shared/ui";
+
+/**
+ * Libellé du rôle (« Vendeur » ou « Employé ») : il dépend du profil de chaque boutique, que
+ * `GET /me` ne donne pas. Seul le profil déjà lu sur cet appareil le fournit ; sinon, rien
+ * plutôt qu'un libellé deviné.
+ */
+function roleSubtitle(shop: ShopMembership): { subtitle: string } | Record<string, never> {
+  const label = savedProfile(shop.shopId, shop.role)?.role_label;
+  return typeof label === "string" ? { subtitle: label } : {};
+}
 
 /** UC-SOC-03 — Choisir la boutique active ; ensuite tout l'écran ne montre qu'elle. */
 export function ShopPicker() {
@@ -15,7 +27,7 @@ export function ShopPicker() {
           <ListCardRow
             key={shop.shopId}
             title={shop.shopName}
-            subtitle={profileForShop(shop.shopId).roleLabel(shop.role)}
+            {...roleSubtitle(shop)}
             onOpen={() => void navigate(shopPath(shop.shopId))}
           />
         ))}
