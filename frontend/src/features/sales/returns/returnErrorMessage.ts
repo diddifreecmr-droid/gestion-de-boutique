@@ -9,6 +9,7 @@ import { formatMoney, formatQuantity } from "../../../shared/format";
 import type { LineDraft } from "../draft";
 import { saleErrorMessage } from "../saleErrorMessage";
 import { MODULE_DISABLED, MODULE_DISABLED_MESSAGE } from "../../../core/profile/modules";
+import { dayMonth } from "./exchangeRules";
 
 export const RETURN_OFFLINE =
   "Connexion nécessaire : le retour n'est pas enregistré. Votre saisie est conservée ; " +
@@ -16,6 +17,18 @@ export const RETURN_OFFLINE =
 
 export const HAS_RETURN =
   "Cette vente a un retour : elle ne se modifie ni ne s'annule plus (ses lignes servent de base aux retours).";
+
+export const EMPLOYEE_EXCHANGE_OFF =
+  "L'échange par l'employé n'est pas autorisé dans cette boutique : demandez au propriétaire.";
+
+/** 422 `EXCHANGE_PERIOD_OVER` (`details.deadline`, `exchange_days`) : employé hors délai. */
+function periodOverMessage(error: ApiError): string {
+  const { deadline, exchange_days: days } = error.details;
+  if (typeof deadline !== "string" || typeof days !== "number") {
+    throw new Error("EXCHANGE_PERIOD_OVER : details.deadline ou exchange_days absent");
+  }
+  return `Délai d'échange dépassé (${String(days)} jours, jusqu'au ${dayMonth(deadline)}) : seul le propriétaire peut encore échanger cette vente.`;
+}
 
 export function returnErrorMessage(
   error: unknown,
@@ -42,7 +55,10 @@ export function returnErrorMessage(
         return "Châssis rendus à revoir : inconnus sur la ligne, en double ou déjà rendus.";
       }
       return `Retour refusé : ${error.message}.`;
+    case "EXCHANGE_PERIOD_OVER":
+      return periodOverMessage(error);
     case "FORBIDDEN":
+      if (error.details["setting"] === "employee_exchange_allowed") return EMPLOYEE_EXCHANGE_OFF;
       return "Seul le propriétaire enregistre un retour ou un échange.";
     case MODULE_DISABLED:
       return MODULE_DISABLED_MESSAGE;

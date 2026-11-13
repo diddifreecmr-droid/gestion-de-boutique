@@ -21,7 +21,7 @@ const ENTRIES: readonly { view: SettingsView; title: string; subtitle: string }[
   {
     view: VIEW.shop,
     title: "Réglages de la boutique",
-    subtitle: "Prix minimum, seuil de stock, reçu et en-tête",
+    subtitle: "Prix minimum, seuil de stock, échanges, reçu et en-tête",
   },
 ];
 

@@ -5,6 +5,7 @@ import type { SaleLocation, SaleSetup } from "../../core/gateways/catalogContrac
 import { useGateways } from "../../core/gateways/gateways";
 import type { SaleResult } from "../../core/gateways/salesContract";
 import { Button, ChoiceChips, EmptyState, Skeleton } from "../../shared/ui";
+import { lineFieldsOf } from "./lineFields";
 import { NewSaleForm } from "./NewSaleForm";
 import { articleSearchHint } from "./profileLabels";
 import { ReceiptPrint } from "./ReceiptPrint";
@@ -130,6 +131,7 @@ function SaleFlow({ shopId, role, setup }: NewSalePageProps & { setup: SaleSetup
       onRecorded={setRecorded}
       notice={notice}
       searchHint={articleSearchHint(setup.article_fields)}
+      fields={lineFieldsOf(setup.sale_fields)}
     />
   );
 }

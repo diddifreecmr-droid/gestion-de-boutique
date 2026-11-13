@@ -14,6 +14,8 @@ export interface SaleOwnerActionsProps {
   sale: SaleResult;
   /** Retours de la vente ; `null` tant qu'ils ne sont pas lus (aucune action proposée). */
   listing: SaleReturns | null;
+  /** « Échange possible jusqu'au 20/11 » (ou délai dépassé), `null` sans délai (QC-4). */
+  deadline?: string | null;
   onCancelled: (sale: SaleResult) => void;
   onReturn: () => void;
 }
@@ -24,7 +26,7 @@ export interface SaleOwnerActionsProps {
  * qu'aucun retour n'existe : une vente avec retour ne se modifie ni ne s'annule plus.
  */
 export function SaleOwnerActions(props: SaleOwnerActionsProps) {
-  const { shopId, sale, listing, onCancelled, onReturn } = props;
+  const { shopId, sale, listing, deadline = null, onCancelled, onReturn } = props;
   const { sales } = useGateways();
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -56,9 +58,12 @@ export function SaleOwnerActions(props: SaleOwnerActionsProps) {
     <>
       {message !== null && <FormMessage text={message} />}
       {returnable ? (
-        <Button variant="secondary" icon={Undo2} fullWidth onClick={onReturn}>
-          Retour ou échange
-        </Button>
+        <>
+          {deadline !== null && <p className="m-0 text-body text-text-muted">{deadline}</p>}
+          <Button variant="secondary" icon={Undo2} fullWidth onClick={onReturn}>
+            Retour ou échange
+          </Button>
+        </>
       ) : (
         <p className="m-0 text-body text-text-muted">Tout a déjà été rendu sur cette vente.</p>
       )}

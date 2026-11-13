@@ -10,6 +10,7 @@ import {
   settingsRoutes,
   viewPath,
 } from "../../../testing/shopSettingsApi";
+import { EMPLOYEE_EXCHANGE_HINT } from "./ExchangeSettingsSection";
 import { APPROVAL_HINT } from "./SalesRulesSection";
 
 const PATH = viewPath("boutique");
@@ -54,29 +55,49 @@ describe("Réglages de la boutique (UC-SOC-06, § 15.1)", () => {
     expect(patches(fake.calls)).toEqual([{ min_price_requires_approval: true, version: 3 }]);
   });
 
-  it("seuil de stock et délai d'échange vérifiés avant l'envoi ; la virgule est acceptée", async () => {
+  it("seuil de stock vérifié avant l'envoi ; la virgule est acceptée", async () => {
     const { user, fake } = await open([
-      json(200, settings({ low_stock_threshold: "2.5", exchange_days: 7, version: 4 })),
+      json(200, settings({ low_stock_threshold: "2.5", version: 4 })),
     ]);
     const prices = section("Prix et stock");
     const threshold = prices.getByLabelText(/Seuil de stock bas/);
     expect(threshold).toHaveValue("2");
+    expect(prices.queryByLabelText(/Délai d'échange/)).toBeNull();
     await user.clear(threshold);
     await user.type(threshold, "2,55");
-    await user.type(prices.getByLabelText(/Délai d'échange/), "999");
     await user.click(prices.getByRole("button", { name: /^Enregistrer/ }));
     expect(prices.getByText(/au dixième près/)).toBeVisible();
-    expect(prices.getByText("Un nombre entier de 0 à 365, ou vide")).toBeVisible();
     expect(patches(fake.calls)).toEqual([]);
 
     await user.clear(threshold);
     await user.type(threshold, "2,5");
-    await user.clear(prices.getByLabelText(/Délai d'échange/));
-    await user.type(prices.getByLabelText(/Délai d'échange/), "7");
     await user.click(prices.getByRole("button", { name: /^Enregistrer/ }));
     expect(await screen.findByText("Prix et stock : enregistré.")).toBeVisible();
+    expect(patches(fake.calls)).toEqual([{ low_stock_threshold: "2.5", version: 3 }]);
+  });
+
+  it("échanges (QC-4) : délai vérifié, employé « Désactivé » par défaut ; axe", async () => {
+    const { user, fake, container } = await open([
+      json(200, settings({ exchange_days: 7, employee_exchange_allowed: true, version: 4 })),
+    ]);
+    const exchanges = section("Échanges");
+    const allowed = exchanges.getByRole("switch", { name: "L'employé peut faire des échanges" });
+    expect(allowed).toHaveAttribute("aria-checked", "false");
+    expect(allowed).toHaveAccessibleDescription(EMPLOYEE_EXCHANGE_HINT);
+    expect(await axeViolations(container)).toEqual([]);
+    await user.type(exchanges.getByLabelText(/Délai d'échange/), "999");
+    await user.click(exchanges.getByRole("button", { name: /^Enregistrer/ }));
+    expect(exchanges.getByText("Un nombre entier de 0 à 365, ou vide")).toBeVisible();
+    expect(patches(fake.calls)).toEqual([]);
+
+    await user.clear(exchanges.getByLabelText(/Délai d'échange/));
+    await user.type(exchanges.getByLabelText(/Délai d'échange/), "7");
+    await user.click(allowed);
+    expect(allowed).toHaveAttribute("aria-checked", "true");
+    await user.click(exchanges.getByRole("button", { name: /^Enregistrer/ }));
+    expect(await screen.findByText("Échanges : enregistré.")).toBeVisible();
     expect(patches(fake.calls)).toEqual([
-      { exchange_days: 7, low_stock_threshold: "2.5", version: 3 },
+      { exchange_days: 7, employee_exchange_allowed: true, version: 3 },
     ]);
   });
 

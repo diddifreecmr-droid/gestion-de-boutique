@@ -41,6 +41,8 @@ export interface SaleServer {
   returns: Map<string, SaleReturn[]>;
   /** Appelé à chaque `POST /sales/{id}/returns` reçu : `(saleId, corps)`. */
   recordReturn: ReturnType<typeof vi.fn<(saleId: string, body: SaleReturnCommand) => void>>;
+  /** Réglages d'échange servis par `/profile` et appliqués aux échanges (QC-4). */
+  exchange: { days: number | null; employeeAllowed: boolean };
 }
 
 export function member(id: string, name: string, role: string): SaleMember {
@@ -88,6 +90,7 @@ export function saleServer(role: SaleRole, extra: Routes = {}): SaleServer {
     printed: new Map(),
     returns: new Map(),
     recordReturn: vi.fn(),
+    exchange: { days: null, employeeAllowed: false },
     members: [member(OWNER_ID, "Awa Bello", "owner"), member(SELLER_ID, "Issa Vendeur", "seller")],
   };
   server.routes = new Proxy(base, {

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { TextField } from "../../../shared/ui";
 import { YesNoChips } from "../YesNoChips";
 import { SettingsSection, type SectionProps } from "./SettingsSection";
-import { parseOptionalInt, parseThreshold } from "./settingsInputs";
+import { parseThreshold } from "./settingsInputs";
 
 /** Texte d'aide de l'accord sous le minimum (décision client du 11/11/2026, specs § 15.1). */
 export const APPROVAL_HINT =
@@ -13,32 +13,24 @@ const thresholdText = (value: string) => String(Number(value)).replace(".", ",")
 
 /**
  * Prix et stock (UC-SOC-06, CDC § 20.1) : prix minimum, accord du propriétaire sous le
- * minimum (`min_price_requires_approval`, désactivé par défaut), seuil de stock bas, délai
- * d'échange.
+ * minimum (`min_price_requires_approval`, désactivé par défaut), seuil de stock bas. Le délai
+ * d'échange est dans « Échanges » (`ExchangeSettingsSection`).
  */
 export function SalesRulesSection(props: SectionProps) {
   const { settings } = props;
   const [minPrice, setMinPrice] = useState(settings.min_price_enabled);
   const [approval, setApproval] = useState(settings.min_price_requires_approval);
   const [threshold, setThreshold] = useState(thresholdText(settings.low_stock_threshold));
-  const [exchange, setExchange] = useState(
-    settings.exchange_days === null ? "" : String(settings.exchange_days),
-  );
-  const [errors, setErrors] = useState<{ threshold?: string; exchange?: string }>({});
+  const [errors, setErrors] = useState<{ threshold?: string }>({});
 
   const collect = () => {
     const parsedThreshold = parseThreshold(threshold);
-    const parsedExchange = parseOptionalInt(exchange, 0, 365);
-    setErrors({
-      ...(parsedThreshold.ok ? {} : { threshold: parsedThreshold.error }),
-      ...(parsedExchange.ok ? {} : { exchange: parsedExchange.error }),
-    });
-    if (!parsedThreshold.ok || !parsedExchange.ok) return null;
+    setErrors(parsedThreshold.ok ? {} : { threshold: parsedThreshold.error });
+    if (!parsedThreshold.ok) return null;
     const sameThreshold = Number(parsedThreshold.value) === Number(settings.low_stock_threshold);
     return {
       min_price_enabled: minPrice,
       min_price_requires_approval: approval,
-      exchange_days: parsedExchange.value,
       ...(sameThreshold ? {} : { low_stock_threshold: parsedThreshold.value }),
     };
   };
@@ -68,16 +60,6 @@ export function SalesRulesSection(props: SectionProps) {
         error={errors.threshold}
         onChange={(event) => {
           setThreshold(event.target.value);
-          setErrors({});
-        }}
-      />
-      <TextField
-        label="Délai d'échange (jours, facultatif)"
-        inputMode="numeric"
-        value={exchange}
-        error={errors.exchange}
-        onChange={(event) => {
-          setExchange(event.target.value);
           setErrors({});
         }}
       />

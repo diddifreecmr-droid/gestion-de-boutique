@@ -3,6 +3,7 @@
  * Le brouillon n'est jamais effacé par un échec d'envoi.
  */
 import { uuidV7 } from "../../../core/api/uuidv7";
+import type { Role } from "../../../core/auth/me";
 import type { SaleReturns, StockCondition } from "../../../core/gateways/returnsContract";
 import type { SaleResult } from "../../../core/gateways/salesContract";
 import { formatMoney } from "../../../shared/format";
@@ -120,10 +121,16 @@ function checkCredit(sale: SaleResult, draft: ReturnDraft, checks: ReturnChecks)
   checks.creditDue = Math.max(0, toPay - deposit);
 }
 
-export function checkReturn(sale: SaleResult, listing: SaleReturns, draft: ReturnDraft) {
+export function checkReturn(
+  sale: SaleResult,
+  listing: SaleReturns,
+  draft: ReturnDraft,
+  role: Role = "owner",
+) {
   const value = returnValue(sale, listing, draft.picks);
   const settled = settlement(sale, listing, value);
-  const exchange = checkSale(draft.exchange, "owner", false);
+  // Employé : sous le minimum, l'avertissement du Lot 1 (vente acceptée, journal).
+  const exchange = checkSale(draft.exchange, role, false);
   const checks: ReturnChecks = {
     value,
     settlement: settled,

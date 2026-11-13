@@ -12,7 +12,7 @@ import { SHOP_A } from "./fakeApi";
 import { PROFILE_KEY } from "../core/profile/savedProfiles";
 import { renderApp } from "./renderApp";
 import { servedProfile } from "./servedProfile";
-import { saleServer, type Routes, type SaleRole } from "./salesServer";
+import { saleServer, type Routes, type SaleRole, type SaleServer } from "./salesServer";
 
 export { SALE_SHOP } from "./salesServer";
 export const NEW_SALE_PATH = `/s/${SHOP_A}/nouvelle-vente`;
@@ -33,6 +33,8 @@ export interface RenderSaleOptions {
   extra?: Routes;
   /** Réglage « Accord du propriétaire sous le prix minimum » (faux par défaut, comme l'API). */
   priceApproval?: boolean;
+  /** Réglages d'échange servis par `/profile` (sans délai, employé non autorisé par défaut). */
+  exchange?: SaleServer["exchange"];
 }
 
 export function renderSale(role: SaleRole = "seller", options: RenderSaleOptions = {}) {
@@ -40,6 +42,7 @@ export function renderSale(role: SaleRole = "seller", options: RenderSaleOptions
   const server = saleServer(role, extra);
   server.network.online = online;
   server.world.settings.minPriceRequiresApproval = priceApproval;
+  if (options.exchange !== undefined) server.exchange = { ...options.exchange };
   // Hors connexion, la boutique a déjà été ouverte sur ce téléphone : son profil est gardé.
   if (!online) {
     window.localStorage.setItem(

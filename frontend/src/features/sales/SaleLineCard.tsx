@@ -1,10 +1,14 @@
 import { useId } from "react";
-import { AlertTriangle, Trash2 } from "lucide-react";
-import { formatMoney, formatQuantity } from "../../shared/format";
-import { AmountField, Button, Disclosure, QuantityStepper, TextField } from "../../shared/ui";
+import { ChevronUp, Trash2 } from "lucide-react";
+import { formatQuantity } from "../../shared/format";
+import { Button, QuantityStepper } from "../../shared/ui";
 import { articleTitle } from "./articleTitle";
-import { withQuantity, type LineDraft, type UnitDetail } from "./draft";
+import { withQuantity, type LineDraft } from "./draft";
+import { isBasket, sizeChoices, COMMON_COLORS, UNIT_FIELDS, type LineFields } from "./lineFields";
+import { LinePrice } from "./LinePrice";
+import { QuickPick } from "./QuickPick";
 import type { LineIssues } from "./saleChecks";
+import { UnitDetailsFields } from "./UnitDetailsFields";
 
 export interface SaleLineCardProps {
   line: LineDraft;
@@ -15,21 +19,22 @@ export interface SaleLineCardProps {
   onChange: (line: LineDraft) => void;
   /** Absent pour la seule ligne de la vente. */
   onRemove?: () => void;
+  /** Champs de la ligne selon le profil (Motos par défaut : détails par unité). */
+  fields?: LineFields;
+  /** Quantité déjà prise par les autres lignes du même article (autre taille, autre couleur). */
+  reserved?: number;
+  /** Replie la carte en une ligne (panier de plusieurs lignes, § 7.4). */
+  onCollapse?: () => void;
 }
 
-/** Une ligne de la vente : article, stock du lieu, quantité, prix, détails par unité. */
-export function SaleLineCard({
-  line,
-  locationName,
-  issues,
-  showErrors,
-  onChange,
-  onRemove,
-}: SaleLineCardProps) {
+/** Une ligne de la vente : article, stock du lieu, quantité, prix, taille et couleur ou détails. */
+export function SaleLineCard(props: SaleLineCardProps) {
+  const { line, locationName, issues, showErrors, onChange, onRemove, onCollapse } = props;
+  const { fields = UNIT_FIELDS, reserved = 0 } = props;
   const titleId = useId();
-  const unit = line.article.unit_label;
-  const priceError = showErrors ? issues?.price : undefined;
   const title = articleTitle(line.article.name);
+  const basket = isBasket(fields);
+  const max = Math.max(line.quantity, line.available - reserved);
   return (
     <section
       aria-labelledby={titleId}
@@ -43,93 +48,65 @@ export function SaleLineCard({
           Stock disponible à {locationName} : {formatQuantity(line.available)}
         </p>
       </div>
+      {fields.size && (
+        <QuickPick
+          label="Taille"
+          choices={sizeChoices(line.article.name)}
+          value={line.size}
+          onChange={(size) => {
+            onChange({ ...line, size });
+          }}
+        />
+      )}
+      {fields.color && (
+        <QuickPick
+          label="Couleur"
+          choices={COMMON_COLORS}
+          value={line.color}
+          onChange={(color) => {
+            onChange({ ...line, color });
+          }}
+        />
+      )}
       <QuantityStepper
         inline
         label="Quantité"
         value={line.quantity}
-        max={line.available}
+        max={max}
         onChange={(quantity) => {
           onChange(withQuantity(line, quantity));
         }}
       />
-      <AmountField
-        label={line.quantity > 1 ? `Prix d'une ${unit}` : "Prix"}
-        value={line.unitPrice}
-        error={priceError}
+      <LinePrice
+        line={line}
+        issues={issues}
+        error={showErrors ? issues?.price : undefined}
+        basket={basket}
         onChange={(unitPrice) => {
           onChange({ ...line, unitPrice });
         }}
       />
-      {issues?.belowMinimum !== undefined && (
-        <p className="m-0 flex items-start gap-2 text-body text-warning-text">
-          <AlertTriangle aria-hidden="true" className="size-6 shrink-0" />
-          <span>
-            {issues.approvalRequired === true
-              ? `Prix inférieur au minimum (${formatMoney(issues.belowMinimum)}) : validation du propriétaire nécessaire.`
-              : `Prix inférieur au minimum de ${formatMoney(issues.belowMinimum)}`}
-          </span>
-        </p>
+      {fields.units && (
+        <UnitDetailsFields
+          line={line}
+          chassisErrors={showErrors ? (issues?.chassis ?? []) : []}
+          onChange={onChange}
+        />
       )}
-      <Disclosure label="Détails de l'article">
-        {line.units.map((detail, index) => (
-          <UnitFields
-            key={index}
-            title={`${unit} ${String(index + 1)}`}
-            detail={detail}
-            chassisError={showErrors ? issues?.chassis[index] : undefined}
-            onChange={(next) => {
-              onChange({ ...line, units: line.units.map((u, i) => (i === index ? next : u)) });
-            }}
-          />
-        ))}
-      </Disclosure>
-      {onRemove !== undefined && (
-        <Button variant="ghost" icon={Trash2} onClick={onRemove}>
-          Retirer {title}
-        </Button>
+      {(onCollapse !== undefined || onRemove !== undefined) && (
+        <div className="flex flex-wrap gap-2">
+          {onCollapse !== undefined && (
+            <Button variant="ghost" icon={ChevronUp} onClick={onCollapse}>
+              Replier {title}
+            </Button>
+          )}
+          {onRemove !== undefined && (
+            <Button variant="ghost" icon={Trash2} onClick={onRemove}>
+              Retirer {title}
+            </Button>
+          )}
+        </div>
       )}
     </section>
-  );
-}
-
-function UnitFields({
-  title,
-  detail,
-  chassisError,
-  onChange,
-}: {
-  title: string;
-  detail: UnitDetail;
-  chassisError: string | undefined;
-  onChange: (detail: UnitDetail) => void;
-}) {
-  return (
-    <fieldset className="m-0 flex flex-col gap-4 border-0 p-0">
-      <legend className="mb-2 p-0 text-label font-semibold text-text-muted">{title}</legend>
-      <TextField
-        label={`Couleur — ${title}`}
-        value={detail.color}
-        onChange={(event) => {
-          onChange({ ...detail, color: event.target.value });
-        }}
-      />
-      <TextField
-        label={`N° de châssis — ${title}`}
-        value={detail.chassis}
-        error={chassisError}
-        autoCapitalize="characters"
-        onChange={(event) => {
-          onChange({ ...detail, chassis: event.target.value });
-        }}
-      />
-      <TextField
-        label={`N° de moteur — ${title}`}
-        value={detail.engine}
-        autoCapitalize="characters"
-        onChange={(event) => {
-          onChange({ ...detail, engine: event.target.value });
-        }}
-      />
-    </fieldset>
   );
 }

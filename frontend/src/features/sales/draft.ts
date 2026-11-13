@@ -24,6 +24,9 @@ export interface LineDraft {
   unitPrice: number | null;
   /** Une entrée par unité (CDC § 17.3), toujours de longueur `quantity`. */
   units: UnitDetail[];
+  /** Taille et couleur de la ligne (Prêt-à-porter, § 7.4) ; vide = non précisée. */
+  size: string;
+  color: string;
 }
 
 export type CustomerDraft =
@@ -95,6 +98,8 @@ export function newLine(article: CatalogArticle): LineDraft {
     quantity: 1,
     unitPrice: article.base_price,
     units: [{ ...EMPTY_UNIT }],
+    size: "",
+    color: "",
   };
 }
 

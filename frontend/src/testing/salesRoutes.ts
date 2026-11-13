@@ -87,8 +87,13 @@ export async function serveSales(
   const [route = "", search = ""] = path.split("?");
   const query = new URLSearchParams(search);
   const q = query.get("q");
-  if (method === "GET" && route === "/profile")
-    return json(200, saleProfile(server.role, server.world.settings.minPriceRequiresApproval));
+  if (method === "GET" && route === "/profile") {
+    return json(200, {
+      ...saleProfile(server.role, server.world.settings.minPriceRequiresApproval),
+      exchange_days: server.exchange.days,
+      employee_exchange_allowed: server.exchange.employeeAllowed,
+    });
+  }
   if (method === "GET" && route === "/payment-modes") return json(200, paymentModes());
   if (method === "GET" && route === "/stock") return json(200, stockMatrix(server.world, q));
   if (method === "GET" && route === "/members") return json(200, server.members);

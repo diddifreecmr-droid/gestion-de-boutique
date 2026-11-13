@@ -16,18 +16,24 @@ export interface ChoiceChipsProps<T extends string> {
   /** Choix actif ; l'écran présélectionne le dernier mode utilisé (§ 6.2). */
   value: T | null;
   onChange: (value: T) => void;
+  /**
+   * Pastilles compactes de 48 px, à la suite (taille, couleur d'une ligne de panier, § 7.4) ;
+   * par défaut, grosses pastilles de 56 px, 2 par ligne.
+   */
+  compact?: boolean;
 }
 
 const NEXT_KEYS = new Set(["ArrowRight", "ArrowDown"]);
 const PREVIOUS_KEYS = new Set(["ArrowLeft", "ArrowUp"]);
 
-function chipClasses(active: boolean): string {
+function chipClasses(active: boolean, compact: boolean): string {
   // Actif : bordure 1 px + ring intérieur 1 px = 2 px primary, sans décaler le contenu.
   const state = active
     ? "border-primary bg-primary-soft ring-1 ring-inset ring-primary"
     : "border-border-strong bg-surface hover:bg-primary-soft";
+  const size = compact ? "min-h-(--control-md) min-w-(--control-md)" : "min-h-(--control-lg)";
   return (
-    "flex min-h-(--control-lg) items-center gap-2 rounded-md border px-4 text-left " +
+    `flex ${size} items-center gap-2 rounded-md border px-4 text-left ` +
     `text-label font-semibold text-text ${PRESS_TRANSITION} ${FOCUS_OUTLINE} ${state}`
   );
 }
@@ -41,6 +47,7 @@ export function ChoiceChips<T extends string>({
   options,
   value,
   onChange,
+  compact = false,
 }: ChoiceChipsProps<T>) {
   const labelId = useId();
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -77,7 +84,11 @@ export function ChoiceChips<T extends string>({
       <span id={labelId} className="text-label font-semibold text-text">
         {label}
       </span>
-      <div role="radiogroup" aria-labelledby={labelId} className="grid grid-cols-2 gap-2">
+      <div
+        role="radiogroup"
+        aria-labelledby={labelId}
+        className={compact ? "flex flex-wrap gap-2" : "grid grid-cols-2 gap-2"}
+      >
         {options.map((option, index) => {
           const active = index === selectedIndex;
           const Icon = option.icon;
@@ -97,7 +108,7 @@ export function ChoiceChips<T extends string>({
               onKeyDown={(event) => {
                 handleKeyDown(event, index);
               }}
-              className={chipClasses(active)}
+              className={chipClasses(active, compact)}
             >
               {active && <Check aria-hidden="true" className="size-6 shrink-0 text-primary" />}
               {Icon !== undefined && <Icon aria-hidden="true" className="size-6 shrink-0" />}
