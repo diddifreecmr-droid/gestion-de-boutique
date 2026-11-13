@@ -5,7 +5,6 @@
  * le test, comme le faux serveur des ventes.
  */
 import type { components } from "../core/api/schema.gen";
-import type { Role } from "../core/auth/me";
 import { ownerArticle } from "./catalog";
 import { dashboardBody, homeBody } from "./dashboard";
 import { json, meBody, ROUTES, SHOP_A, tokenBody, type Reply } from "./fakeApi";
