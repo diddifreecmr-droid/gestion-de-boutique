@@ -110,6 +110,10 @@ class MemoryInventoryRepository(_Listing[InventoryId, Inventory], InventoryRepos
         running = [inv for inv in found if inv.open_location_key == location_id]
         return running[0] if running else None
 
+    def started_since(self, since: datetime) -> list[Inventory]:
+        found = self._sorted(key=lambda inventory: (inventory.started_at, inventory.id))
+        return [inventory for inventory in found if inventory.started_at >= since]
+
 
 MEMORY_STOCK_REPOSITORIES = (
     MemoryStockLevelRepository,

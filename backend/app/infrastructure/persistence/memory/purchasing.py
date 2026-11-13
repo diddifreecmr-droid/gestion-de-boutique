@@ -28,5 +28,8 @@ class MemoryPurchaseRepository(_Listing[PurchaseId, Purchase], PurchaseRepositor
         found.reverse()
         return [p for p in found if first_day <= p.details.purchase_date <= last_day]
 
+    def for_supplier(self, supplier_id: SupplierId) -> list[Purchase]:
+        return [p for p in self._sorted(key=position) if p.details.supplier_id == supplier_id]
+
 
 MEMORY_PURCHASING_REPOSITORIES = (MemorySupplierRepository, MemoryPurchaseRepository)

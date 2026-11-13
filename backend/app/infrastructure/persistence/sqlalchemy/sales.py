@@ -38,6 +38,7 @@ class SqlCustomerRepository(SqlListing[CustomerId, Customer], CustomerRepository
         return {
             "name": d.name,
             "phone": d.phone.e164,
+            "phone_key": aggregate.unique_phone,
             "kind": d.kind.value,
             "city": d.city,
             "address": d.address,
@@ -72,6 +73,7 @@ class SqlCustomerRepository(SqlListing[CustomerId, Customer], CustomerRepository
             details=details,
             created_by=UserId(row["created_by"]),
             created_at=from_db(row["created_at"]),
+            released=row["phone_key"] is None,
             version=int(row["version"]),
         )
 
@@ -85,7 +87,7 @@ class SqlCustomerRepository(SqlListing[CustomerId, Customer], CustomerRepository
         return sa.or_(self.table.c.created_by == seller.value, self.table.c.id.in_(theirs))
 
     def find_by_phone(self, phone: PhoneNumber) -> Customer | None:
-        found = self._select_all(self.table.c.id, where=self.table.c.phone == phone.e164)
+        found = self._select_all(self.table.c.id, where=self.table.c.phone_key == phone.e164)
         return found[0] if found else None
 
     def visible_to(self, customer_id: CustomerId, seller: UserId) -> bool:
@@ -96,14 +98,13 @@ class SqlCustomerRepository(SqlListing[CustomerId, Customer], CustomerRepository
 
     def search(self, query: CustomerQuery) -> list[Customer]:
         c = self.table.c
-        conditions: list[sa.ColumnElement[bool]] = []
+        conditions: list[sa.ColumnElement[bool]] = [c.phone_key.is_not(None)]
         text = query.folded
         if text is not None:
             conditions.append(c.search_key.like(f"%{text}%"))
         if query.seller is not None:
             conditions.append(self._seller_scope(query.seller))
-        where = sa.and_(*conditions) if conditions else None
-        return self._select_all(c.sort_key, c.id, where=where)
+        return self._select_all(c.sort_key, c.id, where=sa.and_(*conditions))
 
 
 class SqlChassisClaimRepository(SqlListing[ChassisClaimId, ChassisClaim], ChassisClaimRepository):

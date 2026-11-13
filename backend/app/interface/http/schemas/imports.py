@@ -1,9 +1,9 @@
-"""Schémas de l'import (UC-IMP-02) : aperçu ligne par ligne, sans écriture ; lot confirmé.
+"""Schémas de l'import (UC-IMP-02, UC-IMP-03) : aperçu ligne par ligne, sans écriture ; lots.
 
 Jamais de clé de stockage ni de lien vers le fichier déposé (SEC-N3-03).
 """
 
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -58,3 +58,30 @@ class ImportBatchResponse(BaseModel):
     created: list[ImportCreatedCount]
     """Éléments créés, par type (articles, mouvements de stock, clients…)."""
     imported_at: datetime
+    cancellable_until: date
+    """Dernier jour d'annulation, inclus (date de l'import + 7 jours, journée de Douala)."""
+    cancelled_at: datetime | None
+
+
+class ImportBatchListResponse(BaseModel):
+    items: list[ImportBatchResponse]
+    """Le plus récent d'abord ; seulement les modèles que l'utilisateur importe."""
+
+
+class ImportAuthor(BaseModel):
+    id: str
+    name: str
+
+
+class ImportItemResponse(BaseModel):
+    line: int
+    """Ligne du fichier qui a créé l'élément."""
+    entity: ImportedEntity
+    entity_id: str
+
+
+class ImportBatchDetailResponse(ImportBatchResponse):
+    imported_by: ImportAuthor
+    problems_total: int
+    """Lignes refusées : le détail est dans `GET /imports/{id}/errors.xlsx`."""
+    items: list[ImportItemResponse]

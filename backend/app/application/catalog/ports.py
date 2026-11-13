@@ -25,17 +25,31 @@ ARTICLE_REFERENCE = "article_reference"
 ARTICLE_NAME = "article_name"
 
 
+def held_key(article: Article, constraint: str) -> str | None:
+    """Clé que l'article occupe pour `constraint` ; aucune s'il a été retiré (QC-6)."""
+    if article.keys_released:
+        return None
+    details = article.details
+    keys = {
+        ARTICLE_BRAND_MODEL: details.brand_model_key,
+        ARTICLE_NAME: details.name_key,
+        ARTICLE_REFERENCE: details.reference_key,
+    }
+    return keys[constraint]
+
+
 class ArticleRepository(ShopRecordRepository[ArticleId, Article]):
     def unique_keys(self) -> Sequence[UniqueKey[Article]]:
         return (
-            UniqueKey(ARTICLE_BRAND_MODEL, lambda article: article.details.brand_model_key),
-            UniqueKey(ARTICLE_NAME, lambda article: article.details.name_key),
-            UniqueKey(ARTICLE_REFERENCE, lambda article: article.details.reference_key),
+            UniqueKey(ARTICLE_BRAND_MODEL, lambda a: held_key(a, ARTICLE_BRAND_MODEL)),
+            UniqueKey(ARTICLE_NAME, lambda a: held_key(a, ARTICLE_NAME)),
+            UniqueKey(ARTICLE_REFERENCE, lambda a: held_key(a, ARTICLE_REFERENCE)),
         )
 
     @abstractmethod
     def find_by_key(self, constraint: str, key: str) -> Article | None:
-        """Article dont la clé pliée de la contrainte `constraint` vaut `key`, ou `None`."""
+        """Article qui **occupe** la clé pliée `key` de `constraint` (`held_key`), ou `None` :
+        un article retiré par l'annulation de son import (QC-6) ne l'occupe plus."""
 
     @abstractmethod
     def search(self, query: ArticleQuery, page: ArticlePageRequest) -> ArticlePage:

@@ -20,9 +20,11 @@ from app.application.imports.kinds.receivables import ReceivablesImport
 from app.application.imports.kinds.suppliers import SuppliersImport
 from app.application.imports.models import ImportModel, ImportModels
 from app.application.imports.previews import PreviewFiles
+from app.application.imports.use_cases.cancel_import import CancelImport
 from app.application.imports.use_cases.confirm_import import ConfirmImport
 from app.application.imports.use_cases.download_template import DownloadImportTemplate
 from app.application.imports.use_cases.preview_import import PreviewImport
+from app.application.imports.use_cases.read_imports import ReadImports
 from app.application.security.policy import Policy
 from app.bootstrap.identity import IdentityModule
 from app.infrastructure.spreadsheets.reader import TabularReader
@@ -53,12 +55,15 @@ def build_imports(
     """`models` : imposé par les tests (modèle témoin) ; sinon `import_models(identity)`."""
     clock, uows = identity.clock, identity.core.shop_uow_factory
     registry = ImportModels(import_models(identity) if models is None else models)
-    access = ImportAccess(Policy(clock=clock.now), registry)
-    previews, reader = PreviewFiles(storage), TabularReader()
+    policy = Policy(clock=clock.now)
+    access = ImportAccess(policy, registry)
+    previews, reader, writer = PreviewFiles(storage), TabularReader(), OpenpyxlWriter()
     http = ImportsComponents(
-        template=DownloadImportTemplate(uows, access, OpenpyxlWriter()),
+        template=DownloadImportTemplate(uows, access, writer),
         preview=PreviewImport(uows, access, clock, reader, previews),
         confirm=ConfirmImport(uows, access, clock, reader, previews),
+        read=ReadImports(uows, identity.uow_factory, access, writer),
+        cancel=CancelImport(uows, policy, clock),
         guard=identity.auth.guard,
     )
     return ImportsModule(http=http, models=registry, previews=previews)

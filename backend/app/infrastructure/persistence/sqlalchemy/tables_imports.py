@@ -6,6 +6,8 @@
 - `import_item` : chaque élément créé par le lot (type, identifiant, ligne du fichier),
   **réécrit** avec le lot ; index `(shop_id, entity_type, entity_id)` : retrouver le lot d'un
   élément (annulation et blocages, QC-6, T35).
+- `import_problem` (migration 0020, T35) : lignes refusées d'un lot (ligne du tableur, colonne,
+  message), posées une fois à la confirmation ; rapport `errors.xlsx`.
 - Aucune clé étrangère, comme pour le reste du schéma.
 """
 
@@ -52,4 +54,17 @@ import_item = sa.Table(
     sa.Column("entity_id", sa.Uuid, nullable=False),
     sa.CheckConstraint("line >= 2", name="line_of_data"),
     sa.Index("import_item_shop_entity_idx", "shop_id", "entity_type", "entity_id"),
+)
+
+import_problem = sa.Table(
+    "import_problem",
+    metadata,
+    sa.Column("import_batch_id", sa.Uuid, primary_key=True),
+    sa.Column("position", sa.Integer, primary_key=True),
+    sa.Column("shop_id", sa.Uuid, nullable=False),
+    sa.Column("line", sa.Integer, nullable=False),
+    sa.Column("column_name", sa.String(120), nullable=True),
+    sa.Column("message", sa.String(300), nullable=False),
+    sa.CheckConstraint("line >= 2", name="line_of_data"),
+    sa.Index("import_problem_shop_batch_idx", "shop_id", "import_batch_id"),
 )

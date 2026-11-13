@@ -1,10 +1,12 @@
 """Dépôt SQL des lots d'import (T32) : ligne `import_batch` + éléments `import_item`.
 
 Gabarit `SqlRepository` (verrou optimiste sur le lot) ; les éléments sont **réécrits** avec
-le lot dans la même transaction, filtrés sur la boutique.
+le lot dans la même transaction, filtrés sur la boutique. `batch_of` passe par l'index
+`import_item_shop_entity_idx` (annulation, QC-6).
 """
 
 from typing import Any
+from uuid import UUID
 
 import sqlalchemy as sa
 
@@ -15,14 +17,15 @@ from app.domain.imports.values import ImportedEntity, ImportKind, ImportStatus
 from app.domain.shared.doc_number import DocNumber
 from app.domain.shared.ids import ShopId, UserId
 from app.infrastructure.persistence.sqlalchemy.columns import from_db, to_db
-from app.infrastructure.persistence.sqlalchemy.repository import SqlRepository
+from app.infrastructure.persistence.sqlalchemy.import_problems import SqlImportProblemLog
+from app.infrastructure.persistence.sqlalchemy.shops import SqlListing
 from app.infrastructure.persistence.sqlalchemy.tables_imports import import_batch, import_item
 
 ITEMS_PER_INSERT = 1_000
 """6 paramètres par élément : 6 000 par requête, loin des limites de SQLite et PostgreSQL."""
 
 
-class SqlImportBatchRepository(SqlRepository[ImportBatchId, ImportBatch], ImportBatchRepository):
+class SqlImportBatchRepository(SqlListing[ImportBatchId, ImportBatch], ImportBatchRepository):
     table = import_batch
 
     def _to_columns(self, aggregate: ImportBatch) -> dict[str, Any]:
@@ -125,5 +128,22 @@ class SqlImportBatchRepository(SqlRepository[ImportBatchId, ImportBatch], Import
         self._tracker.track(found, saved=False)
         return found
 
+    def list_all(self) -> list[ImportBatch]:
+        c = self.table.c
+        return self._select_all(c.imported_at.desc(), c.id.desc())
 
-SQL_IMPORT_REPOSITORIES = (SqlImportBatchRepository,)
+    def batch_of(self, entity: ImportedEntity, entity_id: UUID) -> ImportBatch | None:
+        c = import_item.c
+        owner = self._transaction.fetch_one(
+            sa.select(c.import_batch_id)
+            .where(
+                c.shop_id == self.shop_id.value,
+                c.entity_type == entity.value,
+                c.entity_id == entity_id,
+            )
+            .limit(1)
+        )
+        return None if owner is None else self.find(ImportBatchId(owner["import_batch_id"]))
+
+
+SQL_IMPORT_REPOSITORIES = (SqlImportBatchRepository, SqlImportProblemLog)
