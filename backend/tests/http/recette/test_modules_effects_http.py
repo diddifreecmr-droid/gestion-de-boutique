@@ -9,7 +9,7 @@
 
 from typing import Any
 
-from app.domain.profiles.modules import ALL_MODULES, MANDATORY_MODULES, Module
+from app.domain.profiles.modules import AVAILABLE_MODULES, MANDATORY_MODULES, Module
 from app.domain.sales.ids import SaleId
 from tests.http.recette.routes_trade import cash_sale
 from tests.http.recette.test_modules_routes_http import set_modules
@@ -24,7 +24,7 @@ def _refused(response: Any, module: str) -> None:
 
 def test_without_receivables_no_credit_no_credit_exchange(world: World) -> None:
     a = world.a
-    set_modules(world, a, ALL_MODULES - {Module.RECEIVABLES})
+    set_modules(world, a, AVAILABLE_MODULES - {Module.RECEIVABLES})
     seller = a.sessions["seller"]
     a.ok("POST", "/sales", seller, json=cash_sale(a))  # le comptant marche
     credit = {
@@ -53,22 +53,20 @@ def test_without_expenses_no_expense_enters_the_figures(world: World) -> None:
     a = world.a
     with_expenses = a.ok("GET", "/dashboard", a.owner)["summary"]
     assert with_expenses["expenses"]["value"] > 0  # dépenses du jeu (25 000 + 1 000)
-    set_modules(world, a, ALL_MODULES - {Module.EXPENSES})
+    set_modules(world, a, AVAILABLE_MODULES - {Module.EXPENSES})
     summary = a.ok("GET", "/dashboard", a.owner)["summary"]
     assert summary["expenses"] is None
     assert summary["result"] == summary["margin"]
     assert a.ok("GET", "/home", a.sessions["accountant"])["accountant"]["expenses"] is None
     _refused(a.call("GET", "/dashboard/details/expenses", a.owner), "expenses")
-    set_modules(world, a, ALL_MODULES)
+    set_modules(world, a, AVAILABLE_MODULES)
     assert a.ok("GET", "/dashboard", a.owner)["summary"] == with_expenses
 
 
-def test_without_transfers_and_transport_their_blocks_are_null(world: World) -> None:
+def test_upcoming_transfers_and_transport_blocks_are_always_null(world: World) -> None:
+    """Modules à venir (2026-11-13) : jamais actifs, leurs blocs valent `null`, sans « Lot 2 »."""
     a = world.a
-    full = a.ok("GET", "/dashboard", a.owner)
-    assert full["stock"]["in_transit"]["available"] is False  # Lot 2 : non disponible
-    assert full["trucks"] is not None
-    set_modules(world, a, ALL_MODULES - {Module.TRANSFERS, Module.TRANSPORT})
+    set_modules(world, a, AVAILABLE_MODULES)
     dashboard = a.ok("GET", "/dashboard", a.owner)
     assert (dashboard["stock"]["in_transit"], dashboard["trucks"]) == (None, None)
     accountant = a.ok("GET", "/home", a.sessions["accountant"])["accountant"]

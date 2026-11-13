@@ -11,6 +11,7 @@ describe("Badge", () => {
     ["warning", "bg-warning-soft"],
     ["danger", "bg-danger-soft"],
     ["offline", "border-border-strong"],
+    ["upcoming", "border-dashed"],
   ])("statut %s : mot + icône, 28 px, --radius-sm", (status, classe) => {
     render(<Badge status={status}>Statut</Badge>);
     const badge = screen.getByText("Statut").parentElement;

@@ -8,7 +8,12 @@ from typing import Any
 
 import pytest
 
-from app.domain.profiles.modules import ALL_MODULES, MANDATORY_MODULES, Module
+from app.domain.profiles.modules import (
+    AVAILABLE_MODULES,
+    MANDATORY_MODULES,
+    UPCOMING_MODULES,
+    Module,
+)
 from tests.http.recette.paths import url
 from tests.http.recette.routes import ROUTES
 from tests.http.recette.world import Side, World
@@ -68,7 +73,7 @@ def test_a_disabled_module_closes_all_its_routes_and_only_them(
     own = [route for route, m in modules.items() if m is module]
     reads = [r for r, m in modules.items() if m is not module and r.startswith("GET ")]
     before = {r: send(world.a, r, world.a.owner).json() for r in own if r.startswith("GET ")}
-    set_modules(world, world.a, ALL_MODULES - {module})
+    set_modules(world, world.a, AVAILABLE_MODULES - {module})
     gaps = []
     for route in own:
         response = send(world.a, route, world.a.owner, body=False)  # corps absent : 403 d'abord
@@ -90,7 +95,7 @@ def test_a_disabled_module_closes_all_its_routes_and_only_them(
         if route.startswith("GET ") and send(world.b, route, world.b.owner).status_code != 200:
             gaps.append(f"{route} (boutique B)")
     assert gaps == []
-    set_modules(world, world.a, ALL_MODULES)
+    set_modules(world, world.a, AVAILABLE_MODULES)
     after = {r: send(world.a, r, world.a.owner).json() for r in before}
     assert after == before  # données gardées, réapparues à la réactivation
 
@@ -103,19 +108,20 @@ def test_platform_patch_refuses_invalid_combinations(world: World) -> None:
         return world.api.call("PATCH", path, world.admin, json=body)
 
     for mandatory in sorted(MANDATORY_MODULES):
-        refused = patch(ALL_MODULES - {mandatory})
+        refused = patch(AVAILABLE_MODULES - {mandatory})
         assert refused.status_code == 422, refused.text
         assert refused.json()["error"]["code"] == "MODULE_MANDATORY"
         assert refused.json()["error"]["details"] == {"module": mandatory.value}
-    refused = patch(ALL_MODULES - {Module.TRANSFERS})
-    assert refused.status_code == 422
-    assert refused.json()["error"] == {
-        "code": "MODULE_DEPENDENCY",
-        "message": refused.json()["error"]["message"],
-        "details": {"module": "transport", "requires": "transfers"},
-    }
+    for upcoming in sorted(UPCOMING_MODULES):
+        refused = patch(AVAILABLE_MODULES | {upcoming})
+        assert refused.status_code == 422, refused.text
+        assert refused.json()["error"] == {
+            "code": "MODULE_NOT_YET_AVAILABLE",
+            "message": "Ce module n'est pas encore disponible : il ne peut pas être activé",
+            "details": {"module": upcoming.value},
+        }
     shop = world.api.call("GET", path, world.admin).json()
-    assert set(shop["enabled_modules"]) == ALL_MODULES  # rien n'a changé
+    assert set(shop["enabled_modules"]) == AVAILABLE_MODULES  # rien n'a changé
     minimal = patch(MANDATORY_MODULES)
     assert minimal.status_code == 200
     assert set(minimal.json()["enabled_modules"]) == MANDATORY_MODULES

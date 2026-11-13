@@ -10,7 +10,7 @@ from app.application.receivables.use_cases.record_installment import Installment
 from app.application.shops.ports import ShopRepository
 from app.domain.alerts.alert import AlertType
 from app.domain.audit.values import Performer
-from app.domain.profiles.modules import ALL_MODULES, Module
+from app.domain.profiles.modules import AVAILABLE_MODULES, Module
 from app.domain.profiles.motos import MOTOS
 from app.domain.shared.ids import ShopId, UserId
 from app.domain.shops.errors import ModuleDisabled
@@ -36,7 +36,7 @@ def test_due_reminders_wait_while_receivables_is_disabled() -> None:
     owner, _, seller, _, view = world.scn01()
     shop = world.shop_of(owner)
     world.receivables.schedule_reminder.execute(seller, view.receivable.id, date(2026, 12, 1), "")
-    _set_modules(world, shop, ALL_MODULES - {Module.RECEIVABLES})
+    _set_modules(world, shop, AVAILABLE_MODULES - {Module.RECEIVABLES})
     world.at(date(2026, 12, 1), 0)
     dispatch = world.receivables_module.dispatch_reminders
     assert dispatch.execute(shop, date(2026, 12, 1)) == 0
@@ -46,7 +46,7 @@ def test_due_reminders_wait_while_receivables_is_disabled() -> None:
             InstallmentCommand(receivable_id=view.receivable.id, amount=1_000,
                                mode_id=world.mode(owner)),
         )  # fmt: skip
-    _set_modules(world, shop, ALL_MODULES)
+    _set_modules(world, shop, AVAILABLE_MODULES)
     assert dispatch.execute(shop, date(2026, 12, 1)) == 1
     found = [a for a in world.alerts(owner, seller) if a.type is AlertType.RECEIVABLE_REMINDER]
     assert len(found) == 1

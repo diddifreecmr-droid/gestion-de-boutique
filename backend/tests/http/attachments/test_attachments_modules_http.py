@@ -2,14 +2,14 @@
 son module — créance sans `receivables` → 403 `MODULE_DISABLED` à l'envoi comme au lien ;
 la pièce reste en stockage et se relit à la réactivation. Les autres éléments marchent."""
 
-from app.domain.profiles.modules import ALL_MODULES, Module
+from app.domain.profiles.modules import AVAILABLE_MODULES, Module
 from tests.http.attachments.conftest import MemoryBench
 from tests.http.catalog.test_catalog_http import Shop
 from tests.http.sales.test_sales_http import sold
 
 
 def _modules(bench: MemoryBench, shop: Shop, *off: Module) -> None:
-    wanted = sorted(m.value for m in ALL_MODULES - set(off))
+    wanted = sorted(m.value for m in AVAILABLE_MODULES - set(off))
     response = bench.api.call(
         "PATCH", f"/platform/shops/{shop.id}", bench.api.admin(), json={"modules": wanted}
     )

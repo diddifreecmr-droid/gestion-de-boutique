@@ -42,9 +42,9 @@ describe("boutique minimale (socle, journal, catalogue, ventes)", () => {
     const { container } = open("owner", MINIMAL, `${SHOP_PATH}/plus`);
     expect(await screen.findByRole("heading", { name: "Plus" })).toBeVisible();
     const tiles = screen.getAllByRole("button").map((b) => b.textContent);
-    expect(tiles).toEqual(expect.arrayContaining(["Clients", "Journal", "Réglages", "Mon compte"]));
-    for (const gone of ["Créances", "Achats", "Dépenses", "Paie"]) {
-      expect(screen.queryByRole("button", { name: gone })).toBeNull();
+    expect(tiles).toEqual(expect.arrayContaining(["Clients", "Journal", "Réglages"]));
+    for (const gone of ["Créances", "Achats", "Dépenses", "Paie", "Mon compte"]) {
+      expect(within(screen.getByRole("main")).queryByRole("button", { name: gone })).toBeNull();
     }
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -84,9 +84,27 @@ describe("un module à la fois", () => {
     expect(await navLabels()).toEqual(["Mon voyage"]);
   });
 
-  it("tous les modules : rien n'est masqué", async () => {
+  it("tous les modules reçus, à venir compris : aucune entrée d'un module à venir", async () => {
     open("owner", ALL_MODULES);
-    expect(await navLabels()).toEqual(["Accueil", "Ventes", "Stock", "Camions", "Plus"]);
+    expect(await navLabels()).toEqual(["Accueil", "Ventes", "Stock", "Plus"]);
+  });
+
+  it.each<[Role, string[]]>([
+    ["accountant", ["Accueil", "Achats", "Stock", "Dépenses"]],
+    ["driver", ["Mon voyage"]],
+  ])("%s, tous les modules reçus : ni Déplacements, ni Mes voyages", async (role, labels) => {
+    const { container } = open(role, ALL_MODULES);
+    expect(await navLabels()).toEqual(labels);
+    expect(screen.queryByText(/Disponible au Lot|arrive bientôt/)).toBeNull();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("propriétaire, tous les modules reçus : « Plus » sans Paie ni Mon compte", async () => {
+    open("owner", ALL_MODULES, `${SHOP_PATH}/plus`);
+    expect(await screen.findByRole("heading", { name: "Plus" })).toBeVisible();
+    for (const gone of ["Paie", "Mon compte"]) {
+      expect(within(screen.getByRole("main")).queryByRole("button", { name: gone })).toBeNull();
+    }
   });
 });
 
@@ -114,7 +132,7 @@ describe("refus du serveur et hors connexion", () => {
     open("accountant", ALL_MODULES, SHOP_PATH, {
       [PROFILE_ROUTE]: new TypeError("Failed to fetch"),
     });
-    expect(await navLabels()).toEqual(["Accueil", "Stock", "Déplacements", "Dépenses"]);
+    expect(await navLabels()).toEqual(["Accueil", "Stock", "Dépenses"]);
   });
 
   it("chaque lecture réussie est gardée pour la prochaine ouverture", async () => {

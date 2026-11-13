@@ -1,10 +1,9 @@
-import { LayoutDashboard, UserRound } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 import { useNavigate } from "react-router";
 import { shopPath } from "../core/profile/shopProfile";
 import { useDashboardModule } from "../features/dashboard/dashboardModule";
 import { DASHBOARD_KEY } from "../features/dashboard/dashboardNav";
 import { ActionTile, ActionTileGrid } from "../shared/ui";
-import { ACCOUNT_KEY } from "./RoleHome";
 import { useActiveShop } from "./shopContext";
 
 /** « Tableau de bord » : seulement si le module `dashboard` de la boutique est actif (§ 15.1). */
@@ -21,7 +20,10 @@ function DashboardTile({ shopId }: { shopId: string }) {
   );
 }
 
-/** Entrée « Plus » du propriétaire (CDC § 17.4) : le reste de ses écrans, en tuiles. */
+/**
+ * Entrée « Plus » du propriétaire (CDC § 17.4) : le reste de ses écrans, en tuiles. « Mon
+ * compte » n'y est pas : son seul accès est le bouton « Compte » de la barre du haut.
+ */
 export function MorePage() {
   const { shopId, role, profile } = useActiveShop();
   const navigate = useNavigate();
@@ -38,11 +40,6 @@ export function MorePage() {
             onClick={() => void navigate(shopPath(shopId, entry.key))}
           />
         ))}
-        <ActionTile
-          icon={UserRound}
-          label="Mon compte"
-          onClick={() => void navigate(shopPath(shopId, ACCOUNT_KEY))}
-        />
       </ActionTileGrid>
     </>
   );

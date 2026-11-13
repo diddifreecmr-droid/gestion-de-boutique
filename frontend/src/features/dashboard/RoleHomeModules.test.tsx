@@ -69,11 +69,13 @@ const day = async () => within(await screen.findByRole("list", { name: "Ma journ
 const main = () => within(screen.getByRole("main"));
 
 describe("accueil du comptable — modules", () => {
-  it("dépenses et déplacements reçus : les deux lignes sont là", async () => {
+  it("dépenses et déplacements reçus : dépenses seules (transferts : module à venir)", async () => {
     openAccountant({});
     const list = await day();
     expect(list.getByRole("button", { name: /Dépenses du jour/ })).toBeVisible();
-    expect(list.getByText("Déplacements à réceptionner")).toBeVisible();
+    expect(list.queryByText("Déplacements à réceptionner")).toBeNull();
+    expect(main().queryByRole("button", { name: "Déplacer du stock" })).toBeNull();
+    expect(screen.getByRole("main").textContent).not.toMatch(/Lot 2/);
   });
 
   it.each([
@@ -105,7 +107,7 @@ describe("accueil du comptable — modules", () => {
     );
     const list = await day();
     expect(list.queryByText(/Dépenses du jour/)).toBeNull();
-    expect(list.getByText("Déplacements à réceptionner")).toBeVisible();
+    expect(list.getByText("3 articles sous le seuil")).toBeVisible();
   });
 });
 
@@ -118,11 +120,11 @@ describe("accueil du chauffeur — module transport", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("un seul bloc reçu : seule sa ligne apparaît", async () => {
+  it("un bloc reçu, transport à venir : rien du voyage, ni « Lot 2 »", async () => {
     openDriver({ current_trip: LOT_2, trip_expenses: null });
-    const list = within(await screen.findByRole("list", { name: "Mon voyage" }));
-    expect(list.getByText("Voyage en cours")).toBeVisible();
-    expect(list.queryByText("Mes dépenses de voyage")).toBeNull();
+    expect(await screen.findByText(DRIVER_NOTHING)).toBeVisible();
+    expect(screen.queryByText("Voyage en cours")).toBeNull();
+    expect(screen.getByRole("main").textContent).not.toMatch(/Lot 2/);
   });
 
   it("blocs reçus mais transport éteint pour la coquille : rien du voyage", async () => {

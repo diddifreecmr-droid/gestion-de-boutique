@@ -22,7 +22,8 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-const FOLDED = ["Dépenses et résultat", "Créances", "Stock", "Camions"];
+// Pas de section Camions : le module Transport est à venir (specs § 15.1, 13/11/2026).
+const FOLDED = ["Dépenses et résultat", "Créances", "Stock"];
 
 describe("tableau de bord — l'essentiel au premier coup d'œil", () => {
   it("3 chiffres en haut, le reste replié derrière son titre ; alertes ouvertes ; axe", async () => {

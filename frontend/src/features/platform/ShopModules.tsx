@@ -1,13 +1,20 @@
 import { useId, useState } from "react";
 import { Save } from "lucide-react";
 import {
-  ALWAYS_ON,
-  OPTIONAL_MODULES,
+  AVAILABLE_OPTIONAL_MODULES,
   shopModules,
+  UPCOMING_MODULES,
   type ModuleCode,
 } from "../../core/profile/modules";
 import { Badge, Button, ListCard, ListCardRow, Switch } from "../../shared/ui";
-import { changeSummary, dependencyHint, MODULE_LABELS, modulesBody, toggle } from "./moduleTexts";
+import {
+  ALWAYS_ON_LINE,
+  changeSummary,
+  dependencyHint,
+  MODULE_LABELS,
+  modulesBody,
+  toggle,
+} from "./moduleTexts";
 
 export interface ShopModulesProps {
   /** `enabled_modules` lus du serveur (la fiche est remontée après chaque enregistrement). */
@@ -17,9 +24,10 @@ export interface ShopModulesProps {
 }
 
 /**
- * Modules de la boutique (décision client du 12/11/2026) : socle, journal, catalogue et ventes
- * toujours actifs ; les autres par interrupteur, dépendances comprises. Avant d'enregistrer,
- * une phrase par module dit ce qui disparaît (ou réapparaît) ; les données sont gardées.
+ * Modules de la boutique (décisions client des 12 et 13/11/2026) : socle, journal, catalogue et
+ * ventes toujours actifs, dits sur une seule ligne ; les facultatifs construits par interrupteur,
+ * dépendances comprises ; les modules à venir avec la pastille « Bientôt », sans interrupteur.
+ * Avant d'enregistrer, une phrase par module dit ce qui disparaît (ou réapparaît).
  */
 export function ShopModules({ enabled, busy, onSave }: ShopModulesProps) {
   const [initial] = useState(() => shopModules(enabled).enabled);
@@ -31,18 +39,9 @@ export function ShopModules({ enabled, busy, onSave }: ShopModulesProps) {
       <h2 id={titleId} className="m-0 text-title-sm font-bold text-text">
         Modules
       </h2>
-      <ListCard label="Modules toujours actifs">
-        {ALWAYS_ON.map((module) => (
-          <ListCardRow
-            key={module}
-            title={MODULE_LABELS[module]}
-            subtitle="Ne se désactive pas"
-            badge={<Badge status="success">Toujours actif</Badge>}
-          />
-        ))}
-      </ListCard>
+      <p className="m-0 text-body text-text-muted">{ALWAYS_ON_LINE}</p>
       <div role="group" aria-label="Modules facultatifs" className="flex flex-col gap-2">
-        {OPTIONAL_MODULES.map((module) => (
+        {AVAILABLE_OPTIONAL_MODULES.map((module) => (
           <Switch
             key={module}
             label={MODULE_LABELS[module]}
@@ -54,6 +53,16 @@ export function ShopModules({ enabled, busy, onSave }: ShopModulesProps) {
           />
         ))}
       </div>
+      <ListCard label="Modules à venir">
+        {UPCOMING_MODULES.map((module) => (
+          <ListCardRow
+            key={module}
+            title={MODULE_LABELS[module]}
+            subtitle="Pas encore disponible"
+            badge={<Badge status="upcoming">Bientôt</Badge>}
+          />
+        ))}
+      </ListCard>
       {summary.length > 0 && (
         <div aria-live="polite" className="flex flex-col gap-2 rounded-lg bg-warning-soft p-4">
           <p className="m-0 text-label font-semibold text-warning-text">En enregistrant :</p>

@@ -42,14 +42,11 @@ def test_homes_by_role_never_leak(desk: Desk) -> None:
     keys = _keys(accountant)
     assert not [k for k in keys if any(word in k for word in SALES_WORDS)]  # RG-D03
     block = accountant["accountant"]
-    assert block["transfers_to_receive"]["available"] is False
+    assert block["transfers_to_receive"] is None  # module à venir, jamais actif
     assert (block["low_stock"], block["expenses"]) == (0, 0)
     assert block["stock_value"]["at_wac"] == 19 * 530_000
     driver = desk.ok("GET", "/home", desk.staff("driver"))
-    assert driver["driver"] == {
-        "current_trip": {"available": False, "lot": 2, "message": "Non disponible au Lot 1"},
-        "trip_expenses": {"available": False, "lot": 2, "message": "Non disponible au Lot 1"},
-    }
+    assert driver["driver"] == {"current_trip": None, "trip_expenses": None}
     owner = desk.ok("GET", "/home", desk.owner)
     assert set(owner) == {"role", "today", "owner"}
     assert owner["owner"]["summary"]["sales"]["value"] == 800_000

@@ -15,7 +15,7 @@ from datetime import datetime
 
 from app.domain.audit.values import EntityRef, Performer
 from app.domain.identity.phone import PhoneNumber
-from app.domain.profiles.modules import MANDATORY_MODULES, Module
+from app.domain.profiles.modules import MANDATORY_MODULES, Module, upcoming_among
 from app.domain.profiles.profile import ProfileCode
 from app.domain.shared.business_day import require_aware
 from app.domain.shared.errors import ValidationFailed
@@ -71,6 +71,10 @@ class Shop:
         self.profile_code = ProfileCode(self.profile_code)
         if not self.enabled_modules >= MANDATORY_MODULES:
             msg = "Socle, journal, catalogue et ventes sont toujours actifs"
+            raise ValueError(msg)
+        upcoming = upcoming_among(self.enabled_modules)
+        if upcoming:
+            msg = f"Module à venir actif (migration 0016) : {', '.join(upcoming)}"
             raise ValueError(msg)
 
     @property

@@ -33,7 +33,7 @@ describe("liste du stock compacte", () => {
       within(haojue)
         .getAllByRole("term")
         .map((term) => term.textContent),
-    ).toEqual(["Garoua", "Ngaoundéré", "En route", "Total", "Prix de base"]);
+    ).toEqual(["Garoua", "Ngaoundéré", "Total", "Prix de base"]);
     expect(await axeViolations(container)).toEqual([]);
     await user.click(row);
     expect(within(haojue).queryAllByRole("term")).toEqual([]);

@@ -1,4 +1,4 @@
-/** Console : modules d'une boutique (décision client du 12/11/2026, specs § 15.1). */
+/** Console : modules d'une boutique (décisions client des 12 et 13/11/2026, specs § 15.1). */
 import { screen, within } from "@testing-library/react";
 import { beforeAll, describe, expect, it } from "vitest";
 import { axeViolations } from "../../testing/axe";
@@ -31,18 +31,13 @@ const toggle = (name: string) => screen.getByRole("switch", { name });
 const saveButton = () => screen.getByRole("button", { name: "Enregistrer les modules" });
 
 describe("console — modules d'une boutique", () => {
-  it("socle, journal, catalogue, ventes : toujours actifs, sans interrupteur ; axe", async () => {
+  it("toujours actifs sur une ligne ; interrupteurs des modules construits ; axe", async () => {
     const { container } = openSheet(MINIMAL);
-    const always = await screen.findByRole("list", { name: "Modules toujours actifs" });
-    const rows = within(always).getAllByRole("listitem");
-    expect(rows.map((row) => row.textContent)).toEqual([
-      expect.stringContaining("Socle"),
-      expect.stringContaining("Journal d'actions"),
-      expect.stringContaining("Catalogue et stock"),
-      expect.stringContaining("Ventes et reçus"),
-    ]);
-    expect(within(always).getAllByText("Toujours actif")).toHaveLength(4);
-    expect(within(always).queryByRole("switch")).toBeNull();
+    expect(
+      await screen.findByText("Toujours actifs : Socle, Journal, Catalogue et stock, Ventes"),
+    ).toBeVisible();
+    expect(screen.queryByRole("list", { name: "Modules toujours actifs" })).toBeNull();
+    expect(screen.queryByText("Toujours actif")).toBeNull();
     const optional = screen.getByRole("group", { name: "Modules facultatifs" });
     expect(
       within(optional)
@@ -52,10 +47,7 @@ describe("console — modules d'une boutique", () => {
       ["Achats", "false"],
       ["Créances", "false"],
       ["Dépenses", "false"],
-      ["Transferts", "false"],
-      ["Transport", "false"],
       ["Tableau de bord", "false"],
-      ["Import Excel", "false"],
     ]);
     expect(saveButton()).toHaveAttribute("aria-disabled", "true");
     expect(screen.getByText("Aucun changement à enregistrer.")).toBeVisible();
@@ -80,35 +72,52 @@ describe("console — modules d'une boutique", () => {
     expect(fake.count(`GET ${ONE}`)).toBe(2); // fiche relue après l'enregistrement
   });
 
-  it("dépendance : Transport active Transferts ; désactiver Transferts désactive Transport", async () => {
-    const { user, fake } = openSheet(MINIMAL);
-    await screen.findByRole("switch", { name: "Transport" });
-    expect(toggle("Transport")).toHaveAccessibleDescription(
-      "A besoin de Transferts : l'activer active aussi Transferts.",
-    );
-    expect(toggle("Transferts")).toHaveAccessibleDescription(
-      "Le désactiver désactive aussi Transport.",
-    );
-    await user.click(toggle("Transport"));
-    expect(toggle("Transferts")).toHaveAttribute("aria-checked", "true");
-    expect(screen.getByText(/^Transport activé/)).toBeVisible();
-    expect(screen.getByText(/^Transferts activé/)).toBeVisible();
-    await user.click(toggle("Transferts"));
-    expect(toggle("Transport")).toHaveAttribute("aria-checked", "false");
-    expect(saveButton()).toHaveAttribute("aria-disabled", "true"); // retour à l'état lu
+  it("modules à venir : pastille « Bientôt », sans interrupteur ; axe", async () => {
+    const { container } = openSheet(MINIMAL);
+    const upcoming = await screen.findByRole("list", { name: "Modules à venir" });
+    const rows = within(upcoming).getAllByRole("listitem");
+    expect(rows.map((row) => row.textContent)).toEqual([
+      expect.stringContaining("Transferts"),
+      expect.stringContaining("Transport"),
+      expect.stringContaining("Import Excel"),
+    ]);
+    expect(within(upcoming).getAllByText("Bientôt")).toHaveLength(3);
+    expect(within(upcoming).queryByRole("switch")).toBeNull();
+    expect(within(upcoming).queryByRole("button")).toBeNull();
+    for (const name of ["Transferts", "Transport", "Import Excel"]) {
+      expect(screen.queryByRole("switch", { name })).toBeNull();
+    }
+    expect(await axeViolations(container)).toEqual([]);
+  });
 
-    await user.click(toggle("Transport"));
+  it("boutique lue avec un module à venir : jamais renvoyé au PATCH", async () => {
+    const { user, fake } = openSheet([...MINIMAL, "transfers", "transport", "import"]);
+    await user.click(await screen.findByRole("switch", { name: "Achats" }));
     await user.click(saveButton());
     expect(fake.calls.find((c) => c.method === "PATCH")?.body).toEqual({
-      modules: ["core", "audit", "catalog", "sales", "transfers", "transport"],
+      modules: ["core", "audit", "catalog", "sales", "purchases"],
     });
   });
 
-  it("depuis une boutique avec Transport, désactiver Transferts annonce les deux pertes", async () => {
-    const { user } = openSheet([...MINIMAL, "transfers", "transport"]);
-    await user.click(await screen.findByRole("switch", { name: "Transferts" }));
-    expect(screen.getByText(/^Transferts désactivé : plus de déplacements/)).toBeVisible();
-    expect(screen.getByText(/^Transport désactivé : plus de camions/)).toBeVisible();
+  it("refus 422 MODULE_NOT_YET_AVAILABLE : message clair, la fiche reste", async () => {
+    const { user } = openSheet(
+      MINIMAL,
+      apiError(422, "MODULE_NOT_YET_AVAILABLE", "Pas encore disponible", { module: "import" }),
+    );
+    await user.click(await screen.findByRole("switch", { name: "Achats" }));
+    await user.click(saveButton());
+    expect(
+      await screen.findByText(
+        "Le module « Import Excel » n'est pas encore disponible : il ne peut pas être activé. Rien n'a été enregistré.",
+      ),
+    ).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Motos Garoua" })).toBeVisible();
+  });
+
+  it("fiche d'une boutique : pas de bloc « Mon compte » répété en bas", async () => {
+    openSheet(MINIMAL);
+    expect(await screen.findByRole("heading", { name: "Motos Garoua" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "Mon compte" })).toBeNull();
   });
 
   it("conflit de version : message clair et fiche relue", async () => {

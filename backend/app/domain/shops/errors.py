@@ -9,6 +9,7 @@
 | `NotPointOfSale` | `LOCATION_NOT_POINT_OF_SALE` | lieu habituel hors point de vente (MEM-01) |
 | `RoleNotOffered` | `ROLE_NOT_IN_PROFILE` | rôle absent du profil (Chauffeur hors Motos) |
 | `ModuleNotAvailable` | `MODULE_NOT_AVAILABLE` | module absent du profil de la boutique |
+| `ModuleNotYetAvailable` | `MODULE_NOT_YET_AVAILABLE` | module à venir, pas encore construit |
 | `ModuleMandatory` | `MODULE_MANDATORY` | désactiver un module toujours actif (§ 15.1) |
 | `ModuleDependency` | `MODULE_DEPENDENCY` | `transport` sans `transfers` (§ 15.1) |
 | `ModuleDisabled` | `MODULE_DISABLED` | **403** : fonction d'un module désactivé de la boutique |
@@ -78,6 +79,18 @@ class ModuleNotAvailable(DomainError):
         super().__init__(
             "Module indisponible pour ce type de boutique",
             details={"module": module, "profile": profile},
+        )
+
+
+class ModuleNotYetAvailable(DomainError):
+    """Module à venir (`UPCOMING_MODULES`) : aucun écran n'existe encore, il ne s'active pas."""
+
+    code = "MODULE_NOT_YET_AVAILABLE"
+
+    def __init__(self, module: str) -> None:
+        super().__init__(
+            "Ce module n'est pas encore disponible : il ne peut pas être activé",
+            details={"module": module},
         )
 
 

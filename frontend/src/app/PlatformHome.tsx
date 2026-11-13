@@ -1,6 +1,5 @@
 import { lazy, Suspense } from "react";
 import { Skeleton, TopBar, useToast } from "../shared/ui";
-import { AccountPage } from "../features/settings/AccountPage";
 import { useSignedIn } from "../core/services/servicesContext";
 import { NotFoundPage } from "./NotFoundPage";
 import { AppBanners } from "./AppBanners";
@@ -10,7 +9,8 @@ const PlatformConsole = lazy(() => import("../features/platform/PlatformConsole"
 
 /**
  * Console de l'administrateur plateforme (TR-23) : boutiques, ouverture d'une boutique et de
- * son propriétaire, statut, droits d'offre, délégation ; puis « Mon compte ».
+ * son propriétaire, statut, droits d'offre, délégation ; « Mon compte » sous la liste des
+ * boutiques seulement (accueil de la console), jamais répété sous la fiche d'une boutique.
  */
 export function PlatformHome() {
   const me = useSignedIn();
@@ -33,7 +33,6 @@ export function PlatformHome() {
         <Suspense fallback={<Skeleton lines={4} label="Ouverture de la console…" />}>
           <PlatformConsole />
         </Suspense>
-        <AccountPage title="Mon compte" />
       </main>
     </div>
   );

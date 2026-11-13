@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router";
 import type { OpenedShop } from "../../core/gateways/platformContract";
 import { createHttpPlatform, PlatformContext } from "../../core/gateways/httpPlatform";
 import { useServices } from "../../core/services/servicesContext";
+import { AccountPage } from "../settings/AccountPage";
 import { OpenedShopNotice } from "./OpenedShopNotice";
 import { OpenShopForm } from "./OpenShopForm";
 import { platformNav, VIEW } from "./platformNav";
@@ -43,7 +44,13 @@ function Screens() {
     );
   }
   if (id !== null) return <ShopAdmin key={id} shopId={id} nav={nav} />;
-  return <ShopList nav={nav} />;
+  // Accueil de la console : la liste, puis « Mon compte » (une seule fois, ici seulement).
+  return (
+    <>
+      <ShopList nav={nav} />
+      <AccountPage title="Mon compte" />
+    </>
+  );
 }
 
 /** Console plateforme (chargée à la demande) : boutiques, ouverture, statut, droits, délégation. */

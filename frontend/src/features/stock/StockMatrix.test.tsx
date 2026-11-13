@@ -27,14 +27,14 @@ const cards = stockList;
 const opened = openStockItem;
 
 describe("matrice de stock — vendeur", () => {
-  it("détail : quantités par lieu, En route, Total, prix de base et pastilles ; aucun coût", async () => {
+  it("détail : quantités par lieu, Total, prix de base et pastilles ; aucun coût", async () => {
     const { container, user } = renderApp(STOCK_PAGE, stockRoutes("seller"));
     const haojue = await opened(user, /Haojue/);
     await opened(user, /Yamaha/);
     const lines = within(haojue)
       .getAllByRole("term")
       .map((term) => term.textContent);
-    expect(lines).toEqual(["Garoua", "Ngaoundéré", "En route", "Total", "Prix de base"]);
+    expect(lines).toEqual(["Garoua", "Ngaoundéré", "Total", "Prix de base"]);
     expect(haojue).toHaveTextContent("Ngaoundéré0 (+ 1 abîmé)");
     expect(haojue).toHaveTextContent(`Prix de base${money(780000)}`);
     expect(within(haojue).getByText("Stock bas")).toBeVisible();

@@ -3,17 +3,28 @@
 Ordre des contrôles, premier refus seulement (message stable, testable) :
 
 1. module hors du profil → `MODULE_NOT_AVAILABLE` (si `available` est donné) ;
-2. module obligatoire absent → `MODULE_MANDATORY` (on ne désactive jamais un obligatoire) ;
-3. dépendance non tenue (`transport` sans `transfers`) → `MODULE_DEPENDENCY`.
+2. module à venir (pas encore construit) → `MODULE_NOT_YET_AVAILABLE` ;
+3. module obligatoire absent → `MODULE_MANDATORY` (on ne désactive jamais un obligatoire) ;
+4. dépendance non tenue (`transport` sans `transfers`) → `MODULE_DEPENDENCY`.
 
 Toutes ces erreurs sont des règles métier → HTTP 422.
 """
 
 from collections.abc import Iterable
 
-from app.domain.profiles.modules import Module, broken_dependencies, missing_mandatory
+from app.domain.profiles.modules import (
+    Module,
+    broken_dependencies,
+    missing_mandatory,
+    upcoming_among,
+)
 from app.domain.profiles.profile import ProfileCode
-from app.domain.shops.errors import ModuleDependency, ModuleMandatory, ModuleNotAvailable
+from app.domain.shops.errors import (
+    ModuleDependency,
+    ModuleMandatory,
+    ModuleNotAvailable,
+    ModuleNotYetAvailable,
+)
 
 
 def checked_modules(
@@ -27,6 +38,9 @@ def checked_modules(
     unavailable = [] if available is None else sorted(wanted - available)
     if unavailable:
         raise ModuleNotAvailable(unavailable[0].value, ProfileCode(profile).value)
+    upcoming = upcoming_among(wanted)
+    if upcoming:
+        raise ModuleNotYetAvailable(upcoming[0].value)
     missing = missing_mandatory(wanted)
     if missing:
         raise ModuleMandatory(missing[0].value)
