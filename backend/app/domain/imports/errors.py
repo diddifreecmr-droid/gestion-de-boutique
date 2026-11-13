@@ -16,7 +16,6 @@ from collections.abc import Sequence
 from datetime import date
 
 from app.domain.imports.blocking import BlockingOperation
-
 from app.domain.imports.values import MAX_ROWS
 from app.domain.shared.errors import DomainError, ValidationFailed
 
