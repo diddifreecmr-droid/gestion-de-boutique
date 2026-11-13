@@ -290,6 +290,13 @@ Un profil est un objet de domaine immuable, versionné dans le code ; la boutiqu
 | Défauts | 3 lieux, achats → Garoua-Boulaï, reçu 80 mm | 1 boutique, reçu 58 mm | idem |
 | Menus (≤ 5 entrées) | CDC § 17.4 | § 18.5 | § 19.5 |
 
+**Modules par boutique (décision client du 2026-11-12, § 15.1) — mise en œuvre serveur.**
+
+- *Combinaisons* (`domain/profiles/modules.py`, `domain/shops/modules.py`) : obligatoires `core`, `audit`, `catalog`, `sales` ; dépendance `transport` ⇒ `transfers`. À l'ouverture comme au `PATCH /platform/shops/{id}` (liste **complète** des modules voulus), refus `422` : `MODULE_NOT_AVAILABLE` (hors profil), `MODULE_MANDATORY` (`details.module`), `MODULE_DEPENDENCY` (`details.module`, `details.requires`). Réglages par défaut des profils inchangés (Motos : tous). Migration `0015_mandatory_modules` : une boutique réglée avant la décision retrouve `catalog` et `sales`.
+- *Routes* : chaque route `/shops/{shop_id}/…` déclare son module (extension OpenAPI `x-module`, posée par `interface/http/modules.py`, refus au démarrage d'une route sans module). Ordre : authentification → appartenance (non-membre `404`) → module (`403 MODULE_DISABLED`, `details.module`) → corps et traitement. Correspondance : `core` (profil, réglages, lieux, modes de paiement, membres, délégation, alertes, accueil `/home`, `/sync`, instantané, pièces jointes) ; `audit` (`/audit…`) ; `catalog` (articles, stock, ajustements, inventaires, mouvements) ; `sales` (ventes, reçus, signalements, demandes de prix, retours, clients) ; `purchases` (fournisseurs, achats et paiements) ; `receivables` (créances, rappels, garants, versements, relevé client) ; `expenses` (dépenses, catégories, tags) ; `dashboard` (`/dashboard`, détails). Le contenu d'une pièce jointe (lien signé, sans jeton) n'a pas de garde : le lien n'est délivré que par une route gardée.
+- *Effets transverses* (cas d'utilisation, donc aussi en `POST /sync`) : sans `receivables`, vente ou échange à crédit et versement → `403 MODULE_DISABLED` (`details.module = receivables`), la tâche des rappels ne fait rien (aucun rappel consommé) ; sans `expenses`, dépense (y compris hors ligne) refusée ; pièce jointe d'un élément d'un module éteint (créance, dépense, achat) refusée à l'envoi comme au lien. Tableau de bord : bloc d'un module éteint à `null` — `summary.expenses` (aucune dépense lue, résultat simple = marge), `receivables`, `stock.in_transit` (`transfers`), `trucks` (`transport`) ; détail `expenses` ou `receivables` → `403 MODULE_DISABLED`. Accueils : `seller.reminders_due`, `accountant.expenses`, `accountant.transfers_to_receive`, blocs du chauffeur à `null`. L'argent encaissé reste l'argent réellement reçu. Alertes : aucune alerte d'un type dont le module est éteint (`domain/alerts/modules.py`). Données gardées, réapparues à la réactivation.
+- *Profil* : `GET /shops/{id}/profile` renvoie `enabled_modules` effectifs et le menu sans les entrées d'un module éteint.
+
 Les champs propres à un profil sont stockés dans une colonne `attributes` (JSON) validée par le **schéma du profil dans le domaine**, et non par la base. Les champs à contrainte d'unicité (marque + modèle, référence, châssis) sont promus en colonnes indexées.
 
 ### 4.6 Frontend
@@ -963,11 +970,13 @@ Les montants de `PAYROLL` sont figés au moment du paiement (paie verrouillée, 
 | 401 | `UNAUTHENTICATED`, `SESSION_REVOKED` | jeton absent ou expiré, appareil déconnecté à distance |
 | 403 | `FORBIDDEN` | permission absente (inscrit au journal) |
 | 403 | `PIN_CHANGE_REQUIRED` | première connexion |
+| 403 | `MODULE_DISABLED` | module de la route (ou de l'effet : crédit, versement, dépense) éteint pour la boutique (`details.module`, § 4.5) |
 | 404 | `NOT_FOUND` | inexistant **ou appartenant à une autre boutique** (pas de fuite d'existence) |
 | 409 | `VERSION_CONFLICT`, `DUPLICATE` | concurrence, unicité (téléphone, châssis, marque + modèle…) |
 | 422 | `STOCK_INSUFFICIENT` | `details: {available, other_locations[]}` |
 | 422 | `PRICE_BELOW_MINIMUM` | `details: {min_price, request_required: true}` |
 | 422 | `CREDIT_LIMIT_EXCEEDED`, `OVERPAYMENT`, `DATE_OUT_OF_RANGE`, `INVALID_STATE_TRANSITION`, `PIN_TOO_SIMPLE` | règles métier |
+| 422 | `MODULE_MANDATORY`, `MODULE_DEPENDENCY`, `MODULE_NOT_AVAILABLE` | combinaison de modules refusée (console plateforme, § 4.5) |
 | 423 | `ACCOUNT_LOCKED` | `details: {until}` |
 
 ### 6.3 Catalogue des routes

@@ -9612,32 +9612,6 @@
               "maxLength": 128,
               "title": "Signature"
             }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
-          },
-          {
-            "name": "x-device-id",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "maxLength": 64,
-              "title": "X-Device-Id"
-            }
           }
         ],
         "responses": {
@@ -9660,6 +9634,7 @@
             }
           }
         },
+        "x-signed-link": true,
         "x-module": "core"
       }
     }
@@ -9684,7 +9659,14 @@
       "AccountantHomeOut": {
         "properties": {
           "transfers_to_receive": {
-            "$ref": "#/components/schemas/NotAvailable"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NotAvailable"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "low_stock": {
             "type": "integer",
@@ -9694,7 +9676,14 @@
             "$ref": "#/components/schemas/Valuation"
           },
           "expenses": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Expenses"
           }
         },
@@ -9953,7 +9942,8 @@
                 "type": "null"
               }
             ],
-            "title": "Modules"
+            "title": "Modules",
+            "description": "Liste **complète** des modules actifs voulus, obligatoires compris (core, audit, catalog, sales). 422 MODULE_MANDATORY si l'un manque, MODULE_DEPENDENCY si transport sans transfers, MODULE_NOT_AVAILABLE hors profil."
           },
           "status": {
             "anyOf": [
@@ -11608,13 +11598,27 @@
             ]
           },
           "receivables": {
-            "$ref": "#/components/schemas/ReceivablesBlock"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReceivablesBlock"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "stock": {
             "$ref": "#/components/schemas/StockBlock"
           },
           "trucks": {
-            "$ref": "#/components/schemas/TrucksBlock"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TrucksBlock"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "alerts": {
             "$ref": "#/components/schemas/AlertsBlock"
@@ -11849,10 +11853,24 @@
       "DriverHomeOut": {
         "properties": {
           "current_trip": {
-            "$ref": "#/components/schemas/NotAvailable"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NotAvailable"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "trip_expenses": {
-            "$ref": "#/components/schemas/NotAvailable"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NotAvailable"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -18542,7 +18560,14 @@
             "title": "Sales Amount"
           },
           "reminders_due": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Reminders Due"
           },
           "pending_uploads": {
@@ -19342,7 +19367,14 @@
             "title": "To Verify"
           },
           "in_transit": {
-            "$ref": "#/components/schemas/NotAvailable"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NotAvailable"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -19608,7 +19640,14 @@
             "title": "Without Cost"
           },
           "expenses": {
-            "$ref": "#/components/schemas/Compared"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Compared"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "result": {
             "$ref": "#/components/schemas/Compared"
