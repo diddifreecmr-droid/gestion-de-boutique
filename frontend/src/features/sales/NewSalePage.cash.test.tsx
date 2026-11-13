@@ -154,7 +154,7 @@ describe("Nouvelle vente au comptant (UC-VEN-01)", () => {
     await user.click(await articleButton("Haojue HJ125-8"));
     const line = screen.getByRole("region", { name: "Haojue HJ125-8" });
     await user.click(within(line).getByRole("button", { name: "Quantité : plus un" }));
-    await user.click(within(line).getByRole("button", { name: /Plus de détails/ }));
+    await user.click(within(line).getByRole("button", { name: "Détails de l'article" }));
     await user.type(within(line).getByLabelText("N° de châssis — moto 2"), "lbx0002");
     await user.type(within(line).getByLabelText("Couleur — moto 1"), "Rouge");
 

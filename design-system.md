@@ -174,12 +174,13 @@ Chaque composant vit dans `frontend/src/shared/ui/` (un fichier par composant, 2
 
 ### 6.2 Field (Input, Amount, Select)
 
-- **Libellé toujours au-dessus** (`--text-label`) ; jamais un placeholder qui sert de libellé.
+- **Libellé toujours au-dessus** (`--text-label`) ; jamais un placeholder qui sert de libellé. Seule exception (audit UX du 13/11/2026) : un contrôle compact sans saisie de texte peut porter son libellé **à gauche, sur la même ligne** (`Field` / `QuantityStepper` avec `inline`) ; l'aide passe sous la ligne, la ligne passe à la ligne si la place manque, le libellé reste relié (`htmlFor`).
 - Champ : hauteur 48 px, fond `surface`, bordure 1 px `border-strong`, `--radius-md`, padding `--space-3` × `--space-4`.
 - Focus : bordure 2 px `primary` + `--focus-ring`. Erreur : bordure 2 px `danger`, message en `danger-text` sous le champ, avec l'icône `AlertCircle` et un texte clair (« Le prix est vide »).
 - **AmountField** : `inputmode="numeric"`, suffixe fixe « FCFA » en `text-muted`, séparateur de milliers inséré pendant la frappe, valeur en `--text-lead` gras.
-- **QuantityStepper** : boutons − et + de 48 px de chaque côté de la valeur ; « Stock disponible : 4 » affiché dessous en `text-muted`.
-- **ChoiceChips** (mode de paiement, type de dépense, taille) : boutons de 56 px de haut, 2 par ligne sur téléphone. Le choix actif est en `primary-soft` avec une bordure 2 px `primary` et une icône `Check`. Le dernier mode utilisé est présélectionné.
+- **QuantityStepper** : boutons − et + de 48 px de chaque côté de la valeur ; « Stock disponible : 4 » affiché dessous en `text-muted`. Variante `inline` (ligne d'une vente, § 7.1) : « Quantité » à gauche, − 1 + à droite, sur une ligne.
+- **ChoiceChips** (mode de paiement, type de dépense, taille) : boutons de 56 px de haut, 2 par ligne sur téléphone. Le choix actif est en `primary-soft` avec une bordure 2 px `primary` et une icône `Check`. **Paiement d'une vente** (audit UX du 13/11/2026, remplace « le dernier mode utilisé est présélectionné ») : « Espèces » est présélectionné ; seuls « Espèces », les 2 premiers autres modes actifs de la boutique et « À crédit » (module Créances) sont montrés ; les autres modes et « Répartir sur plusieurs modes » sont derrière un bouton `ghost` « Autre mode » (`aria-expanded`). Un mode choisi parmi les autres reste affiché quand on referme.
+- **Période et filtres d'une liste** (Ventes, Dépenses ; audit UX du 13/11/2026) : **une seule ligne** de deux boutons `secondary` 48 px — « Aujourd'hui ▾ » (nom accessible « Période : Aujourd'hui », s'élargit) et « Filtres » (icône `SlidersHorizontal`, « Filtres (2) » quand des filtres sont actifs). Chacun ouvre son panneau dans le flux, sous la ligne, un seul à la fois : le choix de la période (ChoiceChips Aujourd'hui, 7 derniers jours, Ce mois-ci, Autres dates) se referme dès qu'un choix est fait, sauf « Autres dates » qui montre « Du » / « Au ». Pendant une recherche (toutes dates), seul « Filtres » reste. Composant d'écran partagé : `features/expenses/PeriodBar.tsx`. La recherche des ventes garde son libellé au-dessus mais sans ligne d'aide ; elle ne parle de châssis que si le profil saisit un n° de châssis.
 - **Switch** (interrupteur marche / arrêt, ex. modules d'une boutique dans la console) : toute la ligne est la cible, 56 px de haut, fond `surface`, bordure 1 px `border`, `--radius-md` ; libellé `--text-lead` gras à gauche, phrase d'aide facultative dessous en `text-muted` (dépendance, effet), puis le mot « Activé » / « Désactivé » et la piste (48 × 28 px, `--radius-full`) : `primary` activé, `border-strong` désactivé, pastille `surface`. Motif ARIA `switch` (`aria-checked`). Un réglage qui ne se change pas n'a pas d'interrupteur grisé : il est montré avec une pastille `success` « Toujours actif ».
 - **Disclosure « Plus de détails »** : bouton `ghost` en pleine largeur avec un chevron ; une fois ouvert, les champs facultatifs apparaissent dans le même flux, sans fenêtre modale.
 - **SearchField** : icône loupe, effaçable, résultats dès la première lettre ; les articles les plus vendus sont proposés quand le champ est vide.
@@ -253,8 +254,8 @@ Un élément annulé (RG-T03) garde sa ligne : le texte passe en `text-muted` et
 │ ┌─────────────┐ ┌─────────────┐  │
 │ │ MTN MoMo    │ │ À crédit    │  │
 │ └─────────────┘ └─────────────┘  │
-│                                  │
-│      ⌄ Plus de détails           │  ghost : couleur, châssis, client
+│      … Autre mode                │  ghost : autres modes, répartition
+│      ⌄ Plus de détails           │  ghost : client, référence, note
 ├──────────────────────────────────┤
 │ Total               780 000 FCFA │
 │ ┌──────────────────────────────┐ │
@@ -264,6 +265,14 @@ Un élément annulé (RG-T03) garde sa ligne : le texte passe en `text-muted` et
 ```
 
 Les 4 gestes du CDC sont : choisir l'article, ajuster le prix, choisir le paiement, valider.
+
+Audit UX du 13/11/2026 (téléphone 360 × 800 d'abord) :
+
+- « Espèces » est choisi d'avance : une vente comptant d'un article se fait en 2 gestes (article, valider). Le total et « Valider la vente » restent toujours visibles (barre collée en bas, au-dessus de la barre de navigation).
+- La recherche d'article parle avec les champs du profil (« Cherchez par marque ou modèle » en Motos, « … par nom, référence ou marque » en Prêt-à-porter ; « … par nom ou référence » sinon) ; jamais « modèle » hors Motos.
+- Les articles en rupture restent visibles, marqués « Rupture », mais **après** ceux en stock.
+- Le titre d'une ligne n'affiche pas deux fois le même mot (« Robe Bleu Marine Robe » → « Robe Bleu Marine ») ; le reçu garde le nom figé par le serveur.
+- Sur la carte d'une ligne, « Quantité − 1 + » tient sur une ligne et les détails par unité sont sous « Détails de l'article ».
 
 ### 7.2 Tableau de bord du propriétaire
 

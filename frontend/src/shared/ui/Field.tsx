@@ -21,6 +21,11 @@ export interface FieldProps {
   /** Contenu affiché sous le contrôle (ex. « Stock disponible : 4 »). */
   footer?: ReactNode | undefined;
   id?: string | undefined;
+  /**
+   * Libellé à gauche du contrôle, sur la même ligne (contrôle compact : QuantityStepper) ;
+   * l'aide passe sous la ligne. Faux par défaut : libellé au-dessus.
+   */
+  inline?: boolean;
   children: (control: FieldControlProps) => ReactNode;
 }
 
@@ -29,7 +34,16 @@ export interface FieldProps {
  * et zone d'erreur `aria-live="polite"` toujours présente pour que l'apparition d'une
  * erreur soit annoncée. L'erreur porte l'icône AlertCircle en plus du texte (P7).
  */
-export function Field({ label, hint, error, describedBy, footer, id, children }: FieldProps) {
+export function Field({
+  label,
+  hint,
+  error,
+  describedBy,
+  footer,
+  id,
+  inline = false,
+  children,
+}: FieldProps) {
   const generatedId = useId();
   requireText("Field", "label", label);
   if (error?.trim() === "") {
@@ -43,21 +57,39 @@ export function Field({ label, hint, error, describedBy, footer, id, children }:
     .filter((value) => value !== "")
     .join(" ");
 
+  const labelElement = (
+    <label htmlFor={controlId} className="text-label font-semibold text-text">
+      {label}
+    </label>
+  );
+  const hintElement = hint !== undefined && (
+    <p id={hintId} className="m-0 text-body text-text-muted">
+      {hint}
+    </p>
+  );
+  const control = children({
+    id: controlId,
+    "aria-describedby": ids === "" ? undefined : ids,
+    "aria-invalid": invalid || undefined,
+  });
+
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={controlId} className="text-label font-semibold text-text">
-        {label}
-      </label>
-      {hint !== undefined && (
-        <p id={hintId} className="m-0 text-body text-text-muted">
-          {hint}
-        </p>
+      {inline ? (
+        <>
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            {labelElement}
+            {control}
+          </div>
+          {hintElement}
+        </>
+      ) : (
+        <>
+          {labelElement}
+          {hintElement}
+          {control}
+        </>
       )}
-      {children({
-        id: controlId,
-        "aria-describedby": ids === "" ? undefined : ids,
-        "aria-invalid": invalid || undefined,
-      })}
       {footer}
       <div aria-live="polite">
         {invalid && (

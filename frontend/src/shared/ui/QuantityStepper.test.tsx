@@ -29,6 +29,19 @@ describe("QuantityStepper", () => {
     expect(screen.getByText("Stock disponible : 4")).toHaveClass("text-text-muted");
   });
 
+  it("inline : libellé et boutons sur la même ligne, aide dessous, toujours reliés", () => {
+    render(
+      <QuantityStepper label="Quantité" value={2} onChange={vi.fn()} hint="Par pièce" inline />,
+    );
+    const output = screen.getByLabelText("Quantité");
+    expect(output).toHaveTextContent("2");
+    expect(output).toHaveAccessibleDescription("Par pièce");
+    const row = screen.getByText("Quantité").parentElement;
+    expect(row).toHaveClass("flex-wrap", "justify-between");
+    expect(row).toContainElement(minus());
+    expect(row).not.toContainElement(screen.getByText("Par pièce"));
+  });
+
   it("augmente et diminue dans les bornes", async () => {
     render(<Controlled initial={3} available={4} />);
     await userEvent.click(plus());

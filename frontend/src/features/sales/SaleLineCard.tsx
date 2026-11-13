@@ -44,6 +44,7 @@ export function SaleLineCard({
         </p>
       </div>
       <QuantityStepper
+        inline
         label="Quantité"
         value={line.quantity}
         max={line.available}
@@ -69,7 +70,7 @@ export function SaleLineCard({
           </span>
         </p>
       )}
-      <Disclosure label="Plus de détails : couleur, châssis, moteur">
+      <Disclosure label="Détails de l'article">
         {line.units.map((detail, index) => (
           <UnitFields
             key={index}
