@@ -5,7 +5,7 @@
  */
 import type { InstallmentReceipt } from "../../../core/gateways/receivablesContract";
 import type { Receipt, ReceiptLine } from "../../../core/gateways/salesContract";
-import { formatDate, formatMoney, formatQuantity, formatTime } from "../../../shared/format";
+import { formatDate, formatMoney, formatTime } from "../../../shared/format";
 import { DEFAULT_PRINTING } from "../../receivables/receipt/printing";
 import { printProfileOf } from "../receipt/printProfile";
 import { charsPerLine, type PdfLine, type PdfPage } from "./pdfDocument";
@@ -119,7 +119,8 @@ export function saleReceiptModel(receipt: Receipt): ReceiptPdfModel {
   for (const line of receipt.lines) {
     out.text(line.article_name);
     for (const detail of line.details) out.text(details(detail));
-    const quantity = `${formatQuantity(line.quantity)} × ${formatMoney(line.unit_price)}`;
+    // Libellé du serveur : « 2 », « 2,5 m », « 1 pièce (5,49 m) » (TEX-06).
+    const quantity = `${line.quantity_label} × ${formatMoney(line.unit_price)}`;
     out.row(quantity, formatMoney(line.line_total));
   }
   out.rule();

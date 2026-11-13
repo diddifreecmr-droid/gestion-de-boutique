@@ -1,9 +1,12 @@
 import { useId } from "react";
 import { ChevronUp, Trash2 } from "lucide-react";
+import type { SaleShortcut } from "../../core/gateways/catalogContract";
 import { formatQuantity } from "../../shared/format";
 import { Button, QuantityStepper } from "../../shared/ui";
 import { articleTitle } from "./articleTitle";
-import { withQuantity, type LineDraft } from "./draft";
+import { meterStock, withQuantity, type LineDraft } from "./draft";
+import { stockText } from "./textile";
+import { TextileQuantity } from "./TextileQuantity";
 import { isBasket, sizeChoices, COMMON_COLORS, UNIT_FIELDS, type LineFields } from "./lineFields";
 import { LinePrice } from "./LinePrice";
 import { QuickPick } from "./QuickPick";
@@ -25,16 +28,22 @@ export interface SaleLineCardProps {
   reserved?: number;
   /** Replie la carte en une ligne (panier de plusieurs lignes, § 7.4). */
   onCollapse?: () => void;
+  /** Raccourcis de longueur du profil (Textile, § 7.5) ; vides ailleurs. */
+  shortcuts?: readonly SaleShortcut[];
 }
 
 /** Une ligne de la vente : article, stock du lieu, quantité, prix, taille et couleur ou détails. */
 export function SaleLineCard(props: SaleLineCardProps) {
   const { line, locationName, issues, showErrors, onChange, onRemove, onCollapse } = props;
-  const { fields = UNIT_FIELDS, reserved = 0 } = props;
+  const { fields = UNIT_FIELDS, reserved = 0, shortcuts = [] } = props;
   const titleId = useId();
   const title = articleTitle(line.article.name);
   const basket = isBasket(fields);
   const max = Math.max(line.quantity, line.available - reserved);
+  const textile = line.article.sale_mode === "meter";
+  // Longueur : une saisie commencée est jugée tout de suite (« 2,55 », stock dépassé).
+  const typed = line.mode === "piece" || line.length.trim() !== "";
+  const quantityError = showErrors || typed ? issues?.quantity : undefined;
   return (
     <section
       aria-labelledby={titleId}
@@ -45,7 +54,10 @@ export function SaleLineCard(props: SaleLineCardProps) {
           {title}
         </h2>
         <p className="m-0 text-body text-text-muted">
-          Stock disponible à {locationName} : {formatQuantity(line.available)}
+          Stock disponible à {locationName} :{" "}
+          {textile
+            ? stockText(meterStock(line.article), line.article.piece_length_m)
+            : formatQuantity(line.available)}
         </p>
       </div>
       {fields.size && (
@@ -68,15 +80,24 @@ export function SaleLineCard(props: SaleLineCardProps) {
           }}
         />
       )}
-      <QuantityStepper
-        inline
-        label="Quantité"
-        value={line.quantity}
-        max={max}
-        onChange={(quantity) => {
-          onChange(withQuantity(line, quantity));
-        }}
-      />
+      {textile ? (
+        <TextileQuantity
+          line={line}
+          shortcuts={shortcuts}
+          error={quantityError}
+          onChange={onChange}
+        />
+      ) : (
+        <QuantityStepper
+          inline
+          label="Quantité"
+          value={line.quantity}
+          max={max}
+          onChange={(quantity) => {
+            onChange(withQuantity(line, quantity));
+          }}
+        />
+      )}
       <LinePrice
         line={line}
         issues={issues}

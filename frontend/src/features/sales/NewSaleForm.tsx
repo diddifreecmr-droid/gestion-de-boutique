@@ -1,6 +1,10 @@
 import { useState, type ReactNode } from "react";
 import type { Role } from "../../core/auth/me";
-import type { PaymentMode, SaleLocation } from "../../core/gateways/catalogContract";
+import type {
+  PaymentMode,
+  SaleLocation,
+  SaleShortcut,
+} from "../../core/gateways/catalogContract";
 import type { SaleResult } from "../../core/gateways/salesContract";
 import { FormAlert } from "../auth/FormAlert";
 import { CreditSection } from "./CreditSection";
@@ -29,6 +33,8 @@ export interface NewSaleFormProps {
   searchHint: string;
   /** Champs d'une ligne selon le profil (`lineFieldsOf`) ; Motos par défaut. */
   fields?: LineFields;
+  /** Raccourcis de longueur du profil (Textile, `SaleSetup.sale_shortcuts`). */
+  shortcuts?: readonly SaleShortcut[];
 }
 
 /**
@@ -57,6 +63,7 @@ export function NewSaleForm(props: NewSaleFormProps) {
         showErrors={submit.showErrors}
         fields={props.fields ?? UNIT_FIELDS}
         searchHint={searchHint}
+        shortcuts={props.shortcuts ?? []}
         onLines={(lines) => {
           update({ lines });
         }}

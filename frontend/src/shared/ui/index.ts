@@ -15,6 +15,8 @@ export { QuantityStepper } from "./QuantityStepper";
 export type { QuantityStepperProps } from "./QuantityStepper";
 export { ChoiceChips } from "./ChoiceChips";
 export type { ChoiceChipsProps, ChoiceOption } from "./ChoiceChips";
+export { SegmentedControl } from "./SegmentedControl";
+export type { SegmentedControlProps, SegmentOption } from "./SegmentedControl";
 export { Disclosure } from "./Disclosure";
 export type { DisclosureProps } from "./Disclosure";
 export { SearchField } from "./SearchField";

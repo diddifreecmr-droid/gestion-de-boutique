@@ -14,8 +14,9 @@ import {
 } from "../../shared/ui";
 import { sellableFirst } from "./articleOrder";
 import { articleTitle } from "./articleTitle";
-import { unitStock } from "./draft";
+import { inStock, meterStock } from "./draft";
 import { articleSearchHint } from "./profileLabels";
+import { metersText } from "./textile";
 import { useLookup } from "./useLookup";
 
 /** Nombre d'articles proposés (plus vendus ou résultats). */
@@ -88,15 +89,18 @@ export function ArticlePicker(props: ArticlePickerProps) {
 
 /** Article non vendable ici : une pastille dit pourquoi ; sinon la ligne s'ouvre. */
 function pickState(article: CatalogArticle, onPick: (article: CatalogArticle) => void) {
-  // Vente au mètre ou à la pièce : arrive avec le profil « tissus » (cet écran vend à l'unité).
-  if (article.sale_mode !== "unit")
-    return { badge: <Badge status="warning">Au mètre : à venir</Badge> };
-  if (unitStock(article) < 1) return { badge: <Badge status="danger">Rupture</Badge> };
+  if (!inStock(article)) return { badge: <Badge status="danger">Rupture</Badge> };
   return {
     onOpen: () => {
       onPick(article);
     },
   };
+}
+
+/** Stock du lieu : « 4 », ou en mètres au mètre (« 54,9 m »). */
+function stockOf(article: CatalogArticle): string {
+  if (article.sale_mode === "meter") return metersText(meterStock(article));
+  return formatQuantity(article.available);
 }
 
 function Results({
@@ -130,7 +134,7 @@ function Results({
         <ListCardRow
           key={article.id}
           title={articleTitle(article.name)}
-          subtitle={`Stock à ${locationName} : ${formatQuantity(article.available)}`}
+          subtitle={`Stock à ${locationName} : ${stockOf(article)}`}
           {...(article.base_price === null ? {} : { amount: article.base_price })}
           {...pickState(article, onPick)}
         />

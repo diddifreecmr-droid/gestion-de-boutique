@@ -49,14 +49,30 @@ export function toCatalogArticle(
   locationId: string,
   unitLabel: string,
 ): CatalogArticle {
+  const minActive = article.min_price_active !== false;
+  const length = article.piece_length_m;
+  const saleMode = saleModeOf(article.stock_unit);
+  if (article.sold_by_piece && (saleMode !== "meter" || length === null)) {
+    throw new Error(`« ${article.display_name} » : vente à la pièce sans longueur au mètre`);
+  }
   return {
     id: article.id,
     name: article.display_name,
-    sale_mode: saleModeOf(article.stock_unit),
+    sale_mode: saleMode,
     unit_label: unitLabel,
     base_price: article.base_price ?? null,
-    min_price: article.min_price_active === false ? null : (article.min_price ?? null),
+    min_price: minActive ? (article.min_price ?? null) : null,
     available: availableAt(row, locationId),
+    ...(length === null ? {} : { piece_length_m: length }),
+    ...(article.sold_by_piece && length !== null
+      ? {
+          piece: {
+            length_m: length,
+            base_price: article.base_price_piece ?? null,
+            min_price: minActive ? (article.min_price_piece ?? null) : null,
+          },
+        }
+      : {}),
   };
 }
 
@@ -91,6 +107,7 @@ export function createHttpCatalog({ api, session, offline }: AppServices): Catal
           .sort((a, b) => a.display_order - b.display_order),
         article_fields: profile.article_fields.map(({ code, label }) => ({ code, label })),
         sale_fields: profile.sale_fields.map((field) => field.code),
+        sale_shortcuts: profile.sale_shortcuts,
       };
     },
     searchArticles: async (shopId, { location_id, query, limit }) => {

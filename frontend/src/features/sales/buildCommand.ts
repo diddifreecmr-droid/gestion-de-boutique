@@ -14,7 +14,9 @@ import {
   type SaleDraft,
   type UnitDetail,
 } from "./draft";
+import { lineTenths } from "./lineQuantity";
 import { normalizePhone } from "./phone";
+import { tenthsValue } from "./textile";
 
 /** Jour métier « AAAA-MM-JJ » à Douala (la date du jour est pré-remplie, CDC § 1.3). */
 export function businessDay(now: Date = new Date()): string {
@@ -50,6 +52,14 @@ function lineAttributes(line: LineDraft): SoldDetailInput[] {
   const size = orNull(line.size);
   const color = orNull(line.color);
   return size === null && color === null ? [] : [{ size, color }];
+}
+
+/** Quantité envoyée : unités ou pièces (« 2 »), mètres au dixième (« 2.5 »). */
+function lineQuantity(line: LineDraft): string {
+  if (line.mode !== "meter") return String(line.quantity);
+  const tenths = lineTenths(line);
+  if (tenths === null) throw new Error("buildCommand : longueur illisible (contrôle sauté ?)");
+  return tenthsValue(tenths);
 }
 
 /** Type de client lu de l'API (`string`) : une valeur inconnue est une rupture de contrat. */
@@ -103,8 +113,8 @@ export function buildCommand(
       if (line.unitPrice === null) throw new Error("buildCommand : prix vide (contrôle sauté ?)");
       return {
         article_id: line.article.id,
-        sale_mode: line.article.sale_mode,
-        quantity: String(line.quantity),
+        sale_mode: line.mode,
+        quantity: lineQuantity(line),
         unit_price: line.unitPrice,
         details: [...lineAttributes(line), ...details(line.units)],
       };

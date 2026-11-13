@@ -1,5 +1,5 @@
 import type { Receipt, ReceiptLine } from "../../../core/gateways/salesContract";
-import { formatDate, formatMoney, formatQuantity, formatTime } from "../../../shared/format";
+import { formatDate, formatMoney, formatTime } from "../../../shared/format";
 import { pageRules, printProfileOf } from "./printProfile";
 
 const Rule = () => <hr className="receipt__rule" />;
@@ -37,7 +37,7 @@ function Line({ line }: { line: ReceiptLine }) {
         </p>
       ))}
       <Row
-        label={`${formatQuantity(line.quantity)} × ${formatMoney(line.unit_price)}`}
+        label={`${line.quantity_label} × ${formatMoney(line.unit_price)}`}
         value={formatMoney(line.line_total)}
       />
     </li>

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import type { SaleShortcut } from "../../core/gateways/catalogContract";
 import { Button } from "../../shared/ui";
 import { ArticlePicker } from "./ArticlePicker";
 import { newLine, type LineDraft } from "./draft";
 import { isBasket, UNIT_FIELDS, type LineFields } from "./lineFields";
-import type { LineIssues } from "./saleChecks";
+import { lineBlocking, type LineIssues } from "./saleChecks";
 import { SaleLineCard } from "./SaleLineCard";
 import { SaleLineSummary } from "./SaleLineSummary";
 
@@ -21,11 +22,10 @@ export interface SaleBasketProps {
   searchHint?: string;
   /** La dernière ligne peut-elle être retirée (échange : oui ; nouvelle vente : non) ? */
   removeLast?: boolean;
+  /** Raccourcis de longueur du profil (Textile, RG-X05). */
+  shortcuts?: readonly SaleShortcut[];
 }
 
-function hasError(issues: LineIssues | undefined): boolean {
-  return issues?.price !== undefined || (issues?.chassis.some((e) => e !== undefined) ?? false);
-}
 
 /**
  * Lignes de la vente et recherche d'article. Panier à la ligne (Prêt-à-porter, § 7.4) : un
@@ -51,7 +51,7 @@ export function SaleBasket(props: SaleBasketProps) {
     <>
       {lines.map((line) => {
         const open = !basket || lines.length === 1 || line.key === openKey;
-        if (!open && !(showErrors && hasError(issues[line.key]))) {
+        if (!open && !(showErrors && lineBlocking(issues[line.key]))) {
           return (
             <SaleLineSummary
               key={line.key}
@@ -70,6 +70,7 @@ export function SaleBasket(props: SaleBasketProps) {
             issues={issues[line.key]}
             showErrors={showErrors}
             fields={fields}
+            shortcuts={props.shortcuts ?? []}
             reserved={basket ? takenBy(line.article.id, line.key) : 0}
             onChange={(next) => {
               onLines(lines.map((l) => (l.key === line.key ? next : l)));

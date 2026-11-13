@@ -2,8 +2,9 @@ import { useEffect, useRef } from "react";
 import { AlertTriangle, CheckCircle2, CirclePlus, Printer } from "lucide-react";
 import { useGateways } from "../../core/gateways/gateways";
 import type { SaleResult } from "../../core/gateways/salesContract";
-import { formatMoney, formatQuantity } from "../../shared/format";
+import { formatMoney } from "../../shared/format";
 import { articleTitle } from "./articleTitle";
+import { soldQuantityText } from "./soldQuantity";
 import { CreditIdPhoto } from "./CreditIdPhoto";
 import { ShareButton } from "./ShareButton";
 import { warningText } from "./warningText";
@@ -60,7 +61,7 @@ export function SaleConfirmation({ shopId, sale, onPrint, onNewSale }: SaleConfi
           <ListCardRow
             key={index}
             title={articleTitle(line.article_name)}
-            subtitle={`${formatQuantity(line.quantity)} × ${formatMoney(line.unit_price)}`}
+            subtitle={`${soldQuantityText(line)} × ${formatMoney(line.unit_price)}`}
             amount={line.line_total}
           />
         ))}
