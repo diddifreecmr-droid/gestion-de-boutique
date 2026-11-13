@@ -11,7 +11,7 @@ from types import MappingProxyType
 from app.domain.profiles import defaults as d
 from app.domain.profiles.fields import FieldKind, FieldSpec
 from app.domain.profiles.menus import entry, menu
-from app.domain.profiles.modules import ALL_MODULES, Module
+from app.domain.profiles.modules import ALL_MODULES, AVAILABLE_MODULES, Module
 from app.domain.profiles.printing import ReceiptFormat
 from app.domain.profiles.profile import (
     LocationTemplate,
@@ -74,7 +74,7 @@ def _apparel_like(
         code=code,
         version=1,
         label=label,
-        modules=_AVAILABLE - {Module.TRANSFERS},
+        modules=_AVAILABLE & AVAILABLE_MODULES,
         available_modules=_AVAILABLE,
         roles=(Role.OWNER, Role.SELLER, Role.ACCOUNTANT),
         role_labels=MappingProxyType(dict(d.EMPLOYEE_LABELS)),

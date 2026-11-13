@@ -1,4 +1,4 @@
-"""Combinaisons de modules d'une boutique (décision client specs § 15.1, 2026-11-12)."""
+"""Combinaisons de modules d'une boutique (décisions client specs § 15.1, 2026-11-12 et 13)."""
 
 from datetime import UTC, datetime
 
@@ -9,8 +9,10 @@ from app.domain.identity.phone import PhoneNumber
 from app.domain.profiles.apparel import APPAREL
 from app.domain.profiles.modules import (
     ALL_MODULES,
+    AVAILABLE_MODULES,
     MANDATORY_MODULES,
     OPTIONAL_MODULES,
+    UPCOMING_MODULES,
     Module,
     broken_dependencies,
     missing_mandatory,
@@ -24,6 +26,7 @@ from app.domain.shops.errors import (
     ModuleDisabled,
     ModuleMandatory,
     ModuleNotAvailable,
+    ModuleNotYetAvailable,
 )
 from app.domain.shops.ids import MerchantAccountId
 from app.domain.shops.modules import checked_modules
@@ -60,41 +63,71 @@ def test_mandatory_and_optional_modules_follow_the_client_decision() -> None:
     assert broken_dependencies([*MINIMAL, Module.TRANSPORT, Module.TRANSFERS]) == []
 
 
-def test_profile_defaults_are_unchanged() -> None:
-    assert MOTOS.modules == ALL_MODULES
-    assert APPAREL.modules == ALL_MODULES - {Module.TRANSPORT, Module.TRANSFERS}
+def test_upcoming_modules_are_transfers_transport_and_import() -> None:
+    assert {Module.TRANSFERS, Module.TRANSPORT, Module.IMPORT} == UPCOMING_MODULES
+    assert AVAILABLE_MODULES == ALL_MODULES - UPCOMING_MODULES
+    assert MANDATORY_MODULES <= AVAILABLE_MODULES
+
+
+def test_profile_defaults_enable_only_available_modules() -> None:
+    assert MOTOS.modules == AVAILABLE_MODULES
+    assert APPAREL.modules == AVAILABLE_MODULES
     assert broken_dependencies(MOTOS.modules) == broken_dependencies(APPAREL.modules) == []
 
 
 def test_minimal_shop_and_every_valid_combination_is_accepted() -> None:
     shop = _shop(modules=MINIMAL)
     assert shop.enabled_modules == MINIMAL
-    assert _administer(shop, [*MINIMAL, Module.TRANSFERS, Module.TRANSPORT])
-    assert not _administer(shop, [*MINIMAL, Module.TRANSPORT, Module.TRANSFERS])  # inchangé
+    assert _administer(shop, AVAILABLE_MODULES)
+    assert not _administer(shop, sorted(AVAILABLE_MODULES))  # inchangé
     assert _administer(shop, MINIMAL)
     assert shop.enabled_modules == MINIMAL
+
+
+@pytest.mark.parametrize("upcoming", sorted(UPCOMING_MODULES))
+def test_an_upcoming_module_is_never_enabled(upcoming: Module) -> None:
+    shop = _shop()
+    with pytest.raises(ModuleNotYetAvailable) as refused:
+        _administer(shop, AVAILABLE_MODULES | {upcoming})
+    assert refused.value.code == "MODULE_NOT_YET_AVAILABLE"
+    assert refused.value.details == {"module": upcoming.value}
+    assert shop.enabled_modules == AVAILABLE_MODULES  # rien n'a bougé
+    with pytest.raises(ModuleNotYetAvailable):
+        _shop(modules=MINIMAL | {upcoming})
+
+
+def test_upcoming_is_refused_before_the_dependency() -> None:
+    with pytest.raises(ModuleNotYetAvailable) as refused:
+        _administer(_shop(), [*MINIMAL, Module.TRANSPORT])
+    assert refused.value.details == {"module": "transport"}
+
+
+def test_a_stored_shop_with_an_upcoming_module_fails_fast() -> None:
+    shop = _shop()
+    with pytest.raises(ValueError, match="Module à venir actif"):
+        Shop(
+            id=shop.id, account_id=shop.account_id, profile_code=shop.profile_code,
+            identity=shop.identity, enabled_modules=shop.enabled_modules | {Module.IMPORT},
+            status=shop.status, created_at=NOW,
+        )  # fmt: skip
 
 
 @pytest.mark.parametrize("mandatory", sorted(MANDATORY_MODULES))
 def test_a_mandatory_module_is_never_disabled(mandatory: Module) -> None:
     shop = _shop()
     with pytest.raises(ModuleMandatory) as refused:
-        _administer(shop, ALL_MODULES - {mandatory})
+        _administer(shop, AVAILABLE_MODULES - {mandatory})
     assert refused.value.details == {"module": mandatory.value}
-    assert shop.enabled_modules == ALL_MODULES  # rien n'a bougé
+    assert shop.enabled_modules == AVAILABLE_MODULES  # rien n'a bougé
     with pytest.raises(ModuleMandatory):
         _shop(modules=MINIMAL - {mandatory})
 
 
-def test_transport_requires_transfers_at_opening_and_at_patch() -> None:
-    with pytest.raises(ModuleDependency) as refused:
-        _shop(modules=ALL_MODULES - {Module.TRANSFERS})
-    assert refused.value.code == "MODULE_DEPENDENCY"
-    assert refused.value.details == {"module": "transport", "requires": "transfers"}
-    shop = _shop()
-    with pytest.raises(ModuleDependency):
-        _administer(shop, ALL_MODULES - {Module.TRANSFERS})
-    assert shop.enabled_modules == ALL_MODULES
+def test_dependency_error_keeps_its_stable_shape() -> None:
+    """`transport` ⇒ `transfers` : tous deux à venir, le contrôle reste prêt pour le Lot 2."""
+    refused = ModuleDependency("transport", "transfers")
+    assert refused.code == "MODULE_DEPENDENCY"
+    assert refused.details == {"module": "transport", "requires": "transfers"}
 
 
 def test_a_module_outside_the_profile_is_refused_first() -> None:

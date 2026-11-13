@@ -59,12 +59,7 @@ def test_day_straddling_midnight(desk: Desk) -> None:
     stock = today["stock"]
     assert (stock["value"]["at_wac"], stock["value"]["at_last_cost"]) == (8_480_000, 8_800_000)
     assert (stock["low_stock"], stock["to_verify"]) == (0, 0)
-    assert stock["in_transit"] == {
-        "available": False,
-        "lot": 2,
-        "message": "Non disponible au Lot 1",
-    }
-    assert today["trucks"]["trucks"]["available"] is False
+    assert (stock["in_transit"], today["trucks"]) == (None, None)  # modules à venir
     assert today["alerts"] == {"error_reports": 0, "price_requests": 0}
     seller = desk.ok("GET", "/home", desk.staff("seller"))["seller"]
     assert seller == {"sales_count": 3, "sales_amount": 2_310_000, "reminders_due": 1,

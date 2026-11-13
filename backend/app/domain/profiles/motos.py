@@ -3,7 +3,8 @@
 - Lieux : Garoua-Boulaï (entrepôt), Ngaoundéré (entrepôt), Garoua (boutique, seul point de
   vente). Réception des achats par défaut : **Garoua** au Lot 1 (décision Q-01 : pas de
   déplacement avant le Lot 2) ; le CDC § 17.1 prévoit Garoua-Boulaï à partir du Lot 2.
-- Tous les modules, Transport compris ; reçu 80 mm (`thermal-80`) ; unité : la moto.
+- Tous les modules disponibles à l'ouverture (Transferts, Transport, Import : à venir, specs
+  § 15.1) ; reçu 80 mm (`thermal-80`) ; unité : la moto.
 """
 
 from types import MappingProxyType
@@ -11,7 +12,7 @@ from types import MappingProxyType
 from app.domain.profiles import defaults as d
 from app.domain.profiles.fields import FieldKind, FieldSpec
 from app.domain.profiles.menus import entry, menu
-from app.domain.profiles.modules import ALL_MODULES, Module
+from app.domain.profiles.modules import ALL_MODULES, AVAILABLE_MODULES, Module
 from app.domain.profiles.printing import ReceiptFormat
 from app.domain.profiles.profile import (
     LocationTemplate,
@@ -71,7 +72,7 @@ MOTOS = ShopProfile(
     code=ProfileCode.MOTOS,
     version=1,
     label="Motos et camions",
-    modules=ALL_MODULES,
+    modules=AVAILABLE_MODULES,
     available_modules=ALL_MODULES,
     roles=(Role.OWNER, Role.SELLER, Role.ACCOUNTANT, Role.DRIVER),
     role_labels=MappingProxyType(dict(d.SELLER_LABELS)),

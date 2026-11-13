@@ -6,6 +6,9 @@
   seul, dans les limites du profil.
 - **Dépendances** (`MODULE_REQUIRES`) : `transport` ⇒ `transfers` (un voyage déplace du stock) ;
   une combinaison qui les viole est refusée (`MODULE_DEPENDENCY`), à l'ouverture comme au réglage.
+- **À venir** (`UPCOMING_MODULES`, décision client du 2026-11-13) : `transfers`, `transport`,
+  `import` n'ont encore aucun écran (Lot 2/3) ; ils ne s'activent pas
+  (`MODULE_NOT_YET_AVAILABLE`) et aucun profil ne les active. `AVAILABLE_MODULES` : les autres.
 """
 
 from collections.abc import Iterable, Mapping
@@ -35,6 +38,11 @@ MANDATORY_MODULES: frozenset[Module] = frozenset(
 ALL_MODULES: frozenset[Module] = frozenset(Module)
 OPTIONAL_MODULES: frozenset[Module] = ALL_MODULES - MANDATORY_MODULES
 
+UPCOMING_MODULES: frozenset[Module] = frozenset({Module.TRANSFERS, Module.TRANSPORT, Module.IMPORT})
+"""Pas encore construits (décision du 2026-11-13) : on ne montre jamais ce qui n'existe pas."""
+AVAILABLE_MODULES: frozenset[Module] = ALL_MODULES - UPCOMING_MODULES
+"""Modules construits, donc activables (dans les limites du profil)."""
+
 MODULE_REQUIRES: Mapping[Module, frozenset[Module]] = MappingProxyType(
     {Module.TRANSPORT: frozenset({Module.TRANSFERS})}
 )
@@ -44,6 +52,11 @@ MODULE_REQUIRES: Mapping[Module, frozenset[Module]] = MappingProxyType(
 def missing_mandatory(modules: Iterable[Module]) -> list[Module]:
     """Modules obligatoires absents de `modules`, triés."""
     return sorted(MANDATORY_MODULES - frozenset(modules))
+
+
+def upcoming_among(modules: Iterable[Module]) -> list[Module]:
+    """Modules à venir présents dans `modules`, triés."""
+    return sorted(UPCOMING_MODULES & frozenset(modules))
 
 
 def broken_dependencies(modules: Iterable[Module]) -> list[tuple[Module, Module]]:

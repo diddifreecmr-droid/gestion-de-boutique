@@ -14,7 +14,7 @@ from app.application.security.errors import (
 from app.application.shops.use_cases.platform_shops import AdministerShopCommand
 from app.domain.identity.events import SessionId
 from app.domain.plans.entitlements import Entitlement, PlanCode
-from app.domain.profiles.modules import Module
+from app.domain.profiles.modules import AVAILABLE_MODULES, Module
 from app.domain.profiles.printing import ReceiptFormat
 from app.domain.shared.errors import (
     InvalidStateTransition,
@@ -91,14 +91,16 @@ def test_profile_view_by_role() -> None:
         "stock",
     ]
     assert view.default_location_id == world.location_id(world.shop_of(owner), "Garoua")
+    menu = world.http.profile.execute(owner).menu  # modules à venir jamais actifs (§ 15.1)
+    assert "trucks" not in [entry.code for entry in menu]
+    assert "payroll" not in [child.code for entry in menu for child in entry.children]
     world.http.platform.administer(
         world.admin,
         world.shop_of(owner),
-        AdministerShopCommand(modules=set(Module) - {Module.TRANSPORT}),
+        AdministerShopCommand(modules=set(AVAILABLE_MODULES) - {Module.EXPENSES}),
     )
     menu = world.http.profile.execute(owner).menu
-    assert "trucks" not in [entry.code for entry in menu]
-    assert "payroll" not in [child.code for entry in menu for child in entry.children]
+    assert "expenses" not in [child.code for entry in menu for child in entry.children]
 
 
 def test_admin_delegation_lifecycle_and_journal() -> None:

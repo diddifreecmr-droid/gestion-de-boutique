@@ -4,13 +4,13 @@ module désactivé (`MODULE_DISABLED`, opération `rejected`, rien d'écrit)."""
 
 from typing import Any
 
-from app.domain.profiles.modules import ALL_MODULES, Module
+from app.domain.profiles.modules import AVAILABLE_MODULES, Module
 from app.domain.shared.doc_number import DocType
 from tests.http.sync.conftest import Desk
 
 
 def _modules(desk: Desk, *off: Module) -> None:
-    wanted = sorted(m.value for m in ALL_MODULES - set(off))
+    wanted = sorted(m.value for m in AVAILABLE_MODULES - set(off))
     response = desk.api.call(
         "PATCH", f"/platform/shops/{desk.shop.id}", desk.api.admin(), json={"modules": wanted}
     )
