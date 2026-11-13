@@ -97,7 +97,7 @@ def test_motos_and_textile_fields_come_from_the_profile() -> None:
     model = world.imports.models.get("articles")
     columns = [c.title for c in model.template(owner_profile(world, owner)).columns]
     assert columns[:3] == ["Marque *", "Modèle *", "Cylindrée (cm³)"]
-    found, batch = world.run(
+    found, _ = world.run(
         owner,
         "articles",
         "Marque;Modèle;Cylindrée (cm³)\nHaojue;HJ125-8;125\nHaojue;HJ125-8;\nTVS;;\n",

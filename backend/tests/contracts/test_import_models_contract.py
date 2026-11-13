@@ -107,7 +107,11 @@ def test_every_model_writes_its_batch(backend: ContractBackend, shop_a: ShopId) 
         [entry] = StockMovementLog.within(uow).chronology(haojue.id)
         found = ImportBatchRepository.within(uow).get(stock.id)
         journal = AuditLog.within(uow).search(AuditQuery(), PageRequest(limit=50)).items
-    assert (haojue.wac, haojue.last_cost, tvs.wac) == (Money(450_000), Money(450_000), Money(300_000))
+    assert (haojue.wac, haojue.last_cost, tvs.wac) == (
+        Money(450_000),
+        Money(450_000),
+        Money(300_000),
+    )
     assert (entry.source.number, entry.unit_cost) == ("IMP-000002", Money(450_000))
     assert found.items == stock.items
     assert len(found.items) == 3  # deux mouvements, un article créé
