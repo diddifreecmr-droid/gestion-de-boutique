@@ -223,6 +223,26 @@ export interface paths {
     patch: operations["administer_shop_api_v1_platform_shops__shop_id__patch"];
     trace?: never;
   };
+  "/api/v1/platform/shops/{shop_id}/profile": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Change Profile
+     * @description Changer le type d'une boutique **vide** (QC-1) ; sinon 422 PROFILE_CHANGE_BLOCKED.
+     */
+    post: operations["change_profile_api_v1_platform_shops__shop_id__profile_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/platform/shops/{shop_id}/access": {
     parameters: {
       query?: never;
@@ -1880,6 +1900,18 @@ export interface components {
       new_pin: string;
       /** New Pin Confirmation */
       new_pin_confirmation: string;
+    };
+    /**
+     * ChangeProfileRequest
+     * @description Nouveau type (QC-1) : permis seulement pour une boutique sans données.
+     */
+    ChangeProfileRequest: {
+      /**
+       * Profile Code
+       * @description motos, apparel ou textile. 400 UNKNOWN_PROFILE si inconnu ; 422 PROFILE_CHANGE_BLOCKED si la boutique a des données (`details.blocking` : nature → nombre, parmi articles, movements, sales, purchases, expenses, receivables, members). Même type : rien ne change.
+       * @example apparel
+       */
+      profile_code: string;
     };
     /** Compared */
     Compared: {
@@ -5259,6 +5291,44 @@ export interface operations {
     requestBody: {
       content: {
         "application/json": components["schemas"]["AdministerShopRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ShopSummaryResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  change_profile_api_v1_platform_shops__shop_id__profile_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ChangeProfileRequest"];
       };
     };
     responses: {

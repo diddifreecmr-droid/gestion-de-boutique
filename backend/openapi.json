@@ -1207,6 +1207,85 @@
         }
       }
     },
+    "/api/v1/platform/shops/{shop_id}/profile": {
+      "post": {
+        "tags": [
+          "platform"
+        ],
+        "summary": "Change Profile",
+        "description": "Changer le type d'une boutique **vide** (QC-1) ; sinon 422 PROFILE_CHANGE_BLOCKED.",
+        "operationId": "change_profile_api_v1_platform_shops__shop_id__profile_post",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopSummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/platform/shops/{shop_id}/access": {
       "get": {
         "tags": [
@@ -10869,6 +10948,27 @@
         ],
         "title": "ChangePinRequest",
         "description": "Pour l'administrateur plateforme, ces champs portent le mot de passe."
+      },
+      "ChangeProfileRequest": {
+        "properties": {
+          "profile_code": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Profile Code",
+            "description": "motos, apparel ou textile. 400 UNKNOWN_PROFILE si inconnu ; 422 PROFILE_CHANGE_BLOCKED si la boutique a des données (`details.blocking` : nature → nombre, parmi articles, movements, sales, purchases, expenses, receivables, members). Même type : rien ne change.",
+            "examples": [
+              "apparel"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "profile_code"
+        ],
+        "title": "ChangeProfileRequest",
+        "description": "Nouveau type (QC-1) : permis seulement pour une boutique sans données."
       },
       "Compared": {
         "properties": {
