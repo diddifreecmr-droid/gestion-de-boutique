@@ -9,6 +9,7 @@ from app.application.alerts.ports import AlertRepository
 from app.application.ports.pagination import PageRequest
 from app.application.ports.uow import UnitOfWork
 from app.domain.alerts.alert import Alert, AlertType
+from app.domain.profiles.modules import ALL_MODULES
 from app.domain.shared.errors import Duplicate
 from app.domain.shared.ids import ShopId, UserId
 from app.infrastructure.persistence.memory.clock import FixedClock
@@ -26,7 +27,7 @@ from tests.contracts.widget import NOW, WidgetCreated
 
 
 def dispatcher() -> AlertDispatcher:
-    handler = AlertDispatcher(FixedClock(NOW))
+    handler = AlertDispatcher(FixedClock(NOW), modules=lambda uow: ALL_MODULES)
     handler.register(StockChanged, low_stock_rule)
     return handler
 
@@ -98,7 +99,7 @@ def test_other_duplicates_are_not_swallowed(
 
     run_in_uow(backend, shop_a, lambda uow: AlertRepository.within(uow).add(taken))
     monkeypatch.setattr(Alert, "raise_for", same_id)
-    handler = AlertDispatcher(FixedClock(NOW))
+    handler = AlertDispatcher(FixedClock(NOW), modules=lambda uow: ALL_MODULES)
 
     def rule(event: StockChanged, uow: UnitOfWork) -> list[AlertNotice]:
         return [AlertNotice(recipients=(OWNER,), type=taken.type, entity=ARTICLE, message="m")]

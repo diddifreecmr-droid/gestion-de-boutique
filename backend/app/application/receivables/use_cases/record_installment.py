@@ -7,6 +7,7 @@
 - Numéro `R-000001` continu par boutique (RG-T05), attribué dans la transaction : un refus
   ne consomme aucun numéro. Reste à 0 → Soldée ; créance En perte → « Récupération sur perte ».
 - Idempotent par `installment_id` client (201 puis 200) ; rejoué sur course (`retry.py`).
+- Module `receivables` éteint → 403 `MODULE_DISABLED` avant toute lecture (specs § 15.1).
 """
 
 from dataclasses import dataclass
@@ -30,7 +31,9 @@ from app.application.security.permissions import Permission
 from app.application.security.policy import Policy
 from app.application.security.roles import Role
 from app.application.shops.context import actor_shop, performer_of
+from app.application.shops.modules import require_module
 from app.application.shops.ports import PaymentModeRepository
+from app.domain.profiles.modules import Module
 from app.domain.purchasing.values import Capture
 from app.domain.receivables.ids import InstallmentId, ReceivableId
 from app.domain.receivables.installment import Installment
@@ -99,6 +102,7 @@ class RecordInstallment:
     ) -> tuple[InstallmentResult, bool]:
         now, today = self._clock.now(), self._clock.today()
         with self._uow_factory(actor_shop(actor)) as uow:
+            require_module(uow, Module.RECEIVABLES)  # avant toute lecture (§ 15.1)
             receivables = ReceivableRepository.within(uow)
             if command.installment_id is not None:
                 existing = receivables.find_by_installment(command.installment_id)

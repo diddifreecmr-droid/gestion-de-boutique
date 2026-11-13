@@ -10,7 +10,7 @@ from decimal import Decimal
 from typing import Any
 
 from app.application.reporting.periods import Period
-from app.application.reporting.use_cases.dashboard import DashboardReport
+from app.application.reporting.use_cases.dashboard import DashboardReport, ReceivablesBlock
 from app.application.reporting.use_cases.home import Home
 from app.application.reporting.use_cases.read_details import DetailReport
 from app.application.reporting.views import Compared, NotAvailable
@@ -43,6 +43,22 @@ def _lot(value: NotAvailable) -> s.NotAvailable:
     return s.NotAvailable(available=False, lot=value.lot, message=value.message)
 
 
+def _lot_or_none(value: NotAvailable | None) -> s.NotAvailable | None:
+    """`None` : module éteint pour la boutique (specs § 15.1)."""
+    return None if value is None else _lot(value)
+
+
+def _receivables(block: ReceivablesBlock | None) -> s.ReceivablesBlock | None:
+    if block is None:
+        return None
+    return s.ReceivablesBlock(
+        total_due=block.total_due,
+        debtor_count=block.debtor_count,
+        received=_compared(block.received),
+        reminders_due=block.reminders_due,
+    )
+
+
 def dashboard_response(report: DashboardReport) -> s.DashboardResponse:
     summary, series, stock = report.summary, report.series, report.stock
     return s.DashboardResponse(
@@ -57,7 +73,7 @@ def dashboard_response(report: DashboardReport) -> s.DashboardResponse:
             margin_gap=summary.margin_gap,
             margin_rate_pct=_pct(summary.margin_rate),
             without_cost=summary.without_cost,
-            expenses=_compared(summary.expenses),
+            expenses=None if summary.expenses is None else _compared(summary.expenses),
             result=_compared(summary.result),
         ),
         series=None
@@ -71,20 +87,17 @@ def dashboard_response(report: DashboardReport) -> s.DashboardResponse:
             average_sales=series.average_sales,
             average_margin=series.average_margin,
         ),
-        receivables=s.ReceivablesBlock(
-            total_due=report.receivables.total_due,
-            debtor_count=report.receivables.debtor_count,
-            received=_compared(report.receivables.received),
-            reminders_due=report.receivables.reminders_due,
-        ),
+        receivables=_receivables(report.receivables),
         stock=s.StockBlock(
             value=valuation_response(stock.sellable),
             damaged=valuation_response(stock.damaged),
             low_stock=stock.low_stock,
             to_verify=stock.to_verify,
-            in_transit=_lot(report.transfers_in_transit),
+            in_transit=_lot_or_none(report.transfers_in_transit),
         ),
-        trucks=s.TrucksBlock(
+        trucks=None
+        if report.trucks is None or report.transport_expenses is None
+        else s.TrucksBlock(
             trucks=_lot(report.trucks), transport_expenses=_lot(report.transport_expenses)
         ),
         alerts=s.AlertsBlock(
@@ -131,14 +144,14 @@ def home_response(home: Home) -> s.HomeResponse:
     if home.accountant is not None:
         accountant = home.accountant
         fields["accountant"] = s.AccountantHomeOut(
-            transfers_to_receive=_lot(accountant.transfers_to_receive),
+            transfers_to_receive=_lot_or_none(accountant.transfers_to_receive),
             low_stock=accountant.low_stock,
             stock_value=valuation_response(accountant.stock_value),
             expenses=accountant.expenses,
         )
     if home.driver is not None:
         fields["driver"] = s.DriverHomeOut(
-            current_trip=_lot(home.driver.current_trip),
-            trip_expenses=_lot(home.driver.trip_expenses),
+            current_trip=_lot_or_none(home.driver.current_trip),
+            trip_expenses=_lot_or_none(home.driver.trip_expenses),
         )
     return s.HomeResponse(role=home.role.value, today=home.today, **fields)

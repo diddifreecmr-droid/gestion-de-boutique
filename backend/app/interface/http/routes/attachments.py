@@ -20,6 +20,7 @@ from app.domain.attachments.values import MAX_SIZE_BYTES, AttachmentKind, OwnerT
 from app.domain.catalog.ids import AttachmentId
 from app.domain.shared.errors import ValidationFailed
 from app.domain.shared.ids import ShopId
+from app.interface.http.modules import SIGNED_LINK
 from app.interface.http.routes.attachment_components import AttachmentsComponents
 from app.interface.http.schemas.attachments import AttachmentLinkResponse, AttachmentResponse
 
@@ -98,6 +99,7 @@ def build_attachments_router(c: AttachmentsComponents, api_prefix: str) -> APIRo
         f"{ATTACHMENT}/content",
         response_class=Response,
         responses={200: {"content": {"image/jpeg": {}, "image/png": {}, "application/pdf": {}}}},
+        openapi_extra=SIGNED_LINK,
     )
     def read_content(
         shop_id: str,

@@ -10,6 +10,7 @@ from app.application.audit.ports import AuditQuery
 from app.application.audit.use_cases.consult import JournalFilters
 from app.application.ports.pagination import MAX_LIMIT, Cursor, PageRequest
 from app.domain.audit.values import AuditAction
+from app.domain.profiles.modules import ALL_MODULES
 from app.domain.shared.errors import ValidationFailed
 from app.infrastructure.persistence.memory.clock import FixedClock
 from app.infrastructure.persistence.sqlalchemy.columns import from_db, from_db_optional
@@ -64,4 +65,4 @@ def test_sqlite_naive_instants_are_utc() -> None:
 
 def test_unknown_alert_directive_is_refused() -> None:
     with pytest.raises(TypeError, match="Directive"):
-        AlertDispatcher(FixedClock(AT))._apply("x", None)  # type: ignore[arg-type]
+        AlertDispatcher(FixedClock(AT), modules=lambda uow: ALL_MODULES)._apply("x", None)  # type: ignore[arg-type]

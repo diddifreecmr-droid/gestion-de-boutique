@@ -7,7 +7,8 @@ vendeur responsable et aux propriétaires actifs, règle `reminder_due`) puis re
 alertée (`alerted_for`). **Idempotence** : relancer la tâche ne réalerte jamais la même date
 (`alerted_for`), et la clé `receivable_reminder:<rappel>:<date>` déduplique en plus une course
 entre deux workers. Un rappel reporté réalerte à sa nouvelle date. Aucun message n'est envoyé
-au client (H19 : aucun port d'envoi n'existe).
+au client (H19 : aucun port d'envoi n'existe). Module `receivables` éteint (specs § 15.1) :
+la tâche ne fait rien (0) et ne consomme aucun rappel — ils alerteront à la réactivation.
 """
 
 from collections.abc import Iterable
@@ -19,8 +20,10 @@ from app.application.ports.uow import UnitOfWork, UnitOfWorkFactory
 from app.application.receivables.ports import ReceivableRepository
 from app.application.receivables.retry import with_receivable_retry
 from app.application.sales.ports import CustomerRepository
+from app.application.shops.modules import module_enabled
 from app.application.stock.alerts import OWNERS, recipients
 from app.domain.alerts.alert import AlertType
+from app.domain.profiles.modules import Module
 from app.domain.receivables.events import ReminderDue
 from app.domain.receivables.values import ReceivableStatus
 from app.domain.shared.ids import ShopId
@@ -62,6 +65,8 @@ class DispatchDueReminders:
     def _attempt(self, shop_id: ShopId, today: date) -> int:
         now, count = self._clock.now(), 0
         with self._uow_factory(shop_id) as uow:
+            if not module_enabled(uow, Module.RECEIVABLES):
+                return 0
             receivables = ReceivableRepository.within(uow)
             customers = CustomerRepository.within(uow)
             for receivable in receivables.with_due_reminders(today):

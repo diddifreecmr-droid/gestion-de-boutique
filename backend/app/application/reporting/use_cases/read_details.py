@@ -2,6 +2,7 @@
 
 Même période que le tableau de bord (`periods.resolve_period`) ; les listes et leurs règles
 sont dans `reporting/details.py`. Le total renvoyé est le chiffre du tableau de bord.
+Le détail d'un chiffre d'un module éteint (dépenses, créances) → 403 `MODULE_DISABLED`.
 """
 
 from dataclasses import dataclass
@@ -29,7 +30,9 @@ from app.application.security.actor import Actor
 from app.application.security.permissions import Permission
 from app.application.security.policy import Policy
 from app.application.shops.context import actor_shop
+from app.application.shops.modules import require_module
 from app.application.shops.ports import ExpenseCategoryRepository, PaymentModeRepository
+from app.domain.profiles.modules import Module
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -93,6 +96,7 @@ _BUILDERS = {
     DetailMetric.RECEIVABLES: _receivables,
     DetailMetric.LOW_STOCK: _low_stock,
 }
+_MODULES = {DetailMetric.EXPENSES: Module.EXPENSES, DetailMetric.RECEIVABLES: Module.RECEIVABLES}
 
 
 class ReadDashboardDetail:
@@ -112,6 +116,9 @@ class ReadDashboardDetail:
         self._policy.require(actor, Permission.DASHBOARD_READ)
         period = resolve_period(kind, self._clock.today(), first_day, last_day)
         with self._uow_factory(actor_shop(actor)) as uow:
+            module = _MODULES.get(metric)
+            if module is not None:
+                require_module(uow, module)
             lines = _BUILDERS[metric](uow, period)
         count_only = metric is DetailMetric.LOW_STOCK
         total = len(lines) if count_only else sum(line.amount or 0 for line in lines)

@@ -22,9 +22,9 @@ from app.domain.shared.errors import ValidationFailed
 from app.domain.shared.events import EventCollector
 from app.domain.shared.ids import ShopId
 from app.domain.shops.errors import ModuleDisabled
-from app.domain.shops.modules import checked_modules
 from app.domain.shops.events import SettingsChanged, ShopAdministered, ShopOpened, diff
 from app.domain.shops.ids import MerchantAccountId
+from app.domain.shops.modules import checked_modules
 from app.domain.shops.values import ShopStatus, clean_optional, clean_text
 
 NIU_MAX_LENGTH = 32
