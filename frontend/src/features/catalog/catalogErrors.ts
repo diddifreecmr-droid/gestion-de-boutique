@@ -5,6 +5,7 @@
  */
 import { ApiError, NetworkError } from "../../core/api/errors";
 import { formatMoney } from "../../shared/format";
+import { MODULE_DISABLED, MODULE_DISABLED_MESSAGE } from "../../core/profile/modules";
 
 export const OFFLINE_SAVE =
   "Connexion nécessaire : rien n'a été enregistré. Réessayez quand le réseau revient.";
@@ -47,6 +48,8 @@ function apiMessage(error: ApiError): string {
       return HAS_STOCK_MESSAGE;
     case "FORBIDDEN":
       return FORBIDDEN_MESSAGE;
+    case MODULE_DISABLED:
+      return MODULE_DISABLED_MESSAGE;
     default:
       // Les messages du serveur sont rédigés en français pour l'utilisateur (specs § 6.2).
       return error.message;
@@ -71,5 +74,6 @@ export function submitFailure(error: unknown): SubmitFailure {
 export function loadFailureMessage(error: ApiError): string {
   if (error.code === "NOT_FOUND") return "Cet article est introuvable.";
   if (error.code === "FORBIDDEN") return FORBIDDEN_MESSAGE;
+  if (error.code === MODULE_DISABLED) return MODULE_DISABLED_MESSAGE;
   return error.message;
 }

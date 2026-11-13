@@ -10,6 +10,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DB_NAME } from "../core/offline/db";
 import { openOutbox } from "../core/offline/engine";
 import { RIGHTS_KEY } from "../core/offline/rights";
+import { ALL_MODULES } from "../core/profile/modules";
+import { MODULES_KEY } from "../core/profile/useShopModules";
 import { json, meBody, ROUTES, SHOP_A, tokenBody } from "../testing/fakeApi";
 import { renderApp } from "../testing/renderApp";
 
@@ -18,6 +20,8 @@ const offline = new TypeError("Failed to fetch");
 
 beforeEach(async () => {
   window.localStorage.setItem(RIGHTS_KEY, JSON.stringify([SHOP_A]));
+  // Hors connexion, la coquille ouvre la boutique avec les modules gardés.
+  window.localStorage.setItem(MODULES_KEY, JSON.stringify({ [SHOP_A]: ALL_MODULES }));
   const outbox = openOutbox();
   const base = { shopId: SHOP_A, type: "sale.create" as const, capturedAt: "", payload: {} };
   await outbox.enqueue({ ...base, opId: "op-1", provisionalNumber: "V-HL-3F2A-0001" });
@@ -36,6 +40,7 @@ function openAccount() {
     [ROUTES.refresh]: json(200, tokenBody("t1")),
     [ROUTES.me]: json(200, meBody()),
     [ROUTES.logout]: new Response(null, { status: 204 }),
+    [`GET ${API}/profile`]: offline,
     [`POST ${API}/sync`]: offline,
     [`GET ${API}/offline-snapshot`]: offline,
   });

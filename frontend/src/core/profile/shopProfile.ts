@@ -1,6 +1,7 @@
 /** Accès au profil d'une boutique et traduction des menus en entrées de navigation. */
 import type { NavItem } from "../../shared/ui";
 import type { Role } from "../auth/me";
+import type { ShopModules } from "./modules";
 import { MOTOS_PROFILE } from "./motos";
 import { HOME_KEY, MORE_KEY, type MenuEntry, type ShopProfile } from "./types";
 
@@ -11,6 +12,20 @@ import { HOME_KEY, MORE_KEY, type MenuEntry, type ShopProfile } from "./types";
 export function profileForShop(shopId: string): ShopProfile {
   if (shopId === "") throw new Error("profileForShop : identifiant de boutique vide");
   return MOTOS_PROFILE;
+}
+
+/**
+ * Le profil vu à travers les modules actifs : une entrée d'un module éteint disparaît de la
+ * barre du bas et de « Plus » ; son adresse donne donc « Page introuvable » (`findSection`).
+ */
+export function withModules(profile: ShopProfile, modules: ShopModules): ShopProfile {
+  const keep = (entries: readonly MenuEntry[]) =>
+    entries.filter((entry) => entry.module === undefined || modules.has(entry.module));
+  return {
+    ...profile,
+    menu: (role) => keep(profile.menu(role)),
+    more: (role) => keep(profile.more(role)),
+  };
 }
 
 export function shopPath(shopId: string, key: string = HOME_KEY): string {

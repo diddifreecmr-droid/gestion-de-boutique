@@ -10,6 +10,7 @@ import {
 import { PublicOnly, RequireSession } from "./guards";
 import { HomeRedirect } from "./HomeRedirect";
 import { BareLayout } from "./layouts";
+import { ModuleErrorPage } from "./ModuleErrorPage";
 import { NotFoundPage } from "./NotFoundPage";
 import { PLATFORM_PATH, SHOP_PICKER_PATH } from "./paths";
 import { PlatformHome } from "./PlatformHome";
@@ -71,8 +72,9 @@ export const appRoutes: RouteObject[] = [
         path: "/s/:shopId",
         element: <ShopShell />,
         children: [
-          { index: true, element: <RoleHome /> },
-          { path: ":section", element: <SectionPage /> },
+          // Un écran interrompu par 403 MODULE_DISABLED garde la coquille (specs § 15.1).
+          { index: true, element: <RoleHome />, errorElement: <ModuleErrorPage /> },
+          { path: ":section", element: <SectionPage />, errorElement: <ModuleErrorPage /> },
         ],
       },
     ],

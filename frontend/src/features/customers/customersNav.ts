@@ -5,6 +5,7 @@
  */
 import { ApiError, NetworkError } from "../../core/api/errors";
 import { OFFLINE_MESSAGE } from "../expenses/expenseErrors";
+import { MODULE_DISABLED, MODULE_DISABLED_MESSAGE } from "../../core/profile/modules";
 
 export { CUSTOMERS_KEY } from "../alerts/alertLinks";
 
@@ -47,6 +48,8 @@ export function customerErrorMessage(error: unknown): string {
       return `Vérifiez la saisie : ${error.message}.`;
     case "FORBIDDEN":
       return "Vous n'avez pas le droit de faire cette action.";
+    case MODULE_DISABLED:
+      return MODULE_DISABLED_MESSAGE;
     default:
       return `L'action n'a pas abouti : ${error.message} (${error.code}).`;
   }

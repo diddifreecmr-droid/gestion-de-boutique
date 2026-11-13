@@ -8,6 +8,7 @@ import { refundOverpayment, returnQuantityExceeded } from "../../../core/gateway
 import { formatMoney, formatQuantity } from "../../../shared/format";
 import type { LineDraft } from "../draft";
 import { saleErrorMessage } from "../saleErrorMessage";
+import { MODULE_DISABLED, MODULE_DISABLED_MESSAGE } from "../../../core/profile/modules";
 
 export const RETURN_OFFLINE =
   "Connexion nécessaire : le retour n'est pas enregistré. Votre saisie est conservée ; " +
@@ -43,6 +44,8 @@ export function returnErrorMessage(
       return `Retour refusé : ${error.message}.`;
     case "FORBIDDEN":
       return "Seul le propriétaire enregistre un retour ou un échange.";
+    case MODULE_DISABLED:
+      return MODULE_DISABLED_MESSAGE;
     default:
       return saleErrorMessage(error, exchangeLines, locationName);
   }

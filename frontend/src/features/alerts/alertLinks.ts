@@ -2,9 +2,11 @@
  * Élément lié à une alerte (ALR-02) : l'appui ouvre la vente, l'article, la créance, la demande
  * de prix… **dans un écran que le rôle peut ouvrir**. Sans écran pour ce rôle (ou type inconnu),
  * aucun lien n'est proposé : on n'envoie jamais un utilisateur vers une page interdite.
+ * De même pour l'écran d'un module éteint (specs § 15.1).
  */
 import type { Role } from "../../core/auth/me";
 import type { AlertEntity } from "../../core/gateways/alertsContract";
+import type { ModuleCode, ShopModules } from "../../core/profile/modules";
 import { shopPath } from "../../core/profile/shopProfile";
 import { articlePath } from "../catalog/catalogPaths";
 import { STOCK_KEY } from "../catalog/catalogRights";
@@ -45,9 +47,23 @@ const LINKERS: Readonly<Record<string, Linker>> = {
     role === "owner" ? `${shopPath(shopId, CUSTOMERS_KEY)}?id=${q(id)}` : null,
 };
 
-/** Adresse de l'élément lié, ou `null` s'il n'y a rien à ouvrir pour ce rôle. */
-export function entityLink(shopId: string, entity: AlertEntity, role: Role): string | null {
+/** Module de l'écran ouvert par le lien (les autres types relèvent de modules toujours actifs). */
+const MODULE_OF: Readonly<Record<string, ModuleCode>> = {
+  receivable: "receivables",
+  purchase: "purchases",
+  expense: "expenses",
+};
+
+/** Adresse de l'élément lié, ou `null` s'il n'y a rien à ouvrir pour ce rôle et ces modules. */
+export function entityLink(
+  shopId: string,
+  entity: AlertEntity,
+  role: Role,
+  modules: ShopModules,
+): string | null {
   if (entity.id === null) return null;
+  const module = MODULE_OF[entity.type];
+  if (module !== undefined && !modules.has(module)) return null;
   const linker = LINKERS[entity.type];
   return linker === undefined ? null : linker(shopId, entity.id, role);
 }

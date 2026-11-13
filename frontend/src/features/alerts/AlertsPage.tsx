@@ -5,6 +5,7 @@ import { ApiError } from "../../core/api/errors";
 import type { Role } from "../../core/auth/me";
 import type { Alert, AlertPage } from "../../core/gateways/alertsContract";
 import { useAlertsGateway } from "../../core/gateways/httpAlerts";
+import { useModules } from "../../core/profile/modulesContext";
 import { Button, ChoiceChips, EmptyState, ListCard, Skeleton } from "../../shared/ui";
 import { FormMessage } from "../expenses/FormMessage";
 import { asError } from "../expenses/useLoad";
@@ -29,6 +30,7 @@ const SHOWN = [
 export function AlertsPage({ shopId, role }: { shopId: string; role: Role }) {
   const gateway = useAlertsGateway();
   const navigate = useNavigate();
+  const modules = useModules();
   const [shown, setShown] = useState<Shown>("unread");
   const [readHere, setReadHere] = useState<ReadonlySet<string>>(new Set());
   const [unread, setUnread] = useState<number | null>(null);
@@ -97,7 +99,7 @@ export function AlertsPage({ shopId, role }: { shopId: string; role: Role }) {
       {list.items.length > 0 && (
         <ListCard label="Liste des alertes">
           {list.items.map((alert) => {
-            const link = entityLink(shopId, alert.entity, role);
+            const link = entityLink(shopId, alert.entity, role, modules);
             const read = alert.read || readHere.has(alert.id);
             return (
               <AlertRow

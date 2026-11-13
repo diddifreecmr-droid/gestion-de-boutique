@@ -6,6 +6,7 @@ import {
   Disclosure,
   QuantityStepper,
   SearchField,
+  Switch,
   TextField,
   type ChoiceOption,
 } from "../../shared/ui";
@@ -28,6 +29,8 @@ export function FieldGallery() {
   const [lastUnit, setLastUnit] = useState(4);
   const [payment, setPayment] = useState<Payment | null>("cash");
   const [noChoice, setNoChoice] = useState<Payment | null>(null);
+  const [credit, setCredit] = useState(true);
+  const [transport, setTransport] = useState(false);
   const [search, setSearch] = useState("Haojue");
   const [emptySearch, setEmptySearch] = useState("");
 
@@ -80,6 +83,16 @@ export function FieldGallery() {
           options={PAYMENTS}
           value={noChoice}
           onChange={setNoChoice}
+        />
+      </GallerySection>
+
+      <GallerySection title="Switch">
+        <Switch label="Créances" checked={credit} onChange={setCredit} />
+        <Switch
+          label="Transport"
+          hint="Nécessite Transferts de stock."
+          checked={transport}
+          onChange={setTransport}
         />
       </GallerySection>
 

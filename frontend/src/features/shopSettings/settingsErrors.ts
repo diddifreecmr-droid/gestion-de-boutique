@@ -4,6 +4,7 @@
  * relancée (fail-fast).
  */
 import { ApiError, NetworkError } from "../../core/api/errors";
+import { MODULE_DISABLED, MODULE_DISABLED_MESSAGE } from "../../core/profile/modules";
 
 export const OFFLINE_MESSAGE =
   "Connexion nécessaire : rien n'est enregistré. Réessayez quand le réseau revient.";
@@ -20,6 +21,7 @@ const MESSAGES: Readonly<Record<string, string>> = {
   VERSION_CONFLICT:
     "Quelqu'un a modifié cet élément entre-temps : revenez au sommaire puis recommencez.",
   FORBIDDEN: "Vous n'avez pas le droit de faire cette action.",
+  [MODULE_DISABLED]: MODULE_DISABLED_MESSAGE,
 };
 
 /** Champ nommé par `VALIDATION_ERROR` (`details.field`), s'il y en a un. */

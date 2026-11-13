@@ -3,6 +3,7 @@ import { ArrowLeft, FileText, Pencil, RefreshCw, ShoppingCart } from "lucide-rea
 import { useNavigate } from "react-router";
 import type { CustomerSale } from "../../core/gateways/customersContract";
 import { useCustomersGateway } from "../../core/gateways/httpCustomers";
+import { useModules } from "../../core/profile/modulesContext";
 import { shopPath } from "../../core/profile/shopProfile";
 import { formatDate, formatMoney } from "../../shared/format";
 import {
@@ -20,9 +21,9 @@ import { SALES_KEY } from "../sales/salesNav";
 import { customerLine } from "./customerFields";
 import type { CustomerNav } from "./customersNav";
 
-function saleBadge(sale: CustomerSale) {
+function saleBadge(sale: CustomerSale, credit: boolean) {
   if (sale.status === "cancelled") return <Badge status="danger">Annulée</Badge>;
-  if (sale.remaining > 0)
+  if (credit && sale.remaining > 0)
     return <Badge status="credit">{`Reste ${formatMoney(sale.remaining)}`}</Badge>;
   return undefined;
 }
@@ -30,6 +31,7 @@ function saleBadge(sale: CustomerSale) {
 /**
  * Fiche client (UC-VEN-11, CUS-01) : coordonnées, total acheté, total dû, historique des ventes ;
  * le relevé des créances s'ouvre dans « Créances ». Montants de vente seulement (aucun coût).
+ * Sans le module Créances : ni total dû, ni reste, ni relevé (specs § 15.1).
  */
 export function CustomerSheet({
   shopId,
@@ -42,6 +44,7 @@ export function CustomerSheet({
 }) {
   const gateway = useCustomersGateway();
   const navigate = useNavigate();
+  const credit = useModules().has("receivables");
   const [round, setRound] = useState(0);
   const sheet = useLoad(`${id}|${String(round)}`, () => gateway.sheet(shopId, id));
   const back = (
@@ -95,19 +98,23 @@ export function CustomerSheet({
         ))}
       </div>
       <KpiCard label="Total acheté" amount={total_bought} />
-      <KpiCard label="Total dû" amount={total_due} />
-      <Button
-        variant="secondary"
-        icon={FileText}
-        fullWidth
-        onClick={() =>
-          void navigate(
-            `${shopPath(shopId, RECEIVABLES_KEY)}?vue=${RECEIVABLE_VIEW.statement}&client=${encodeURIComponent(id)}`,
-          )
-        }
-      >
-        Relevé des créances
-      </Button>
+      {credit && (
+        <>
+          <KpiCard label="Total dû" amount={total_due} />
+          <Button
+            variant="secondary"
+            icon={FileText}
+            fullWidth
+            onClick={() =>
+              void navigate(
+                `${shopPath(shopId, RECEIVABLES_KEY)}?vue=${RECEIVABLE_VIEW.statement}&client=${encodeURIComponent(id)}`,
+              )
+            }
+          >
+            Relevé des créances
+          </Button>
+        </>
+      )}
       {sales.length === 0 ? (
         <EmptyState icon={ShoppingCart} message="Aucune vente pour ce client." />
       ) : (
@@ -118,7 +125,7 @@ export function CustomerSheet({
               title={sale.number}
               subtitle={formatDate(sale.sold_on)}
               amount={sale.total}
-              badge={saleBadge(sale)}
+              badge={saleBadge(sale, credit)}
               cancelled={sale.status === "cancelled"}
               onOpen={() =>
                 void navigate(`${shopPath(shopId, SALES_KEY)}?id=${encodeURIComponent(sale.id)}`)

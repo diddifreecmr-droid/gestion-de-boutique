@@ -55,9 +55,18 @@ export function platformErrorMessage(error: unknown): string {
       return "Ce type de boutique n'existe pas.";
     case "MODULE_NOT_AVAILABLE":
       return "Ce module n'existe pas pour ce type de boutique.";
+    case "VERSION_CONFLICT":
+      return "La boutique a été modifiée entre-temps : la fiche a été relue, vérifiez puis enregistrez de nouveau.";
     case "FORBIDDEN":
       return "Réservé à l'administrateur plateforme.";
     default:
+      // 422 : règle refusée par le serveur (dépendance de modules…), message rédigé pour l'écran.
+      if (error.status === 422) return `Refusé par le serveur : ${error.message}.`;
       return `L'action n'a pas abouti : ${error.message} (${error.code}).`;
   }
+}
+
+/** Refus parce que la fiche lue est périmée : il faut la relire avant de recommencer. */
+export function isStale(error: unknown): boolean {
+  return error instanceof ApiError && error.code === "VERSION_CONFLICT";
 }

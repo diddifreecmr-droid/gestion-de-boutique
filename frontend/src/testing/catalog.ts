@@ -1,5 +1,6 @@
 /** Données et routes du faux serveur pour les écrans du catalogue (tests seulement). */
 import type { components } from "../core/api/schema.gen";
+import { ALL_MODULES } from "../core/profile/modules";
 import type { ArticleResponse } from "../core/gateways/catalogAdminContract";
 import { json, meBody, ROUTES, SHOP_A, tokenBody, type Reply } from "./fakeApi";
 
@@ -16,7 +17,7 @@ export function profileBody(role: Role, minPriceEnabled = true) {
     profile_code: "motos",
     profile_version: 1,
     profile_label: "Motos et camions",
-    enabled_modules: ["catalog"],
+    enabled_modules: [...ALL_MODULES],
     roles: [],
     role,
     role_label: null,

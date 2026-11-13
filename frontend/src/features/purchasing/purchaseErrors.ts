@@ -7,6 +7,7 @@
 import { ApiError, NetworkError } from "../../core/api/errors";
 import { formatDate, formatMoney } from "../../shared/format";
 import { OFFLINE_MESSAGE } from "../expenses/expenseErrors";
+import { MODULE_DISABLED, MODULE_DISABLED_MESSAGE } from "../../core/profile/modules";
 
 export { OFFLINE_MESSAGE };
 
@@ -65,6 +66,8 @@ export function purchaseErrorMessage(error: unknown): string {
       return validationText(error);
     case "FORBIDDEN":
       return "Vous n'avez pas le droit de faire cette action.";
+    case MODULE_DISABLED:
+      return MODULE_DISABLED_MESSAGE;
     default:
       return `L'action n'a pas abouti : ${error.message} (${error.code}).`;
   }

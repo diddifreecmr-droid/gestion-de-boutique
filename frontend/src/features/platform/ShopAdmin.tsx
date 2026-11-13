@@ -6,7 +6,8 @@ import { formatDate } from "../../shared/format";
 import { Badge, Button, ConfirmDialog, EmptyState, Skeleton } from "../../shared/ui";
 import { FormMessage } from "../expenses/FormMessage";
 import { asError, useLoad } from "../expenses/useLoad";
-import { platformErrorMessage, STATUS_LABELS, type PlatformNav } from "./platformNav";
+import { isStale, platformErrorMessage, STATUS_LABELS, type PlatformNav } from "./platformNav";
+import { ShopModules } from "./ShopModules";
 import { ShopRights } from "./ShopRights";
 
 interface Sheet {
@@ -15,8 +16,8 @@ interface Sheet {
 }
 
 /**
- * Fiche d'une boutique dans la console (TR-23) : identité, statut (fermer / rouvrir), droits
- * d'offre et délégation. Aucune donnée métier de la boutique n'est lue ici.
+ * Fiche d'une boutique dans la console (TR-23) : identité, statut (fermer / rouvrir), modules,
+ * droits d'offre et délégation. Aucune donnée métier de la boutique n'est lue ici.
  */
 export function ShopAdmin({ shopId, nav }: { shopId: string; nav: PlatformNav }) {
   const gateway = usePlatformGateway();
@@ -41,6 +42,7 @@ export function ShopAdmin({ shopId, nav }: { shopId: string; nav: PlatformNav })
     } catch (error) {
       try {
         setMessage(platformErrorMessage(error));
+        if (isStale(error)) setRound((n) => n + 1); // modifiée ailleurs : la fiche est relue
       } catch (unexpected) {
         setFatal(unexpected);
       }
@@ -96,9 +98,7 @@ export function ShopAdmin({ shopId, nav }: { shopId: string; nav: PlatformNav })
         <p className="m-0 text-body text-text-muted">
           {shop.city} · compte {shop.account_name} · offre {shop.plan}
         </p>
-        <p className="m-0 text-body text-text-muted">
-          Ouverte le {formatDate(shop.created_at)} · modules : {shop.enabled_modules.join(", ")}
-        </p>
+        <p className="m-0 text-body text-text-muted">Ouverte le {formatDate(shop.created_at)}</p>
       </div>
       {message !== null && <FormMessage text={message} />}
       {open ? (
@@ -124,6 +124,12 @@ export function ShopAdmin({ shopId, nav }: { shopId: string; nav: PlatformNav })
           Rouvrir la boutique
         </Button>
       )}
+      <ShopModules
+        key={`${String(round)}|${shop.enabled_modules.join(",")}`}
+        enabled={shop.enabled_modules}
+        busy={busy}
+        onSave={(modules) => void administer({ modules, ...versionOf(shop) })}
+      />
       <ShopRights
         access={access}
         busy={busy}
@@ -143,4 +149,12 @@ export function ShopAdmin({ shopId, nav }: { shopId: string; nav: PlatformNav })
       </ConfirmDialog>
     </>
   );
+}
+
+/**
+ * Version de la boutique lue, renvoyée pour refuser un enregistrement sur une fiche périmée
+ * (409 `VERSION_CONFLICT`), dès que le contrat la porte ; sans elle, rien n'est ajouté.
+ */
+function versionOf(shop: ShopSummary): { version?: number } {
+  return "version" in shop && typeof shop.version === "number" ? { version: shop.version } : {};
 }
