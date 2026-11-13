@@ -104,13 +104,14 @@ describe("modes de paiement visibles", () => {
 });
 
 describe("ordre des articles proposés", () => {
-  it("les ruptures et les articles au mètre après ceux en stock, ordre gardé", () => {
+  it("les ruptures après ceux en stock, ordre gardé ; un tissu en stock se vend (T41)", () => {
     const items = [
       article("a", "0"),
       article("b", "3"),
       article("c", "2.5", "meter"),
+      article("e", "0.0", "meter"),
       article("d", "1.000"),
     ];
-    expect(sellableFirst(items).map((a) => a.id)).toEqual(["b", "d", "a", "c"]);
+    expect(sellableFirst(items).map((a) => a.id)).toEqual(["b", "c", "d", "a", "e"]);
   });
 });
