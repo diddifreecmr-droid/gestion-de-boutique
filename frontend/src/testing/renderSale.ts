@@ -9,7 +9,9 @@ import { appGateways } from "../core/gateways/gateways";
 import type { RecordSaleCommand } from "../core/gateways/salesContract";
 import { formatMoney } from "../shared/format";
 import { SHOP_A } from "./fakeApi";
+import { PROFILE_KEY } from "../core/profile/savedProfiles";
 import { renderApp } from "./renderApp";
+import { servedProfile } from "./servedProfile";
 import { saleServer, type Routes, type SaleRole } from "./salesServer";
 
 export { SALE_SHOP } from "./salesServer";
@@ -38,6 +40,13 @@ export function renderSale(role: SaleRole = "seller", options: RenderSaleOptions
   const server = saleServer(role, extra);
   server.network.online = online;
   server.world.settings.minPriceRequiresApproval = priceApproval;
+  // Hors connexion, la boutique a déjà été ouverte sur ce téléphone : son profil est gardé.
+  if (!online) {
+    window.localStorage.setItem(
+      PROFILE_KEY,
+      JSON.stringify({ [SHOP_A]: servedProfile("motos", role) }),
+    );
+  }
   const view = renderApp(path, server.routes);
   const gateways = appGateways(view.services);
   const requestPriceApproval = vi.spyOn(gateways.sales, "requestPriceApproval");

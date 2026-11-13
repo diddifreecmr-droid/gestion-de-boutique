@@ -36,7 +36,6 @@ describe("coquille — menus par rôle (CDC § 17.4)", () => {
     // Modules à venir (transfers, transport) : leurs entrées n'apparaissent jamais (13/11/2026).
     ["owner", ["Accueil", "Ventes", "Stock", "Plus"]],
     ["accountant", ["Accueil", "Achats", "Stock", "Dépenses"]],
-    ["driver", ["Mon voyage"]],
   ])("%s : barre du bas et titre de l'accueil", async (role, labels) => {
     openAs(role);
     const [home = ""] = labels;
@@ -46,6 +45,12 @@ describe("coquille — menus par rôle (CDC § 17.4)", () => {
         .getAllByRole("link")
         .map((link) => link.textContent),
     ).toEqual(labels);
+  });
+
+  it("chauffeur : tout son menu dépend de Transport (à venir) — ni barre du bas ni entrée", async () => {
+    openAs("driver");
+    expect(await screen.findByRole("heading", { level: 1, name: "Accueil" })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Navigation principale" })).toBeNull();
   });
 
   it("l'adresse d'un écran à venir donne « Page introuvable », jamais « arrive bientôt »", async () => {

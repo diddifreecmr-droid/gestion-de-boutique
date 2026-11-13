@@ -1,16 +1,22 @@
 /**
- * Modules éteints dans la coquille (décision client du 12/11/2026) : menus, « Plus », adresse
- * directe (« Page introuvable »), refus `MODULE_DISABLED`, lecture hors connexion.
+ * Modules éteints dans la coquille (décision client du 12/11/2026) : menus servis par le profil
+ * (le serveur retire les entrées d'un module éteint), « Plus », adresse directe (« Page
+ * introuvable »), refus `MODULE_DISABLED`, lecture hors connexion du profil gardé.
+ *
+ * L'entrée « Accueil » est servie avec le module `dashboard` (backend `domain/profiles`) : sans
+ * ce module, le serveur ne la sert pas et le client ne l'invente pas.
  */
 import { screen, within } from "@testing-library/react";
 import { beforeAll, describe, expect, it } from "vitest";
 import { ALL_MODULES, type ModuleCode } from "../core/profile/modules";
-import { MODULES_KEY } from "../core/profile/useShopModules";
+import { PROFILE_KEY } from "../core/profile/savedProfiles";
 import { axeViolations } from "../testing/axe";
 import { apiError, SHOP_A } from "../testing/fakeApi";
 import { memberSession, preloadLot1Screens, route, SHOP_PATH } from "../testing/lot1Screens";
 import { MINIMAL, profileWith, PROFILE_ROUTE, without } from "../testing/modules";
 import { renderApp } from "../testing/renderApp";
+import { servedProfile } from "../testing/servedProfile";
+import { PROFILE_UNAVAILABLE } from "./ShopShell";
 
 beforeAll(preloadLot1Screens);
 
@@ -27,19 +33,31 @@ async function navLabels(): Promise<(string | null)[]> {
     .map((link) => link.textContent);
 }
 
-describe("boutique minimale (socle, journal, catalogue, ventes)", () => {
+const BASIC = [...MINIMAL, "dashboard"];
+
+describe("boutique minimale (socle, journal, catalogue, ventes) et accueil", () => {
   it.each<[Role, string[]]>([
     ["owner", ["Accueil", "Ventes", "Stock", "Plus"]],
     ["seller", ["Accueil", "Nouvelle vente", "Mes ventes", "Stock"]],
     ["accountant", ["Accueil", "Stock"]],
-    ["driver", ["Mon voyage"]],
-  ])("%s : seules les entrées des modules toujours actifs", async (role, labels) => {
-    open(role, MINIMAL);
+  ])("%s : seules les entrées des modules actifs", async (role, labels) => {
+    open(role, BASIC);
     expect(await navLabels()).toEqual(labels);
   });
 
+  it("sans « dashboard » : l'accueil n'est pas servi, il n'est pas inventé", async () => {
+    open("seller", MINIMAL);
+    expect(await navLabels()).toEqual(["Nouvelle vente", "Mes ventes", "Stock"]);
+  });
+
+  it("chauffeur (Transport à venir) : menu servi vide, pas de barre du bas", async () => {
+    open("driver", ALL_MODULES);
+    expect(await screen.findByRole("heading", { level: 1 })).toBeVisible();
+    expect(screen.queryByRole("navigation", { name: "Navigation principale" })).toBeNull();
+  });
+
   it("propriétaire : « Plus » sans Créances, Achats, Dépenses ni Paie ; axe", async () => {
-    const { container } = open("owner", MINIMAL, `${SHOP_PATH}/plus`);
+    const { container } = open("owner", BASIC, `${SHOP_PATH}/plus`);
     expect(await screen.findByRole("heading", { name: "Plus" })).toBeVisible();
     const tiles = screen.getAllByRole("button").map((b) => b.textContent);
     expect(tiles).toEqual(expect.arrayContaining(["Clients", "Journal", "Réglages"]));
@@ -60,7 +78,7 @@ describe("boutique minimale (socle, journal, catalogue, ventes)", () => {
     ["driver", "mes-voyages"],
     ["driver", "mes-depenses"],
   ])("%s : l'adresse directe /%s donne « Page introuvable »", async (role, section) => {
-    open(role, MINIMAL, `${SHOP_PATH}/${section}`);
+    open(role, BASIC, `${SHOP_PATH}/${section}`);
     expect(await screen.findByRole("heading", { name: "Page introuvable" })).toBeVisible();
   });
 });
@@ -70,8 +88,6 @@ describe("un module à la fois", () => {
     ["receivables", "seller", "Créances"],
     ["purchases", "accountant", "Achats"],
     ["expenses", "accountant", "Dépenses"],
-    ["transfers", "accountant", "Déplacements"],
-    ["transport", "owner", "Camions"],
   ])("sans %s : %s ne voit plus « %s »", async (module, role, label) => {
     open(role, without(module));
     const labels = await navLabels();
@@ -79,20 +95,10 @@ describe("un module à la fois", () => {
     expect(labels).toContain("Stock");
   });
 
-  it("chauffeur sans Transport : seulement son accueil", async () => {
-    open("driver", without("transport"));
-    expect(await navLabels()).toEqual(["Mon voyage"]);
-  });
-
-  it("tous les modules reçus, à venir compris : aucune entrée d'un module à venir", async () => {
-    open("owner", ALL_MODULES);
-    expect(await navLabels()).toEqual(["Accueil", "Ventes", "Stock", "Plus"]);
-  });
-
   it.each<[Role, string[]]>([
+    ["owner", ["Accueil", "Ventes", "Stock", "Plus"]],
     ["accountant", ["Accueil", "Achats", "Stock", "Dépenses"]],
-    ["driver", ["Mon voyage"]],
-  ])("%s, tous les modules reçus : ni Déplacements, ni Mes voyages", async (role, labels) => {
+  ])("%s, tous les modules reçus : aucune entrée d'un module à venir", async (role, labels) => {
     const { container } = open(role, ALL_MODULES);
     expect(await navLabels()).toEqual(labels);
     expect(screen.queryByText(/Disponible au Lot|arrive bientôt/)).toBeNull();
@@ -109,6 +115,8 @@ describe("un module à la fois", () => {
 });
 
 describe("refus du serveur et hors connexion", () => {
+  const offline = { [PROFILE_ROUTE]: new TypeError("Failed to fetch") };
+
   it("403 MODULE_DISABLED à l'ouverture d'un écran : message clair, la coquille reste", async () => {
     open("owner", ALL_MODULES, `${SHOP_PATH}/clients`, {
       [route("GET", "/customers")]: apiError(403, "MODULE_DISABLED", "Module désactivé"),
@@ -120,28 +128,34 @@ describe("refus du serveur et hors connexion", () => {
     expect(await navLabels()).toContain("Plus");
   });
 
-  it("hors connexion sans modules gardés : seulement les modules toujours actifs", async () => {
-    open("seller", ALL_MODULES, SHOP_PATH, {
-      [PROFILE_ROUTE]: new TypeError("Failed to fetch"),
-    });
-    expect(await navLabels()).toEqual(["Accueil", "Nouvelle vente", "Mes ventes", "Stock"]);
+  it("hors connexion sans profil gardé : aucun menu deviné, message clair", async () => {
+    open("seller", ALL_MODULES, SHOP_PATH, offline);
+    expect(await screen.findByText(PROFILE_UNAVAILABLE)).toBeVisible();
+    expect(screen.queryByRole("navigation", { name: "Navigation principale" })).toBeNull();
   });
 
-  it("hors connexion : les derniers modules lus sont gardés et réutilisés", async () => {
-    window.localStorage.setItem(MODULES_KEY, JSON.stringify({ [SHOP_A]: without("purchases") }));
-    open("accountant", ALL_MODULES, SHOP_PATH, {
-      [PROFILE_ROUTE]: new TypeError("Failed to fetch"),
-    });
+  it("hors connexion : le dernier profil lu est gardé et réutilisé", async () => {
+    const saved = servedProfile("motos", "accountant", without("purchases"));
+    window.localStorage.setItem(PROFILE_KEY, JSON.stringify({ [SHOP_A]: saved }));
+    open("accountant", ALL_MODULES, SHOP_PATH, offline);
     expect(await navLabels()).toEqual(["Accueil", "Stock", "Dépenses"]);
+  });
+
+  it("un profil gardé pour un autre rôle n'est pas réutilisé", async () => {
+    const saved = servedProfile("motos", "owner");
+    window.localStorage.setItem(PROFILE_KEY, JSON.stringify({ [SHOP_A]: saved }));
+    open("seller", ALL_MODULES, SHOP_PATH, offline);
+    expect(await screen.findByText(PROFILE_UNAVAILABLE)).toBeVisible();
   });
 
   it("chaque lecture réussie est gardée pour la prochaine ouverture", async () => {
     open("owner", without("receivables"));
     await navLabels();
-    const saved = JSON.parse(window.localStorage.getItem(MODULES_KEY) ?? "{}") as Record<
+    const saved = JSON.parse(window.localStorage.getItem(PROFILE_KEY) ?? "{}") as Record<
       string,
-      string[]
+      { enabled_modules: string[]; role: string }
     >;
-    expect(saved[SHOP_A]).toEqual(without("receivables"));
+    expect(saved[SHOP_A]?.enabled_modules).toEqual(without("receivables"));
+    expect(saved[SHOP_A]?.role).toBe("owner");
   });
 });

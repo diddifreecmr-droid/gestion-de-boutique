@@ -32,7 +32,7 @@ export function MorePage() {
       <h1 className="m-0 text-title font-bold text-text">Plus</h1>
       <ActionTileGrid>
         {role === "owner" && <DashboardTile shopId={shopId} />}
-        {profile.more(role).map((entry) => (
+        {profile.more.map((entry) => (
           <ActionTile
             key={entry.key}
             icon={entry.icon}

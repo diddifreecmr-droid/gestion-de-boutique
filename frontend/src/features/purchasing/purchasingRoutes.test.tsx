@@ -51,7 +51,8 @@ describe("emplacement des Achats (CDC § 17.4) et droits par rôle (§ 4.2)", ()
     async (role) => {
       const { fake } = renderApp(`${PURCHASES_PATH}?vue=nouvel`, purchasingRoutes(role));
       expect(await screen.findByRole("heading", { name: "Page introuvable" })).toBeVisible();
-      expect(within(nav()).queryByRole("link", { name: "Achats" })).toBeNull();
+      // Le chauffeur n'a pas de barre du bas (menu servi vide) : aucun lien nulle part.
+      expect(screen.queryByRole("link", { name: "Achats" })).toBeNull();
       const touched = fake.calls.some((c) => /\/(purchases|suppliers)/.test(c.url));
       expect(touched).toBe(false);
     },

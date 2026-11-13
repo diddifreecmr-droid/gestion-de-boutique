@@ -11,7 +11,8 @@ import { DB_NAME } from "../core/offline/db";
 import { openOutbox } from "../core/offline/engine";
 import { RIGHTS_KEY } from "../core/offline/rights";
 import { ALL_MODULES } from "../core/profile/modules";
-import { MODULES_KEY } from "../core/profile/useShopModules";
+import { PROFILE_KEY } from "../core/profile/savedProfiles";
+import { servedProfile } from "../testing/servedProfile";
 import { json, meBody, ROUTES, SHOP_A, tokenBody } from "../testing/fakeApi";
 import { renderApp } from "../testing/renderApp";
 
@@ -20,8 +21,9 @@ const offline = new TypeError("Failed to fetch");
 
 beforeEach(async () => {
   window.localStorage.setItem(RIGHTS_KEY, JSON.stringify([SHOP_A]));
-  // Hors connexion, la coquille ouvre la boutique avec les modules gardés.
-  window.localStorage.setItem(MODULES_KEY, JSON.stringify({ [SHOP_A]: ALL_MODULES }));
+  // Hors connexion, la coquille ouvre la boutique avec le profil gardé (meBody : vendeur).
+  const profile = servedProfile("motos", "seller", ALL_MODULES);
+  window.localStorage.setItem(PROFILE_KEY, JSON.stringify({ [SHOP_A]: profile }));
   const outbox = openOutbox();
   const base = { shopId: SHOP_A, type: "sale.create" as const, capturedAt: "", payload: {} };
   await outbox.enqueue({ ...base, opId: "op-1", provisionalNumber: "V-HL-3F2A-0001" });

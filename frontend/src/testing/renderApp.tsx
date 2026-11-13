@@ -8,8 +8,11 @@ import { ServicesProvider } from "../core/services/ServicesProvider";
 import { ToastProvider } from "../shared/ui";
 import { profileBody } from "./catalog";
 import { createFakeFetch, json, SHOP_A, SHOP_B, type Reply } from "./fakeApi";
+import { perActor } from "./servedProfile";
 
 type Routes = Record<string, Reply | Reply[]>;
+
+const PROFILE_PATH = /^GET \/api\/v1\/shops\/([^/]+)\/profile$/;
 
 /**
  * Profil lu par la coquille de chaque boutique (modules actifs) : tous les modules, sauf si le
@@ -26,8 +29,12 @@ function withShopProfiles(routes: Routes): Routes {
   return new Proxy(routes, {
     get: (target, key): Reply | Reply[] | undefined => {
       const own: unknown = Reflect.get(target, key);
-      if (own !== undefined) return own as Reply | Reply[];
-      return typeof key === "string" ? defaults[key] : undefined;
+      const found = own !== undefined ? (own as Reply | Reply[]) : defaults[String(key)];
+      const shopId = typeof key === "string" ? PROFILE_PATH.exec(key)?.[1] : undefined;
+      if (found === undefined || shopId === undefined) return found;
+      // Le vrai serveur sert le profil **par acteur** : menu et libellé du rôle de `GET /me`.
+      const wrap = (reply: Reply) => perActor(target, shopId, reply);
+      return Array.isArray(found) ? found.map(wrap) : wrap(found);
     },
   });
 }

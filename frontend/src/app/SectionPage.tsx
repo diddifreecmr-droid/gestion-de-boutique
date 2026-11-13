@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
-import { useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
+import { INVENTORY_KEY } from "../core/profile/menuRoutes";
 import { findSection } from "../core/profile/shopProfile";
 import { MORE_KEY } from "../core/profile/types";
 import {
@@ -13,8 +14,9 @@ import { AccountPage } from "../features/settings/AccountPage";
 import { EXPENSES_KEY } from "../features/expenses/expenseNav";
 import { SETTINGS_KEY } from "../features/shopSettings/settingsNav";
 import { SETTINGS_ROLES } from "../features/shopSettings/settingsRights";
-import { STOCK_KEY } from "../features/catalog/catalogRights";
+import { CATALOG_ROLES, STOCK_KEY } from "../features/catalog/catalogRights";
 import { STOCK_ROLES } from "../features/stock/stockRoles";
+import { stockViewPath, VIEW } from "../features/stock/stockNav";
 import { PURCHASE_ROLES, PURCHASES_KEY } from "../features/purchasing/purchasingNav";
 import { RECEIVABLE_ROLES, RECEIVABLES_KEY } from "../features/receivables/receivablesNav";
 import { DASHBOARD_KEY } from "../features/dashboard/dashboardNav";
@@ -78,7 +80,7 @@ export function SectionPage() {
   }
   // « Tableau de bord » : « Plus » du propriétaire, si le module `dashboard` est actif (§ 15.1).
   if (section === DASHBOARD_KEY && role === "owner") return <DashboardSection shopId={shopId} />;
-  const entry = findSection(profile, role, section);
+  const entry = findSection(profile, section);
   if (entry === null) return <NotFoundPage />;
   if (entry.key === MORE_KEY) return <MorePage />;
   // « Plus → Réglages » du propriétaire : membres, lieux, modes de paiement, réglages (T22).
@@ -128,6 +130,10 @@ export function SectionPage() {
         <StockRoute shopId={shopId} role={role} />
       </Suspense>
     );
+  }
+  // « Inventaire » (comptable Prêt-à-porter et Textile) : l'inventaire de la section « Stock ».
+  if (entry.key === INVENTORY_KEY && CATALOG_ROLES.includes(role)) {
+    return <Navigate replace to={stockViewPath(shopId, VIEW.inventory)} />;
   }
   // « Journal » et « Clients » : « Plus » du propriétaire seul (UC-JRN-01, UC-VEN-11).
   if (entry.key === JOURNAL_KEY && role === "owner") {
