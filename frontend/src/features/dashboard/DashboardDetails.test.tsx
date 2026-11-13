@@ -11,6 +11,7 @@ import {
   preloadDashboard,
   weekBody,
 } from "../../testing/dashboard";
+import { sectionToggle } from "../../testing/dashboardFold";
 import { setClock } from "../../testing/expensesApi";
 import { json, SHOP_A } from "../../testing/fakeApi";
 import { renderApp } from "../../testing/renderApp";
@@ -118,6 +119,7 @@ describe("détail d'un chiffre (UC-TDB-04)", () => {
       DASHBOARD_PATH,
       homeRoutes("owner", { [detailRoute("low_stock")]: json(200, LOW) }),
     );
+    await user.click(await sectionToggle("Stock"));
     await user.click(await screen.findByRole("button", { name: /^Stock bas/ }));
     expect(await screen.findByText("1 article sous le seuil")).toBeVisible();
     expect(screen.getByText("Stock : 1 · seuil : 3")).toBeVisible();

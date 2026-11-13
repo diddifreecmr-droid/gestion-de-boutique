@@ -1,13 +1,16 @@
 import type { Dashboard, DetailMetric } from "../../core/gateways/reportingContract";
+import { formatMoney } from "../../shared/format";
 import { Kpi } from "./Kpi";
 import { useShownBlock } from "./moduleBlock";
 import { figureLabel, kindOf } from "./periods";
+import { Section } from "./Section";
 
 /**
  * UC-TDB-01 point 2 : dépenses de la boutique et résultat simple (marge − dépenses, § 14.1).
  * Le résultat s'explique par ses deux termes, affichés juste au-dessus : il n'a pas de liste.
  * Sans le module `expenses` (`summary.expenses = null`) : ni dépenses ni résultat — le résultat
- * vaudrait la marge, déjà affichée ; aucune dépense « 0 » n'est inventée.
+ * vaudrait la marge, déjà affichée ; aucune dépense « 0 » n'est inventée. Dans le tableau de
+ * bord, la section est repliée ; son résumé donne les deux montants.
  */
 export function ResultFigures({
   dashboard,
@@ -22,7 +25,10 @@ export function ResultFigures({
   if (expenses === null) return null;
   const kind = kindOf(period);
   return (
-    <section aria-label="Dépenses et résultat" className="flex flex-col gap-4">
+    <Section
+      title="Dépenses et résultat"
+      summary={`Dépenses ${formatMoney(expenses.value)} · Résultat ${formatMoney(summary.result.value)}`}
+    >
       <Kpi
         label={figureLabel("Dépenses", kind)}
         value={expenses}
@@ -37,6 +43,6 @@ export function ResultFigures({
         period={period}
         detail="Marge − dépenses"
       />
-    </section>
+    </Section>
   );
 }

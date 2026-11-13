@@ -3,8 +3,10 @@ import {
   ActionTile,
   ActionTileGrid,
   Badge,
+  CollapsibleSection,
   KpiCard,
   ListCard,
+  ListCardDetailRow,
   ListCardRow,
   SummaryCard,
 } from "../../shared/ui";
@@ -52,6 +54,36 @@ export function CardGallery() {
           />
           <ListCardRow title="Haojue HJ125-8" subtitle="Stock à Garoua : 1" />
         </ListCard>
+      </GallerySection>
+
+      <GallerySection title="ListCardDetailRow">
+        <ListCard label="Stock par article">
+          <ListCardDetailRow
+            title="Haojue HJ125-8"
+            value="1"
+            valueLabel="En stock"
+            badge={<Badge status="warning">Stock bas</Badge>}
+          >
+            <span className="text-body text-text">Garoua : 1 · Ngaoundéré : 0</span>
+          </ListCardDetailRow>
+          <ListCardDetailRow title="Yamaha Crypton" value="0" valueLabel="En stock">
+            <span className="text-body text-text">Garoua : 0</span>
+          </ListCardDetailRow>
+        </ListCard>
+      </GallerySection>
+
+      <GallerySection title="CollapsibleSection">
+        <CollapsibleSection title="Stock" summary="3 articles sous le seuil" level={3}>
+          <ListCard label="Stock">
+            <ListCardRow title="Valeur du stock" amount={12500000} onOpen={noop} />
+          </ListCard>
+        </CollapsibleSection>
+        <StateLabel>Ouverte</StateLabel>
+        <CollapsibleSection title="Alertes en attente" level={3} defaultOpen>
+          <ListCard label="Erreurs signalées">
+            <ListCardRow title="Erreurs signalées par les vendeurs" subtitle="Aucune erreur" />
+          </ListCard>
+        </CollapsibleSection>
       </GallerySection>
 
       <GallerySection title="ActionTile">

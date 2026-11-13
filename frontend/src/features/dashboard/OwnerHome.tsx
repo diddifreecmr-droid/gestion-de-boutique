@@ -5,6 +5,7 @@ import { useDashboardNav, type DashboardNav } from "./dashboardNav";
 import { DayBars } from "./DayBars";
 import { DayFigures } from "./DayFigures";
 import { FIGURES_OFFLINE, FiguresPending } from "./FiguresOffline";
+import { FoldSectionsContext } from "./foldContext";
 import { periodText, queryKey, resolveChoice } from "./periods";
 import { PeriodPicker } from "./PeriodPicker";
 import { useFigures, useReporting } from "./reportingContext";
@@ -49,8 +50,10 @@ function Figures({
 }
 
 /**
- * Tableau de bord du propriétaire (UC-TDB-01 à 04, design-system § 7.2) : période en haut, gros
- * chiffres, puis créances, stock, camions et alertes. Hors connexion : « Chiffres disponibles
+ * Tableau de bord du propriétaire (UC-TDB-01 à 04, design-system § 7.2) : période en haut
+ * (3 choix + « Autre période »), les 3 gros chiffres (ventes, argent encaissé, marge), puis
+ * dépenses et résultat, jour par jour, créances, stock et camions **repliés** (un appui), et
+ * les alertes, ouvertes (audit UX du 13/11/2026). Hors connexion : « Chiffres disponibles
  * avec internet » à la place des montants (RG-T25).
  */
 export function OwnerHome({ shopId }: { shopId: string }) {
@@ -59,7 +62,7 @@ export function OwnerHome({ shopId }: { shopId: string }) {
   const today = businessDate(now());
   const resolved = resolveChoice(nav.choice, today);
   return (
-    <>
+    <FoldSectionsContext.Provider value={true}>
       <PeriodPicker
         nav={nav}
         today={today}
@@ -70,6 +73,6 @@ export function OwnerHome({ shopId }: { shopId: string }) {
       ) : (
         <AlertsSection shopId={shopId} errorReports="Choisissez une période valable" />
       )}
-    </>
+    </FoldSectionsContext.Provider>
   );
 }

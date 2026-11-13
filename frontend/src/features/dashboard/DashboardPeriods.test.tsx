@@ -11,6 +11,7 @@ import {
   TODAY,
   weekBody,
 } from "../../testing/dashboard";
+import { sectionToggle } from "../../testing/dashboardFold";
 import { setClock } from "../../testing/expensesApi";
 import { json } from "../../testing/fakeApi";
 import { renderApp } from "../../testing/renderApp";
@@ -31,7 +32,7 @@ const custom = (from: string, to: string) =>
 const money = (amount: number) => plain(formatMoney(amount));
 
 describe("changer de période (UC-TDB-02)", () => {
-  it("six périodes ; « Cette semaine » : chiffres de la semaine, barres jour par jour, total et moyenne", async () => {
+  it("3 périodes + « Autre période » ; « Cette semaine » : chiffres, barres jour par jour, total et moyenne", async () => {
     const { user, router, fake, container } = renderApp(
       DASHBOARD_PATH,
       homeRoutes("owner", { [WEEK]: json(200, weekBody()) }),
@@ -41,13 +42,29 @@ describe("changer de période (UC-TDB-02)", () => {
       within(periods)
         .getAllByRole("radio")
         .map((radio) => radio.textContent),
-    ).toEqual(["Aujourd'hui", "Hier", "Cette semaine", "Ce mois", "Mois dernier", "Période libre"]);
-    await user.click(within(periods).getByRole("radio", { name: "Cette semaine" }));
+    ).toEqual(["Aujourd'hui", "Hier", "Ce mois", "Autre période"]);
+    expect(screen.queryByRole("radiogroup", { name: "Autre période" })).toBeNull();
+    // « Autre période » ouvre les autres choix et retient le premier, « Cette semaine ».
+    await user.click(within(periods).getByRole("radio", { name: "Autre période" }));
     expect(router.state.location.search).toBe("?periode=week");
+    const others = screen.getByRole("radiogroup", { name: "Autre période" });
+    expect(
+      within(others)
+        .getAllByRole("radio")
+        .map((radio) => radio.textContent),
+    ).toEqual(["Cette semaine", "Mois dernier", "Période libre"]);
+    expect(within(others).getByRole("radio", { name: "Cette semaine" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
     const sales = await screen.findByRole("button", { name: /^Ventes de la semaine/ });
     expect(sales).toHaveTextContent("+12 % par rapport à la période précédente");
     expect(screen.getByText("Du 09/11/2026 au 11/11/2026")).toBeVisible();
     expect(fake.count(WEEK)).toBe(1);
+    // Re-appuyer sur « Autre période » garde la période choisie.
+    await user.click(within(periods).getByRole("radio", { name: "Autre période" }));
+    expect(router.state.location.search).toBe("?periode=week");
+    await user.click(await sectionToggle("Jour par jour"));
 
     const totals = screen.getByText("Total des ventes").closest("dl") ?? container;
     const terms = within(totals)
@@ -85,10 +102,12 @@ describe("changer de période (UC-TDB-02)", () => {
     const { user, fake, router } = renderApp(
       DASHBOARD_PATH,
       homeRoutes("owner", {
+        [WEEK]: json(200, weekBody()),
         [custom(TODAY, TODAY)]: json(200, weekBody()),
         [custom("2026-11-01", TODAY)]: json(200, weekBody()),
       }),
     );
+    await user.click(await screen.findByRole("radio", { name: "Autre période" }));
     await user.click(await screen.findByRole("radio", { name: "Période libre" }));
     expect(await screen.findByRole("button", { name: /^Ventes de la semaine/ })).toBeVisible();
     expect(fake.count(custom(TODAY, TODAY))).toBe(1);

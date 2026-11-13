@@ -10,6 +10,7 @@ import {
   NOW,
   preloadDashboard,
 } from "../../testing/dashboard";
+import { sectionToggle, unfoldSections } from "../../testing/dashboardFold";
 import { setClock } from "../../testing/expensesApi";
 import { json } from "../../testing/fakeApi";
 import { renderApp } from "../../testing/renderApp";
@@ -31,7 +32,7 @@ const list = (name: string) => within(screen.getByRole("list", { name }));
 
 describe("tableau de bord du propriétaire (UC-TDB-01, design-system § 7.2)", () => {
   it("tous les blocs, de haut en bas, avec la comparaison en mots ; 360 px, axe", async () => {
-    const { container, fake } = renderApp(DASHBOARD_PATH, homeRoutes("owner"));
+    const { container, fake, user } = renderApp(DASHBOARD_PATH, homeRoutes("owner"));
     const sales = await card(/^Ventes du jour/);
     expect(sales).toHaveTextContent(plain(figure(2_340_000)));
     expect(sales).toHaveTextContent(plain("3 ventes"));
@@ -44,6 +45,7 @@ describe("tableau de bord du propriétaire (UC-TDB-01, design-system § 7.2)", (
     const margin = await card(/^Marge du jour/);
     expect(margin).toHaveTextContent(plain(`−13${NBSP}% par rapport à hier`));
     expect(margin).toHaveTextContent(plain(`Taux de marge : 26,07${NBSP}%`));
+    await unfoldSections(user);
     expect(await card(/^Dépenses du jour/)).toHaveTextContent(plain(figure(45_000)));
     expect(screen.getByText(/^Résultat simple du jour/).closest("div")).toHaveTextContent(
       plain(figure(565_000)),
@@ -85,7 +87,7 @@ describe("tableau de bord du propriétaire (UC-TDB-01, design-system § 7.2)", (
 
   it("aucune vente sans coût : la ligne n'apparaît pas ; stock non calculable dit pourquoi", async () => {
     const body = dashboardBody();
-    renderApp(
+    const { user } = renderApp(
       DASHBOARD_PATH,
       homeRoutes("owner", {
         [DASHBOARD_TODAY]: json(200, {
@@ -100,6 +102,7 @@ describe("tableau de bord du propriétaire (UC-TDB-01, design-system § 7.2)", (
     );
     expect(await card(/^Marge du jour/)).toHaveTextContent(plain("Taux de marge non calculable"));
     expect(screen.queryByRole("list", { name: "Ventes sans coût connu" })).toBeNull();
+    await user.click(await sectionToggle("Stock"));
     expect(list("Stock").getByRole("button", { name: /Valeur du stock/ })).toHaveTextContent(
       plain(`Non calculable : 2 articles sans coût connu (connu : ${formatMoney(900_000)})`),
     );

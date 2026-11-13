@@ -1,7 +1,7 @@
 import { configure, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { axeViolations } from "../../testing/axe";
-import { API, listUrl, profileBody } from "../../testing/catalog";
+import { listUrl } from "../../testing/catalog";
 import { json } from "../../testing/fakeApi";
 import { money } from "../../testing/renderSale";
 import { renderApp } from "../../testing/renderApp";
@@ -15,6 +15,7 @@ import {
   stockRoutes,
   stockRow,
 } from "../../testing/stock";
+import { openStockItem, stockList } from "../../testing/stockList";
 
 configure({ asyncUtilTimeout: 5000 });
 
@@ -22,41 +23,10 @@ beforeEach(() => {
   window.localStorage.clear();
 });
 
-const cards = () => screen.findByRole("list", { name: "Stock par article" });
-const card = async (name: RegExp) =>
-  within(await cards())
-    .getAllByRole("listitem")
-    .find((item) => name.test(item.textContent));
-/** Ligne d'un article, dépliée d'un appui : le détail (lieux, prix, coûts) apparaît dessous. */
-const opened = async (user: { click: (element: Element) => Promise<void> }, name: RegExp) => {
-  const item = await card(name);
-  if (item === undefined) throw new Error(`ligne ${name.source} absente`);
-  await user.click(within(item).getByRole("button", { name }));
-  return item;
-};
+const cards = stockList;
+const opened = openStockItem;
 
 describe("matrice de stock — vendeur", () => {
-  it("ligne compacte : nom, total et pastille ; un appui déplie le détail", async () => {
-    const { container, user } = renderApp(STOCK_PAGE, stockRoutes("seller"));
-    const haojue = await card(/Haojue/);
-    if (haojue === undefined) throw new Error("ligne Haojue absente");
-    const row = within(haojue).getByRole("button", { name: /Haojue/ });
-    expect(row).toHaveAttribute("aria-expanded", "false");
-    expect(row).toHaveTextContent("Haojue HJ125-8En stock1Stock bas");
-    expect(within(haojue).queryAllByRole("term")).toEqual([]);
-    expect(within(await cards()).getByText("Rupture")).toBeVisible();
-    await user.click(row);
-    expect(row).toHaveAttribute("aria-expanded", "true");
-    expect(
-      within(haojue)
-        .getAllByRole("term")
-        .map((term) => term.textContent),
-    ).toEqual(["Garoua", "Ngaoundéré", "En route", "Total", "Prix de base"]);
-    await user.click(row);
-    expect(within(haojue).queryAllByRole("term")).toEqual([]);
-    expect(await axeViolations(container)).toEqual([]);
-  });
-
   it("détail : quantités par lieu, En route, Total, prix de base et pastilles ; aucun coût", async () => {
     const { container, user } = renderApp(STOCK_PAGE, stockRoutes("seller"));
     const haojue = await opened(user, /Haojue/);
@@ -74,28 +44,6 @@ describe("matrice de stock — vendeur", () => {
     expect(screen.queryByRole("button", { name: "Inventaire" })).toBeNull();
     expect(screen.queryByRole("button", { name: /Historique/ })).toBeNull();
     expect(await axeViolations(container)).toEqual([]);
-  });
-
-  it("module `transfers` éteint : pas de ligne « En route », sauf une quantité réellement en route", async () => {
-    const moving = stockRow("seller", {
-      article_id: "a-moving",
-      display_name: "Sym Jet",
-      incoming: "2.000",
-    });
-    const { user } = renderApp(
-      STOCK_PAGE,
-      stockRoutes("seller", {
-        [`GET ${API}/profile`]: json(200, {
-          ...profileBody("seller"),
-          enabled_modules: ["core", "audit", "catalog", "sales"],
-        }),
-        [matrixUrl()]: json(200, { locations: COLUMNS, items: [stockRow("seller"), moving] }),
-      }),
-    );
-    const haojue = await opened(user, /Haojue/);
-    expect(within(haojue).queryByText("En route")).toBeNull();
-    const sym = await opened(user, /Sym Jet/);
-    expect(within(sym).getByText("En route")).toBeVisible();
   });
 
   it("non-fuite : un coût envoyé par erreur au vendeur n'est jamais affiché", async () => {
