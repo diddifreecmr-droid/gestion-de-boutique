@@ -3,7 +3,8 @@
 `FileStorage` cache le service de fichiers (Silo/MinIO, tout S3 compatible, mémoire pour les
 tests). Contrat (vérifié par `tests/contracts/test_file_storage_contract.py`) :
 
-- `put(key, content, file_format)` écrit l'objet (réécrire la même clé le remplace) ;
+- `put(key, content, media_type)` écrit l'objet (réécrire la même clé le remplace) ; le type
+  MIME est celui d'une pièce jointe (`FileFormat`, un `str`) ou d'un fichier d'import ;
 - `get(key)` relit exactement les octets écrits ; clé absente → `MissingFile` (erreur
   d'intégrité : la base cite un fichier que le stockage n'a pas, réponse 500) ;
 - service injoignable ou en erreur → `StorageUnavailable` (503 `STORAGE_UNAVAILABLE`, le
@@ -14,7 +15,6 @@ from abc import ABC, abstractmethod
 
 from app.application.shops.ports import ShopRecordRepository
 from app.domain.attachments.attachment import Attachment
-from app.domain.attachments.values import FileFormat
 from app.domain.catalog.ids import AttachmentId
 from app.domain.shared.errors import DomainError
 
@@ -40,10 +40,11 @@ class AttachmentRepository(ShopRecordRepository[AttachmentId, Attachment]):
 
 
 class FileStorage(ABC):
-    """Stockage objet privé ; les clés viennent de `Attachment.storage_key`."""
+    """Stockage objet privé ; clés calculées par le serveur (`Attachment.storage_key`, aperçu
+    d'import), jamais à partir d'un nom fourni par le client."""
 
     @abstractmethod
-    def put(self, key: str, content: bytes, file_format: FileFormat) -> None:
+    def put(self, key: str, content: bytes, media_type: str) -> None:
         """Écrit l'objet ; `StorageUnavailable` si le service ne répond pas."""
 
     @abstractmethod

@@ -18,7 +18,6 @@ from minio import Minio
 from minio.error import MinioException, S3Error
 
 from app.application.attachments.ports import FileStorage, MissingFile, StorageUnavailable
-from app.domain.attachments.values import FileFormat
 
 logger = logging.getLogger(__name__)
 
@@ -63,14 +62,14 @@ class S3FileStorage(FileStorage):
         self._bucket = location.bucket
         self._client = location.client()
 
-    def put(self, key: str, content: bytes, file_format: FileFormat) -> None:
+    def put(self, key: str, content: bytes, media_type: str) -> None:
         try:
             self._client.put_object(
                 self._bucket,
                 key,
                 io.BytesIO(content),
                 len(content),
-                content_type=FileFormat(file_format).value,
+                content_type=str(media_type),
             )
         except (MinioException, urllib3.exceptions.HTTPError) as exc:
             raise _unavailable("écriture", key, exc) from exc

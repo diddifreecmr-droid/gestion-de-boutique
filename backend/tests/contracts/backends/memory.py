@@ -24,6 +24,7 @@ from app.infrastructure.persistence.memory.directories import (
 from app.infrastructure.persistence.memory.entitlements import InMemoryEntitlementOverrides
 from app.infrastructure.persistence.memory.expenses import EXPENSE_REPOSITORIES
 from app.infrastructure.persistence.memory.identity import MemoryIdentityUnitOfWork
+from app.infrastructure.persistence.memory.imports import MEMORY_IMPORT_REPOSITORIES
 from app.infrastructure.persistence.memory.joined import ShopJoin
 from app.infrastructure.persistence.memory.platform_store import MemoryPlatformStore
 from app.infrastructure.persistence.memory.purchasing import MEMORY_PURCHASING_REPOSITORIES
@@ -60,6 +61,7 @@ REGISTRY: RepositoryRegistry = (
     *MEMORY_REPORTING_ADAPTERS,
     *MEMORY_SYNC_REPOSITORIES,
     *MEMORY_ATTACHMENT_REPOSITORIES,
+    *MEMORY_IMPORT_REPOSITORIES,
 )
 
 

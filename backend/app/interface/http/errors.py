@@ -20,6 +20,7 @@ from app.application.attachments.ports import LinkExpired, StorageUnavailable
 from app.application.audit.access_denied import ACCESS_DENIALS, AccessDenial
 from app.application.security.errors import RateLimited
 from app.domain.identity.errors import AccountLocked, PinChangeLocked, Unauthenticated
+from app.domain.imports.errors import ImportPreviewExpired
 from app.domain.shared.errors import Conflict, DomainError, Forbidden, NotFound, ValidationFailed
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,7 @@ _STATUS_BY_TYPE: Mapping[type[object], int] = {
     PinChangeLocked: HTTPStatus.LOCKED,
     RateLimited: HTTPStatus.TOO_MANY_REQUESTS,
     LinkExpired: HTTPStatus.GONE,
+    ImportPreviewExpired: HTTPStatus.GONE,
     StorageUnavailable: HTTPStatus.SERVICE_UNAVAILABLE,
 }
 # Règle métier violée (STOCK_INSUFFICIENT, PRICE_BELOW_MINIMUM…) : 422.

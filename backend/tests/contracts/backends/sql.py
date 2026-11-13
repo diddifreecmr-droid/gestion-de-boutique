@@ -33,6 +33,7 @@ from app.infrastructure.persistence.sqlalchemy.directories import (
 )
 from app.infrastructure.persistence.sqlalchemy.entitlements import SqlEntitlementOverrides
 from app.infrastructure.persistence.sqlalchemy.expense_query import SQL_EXPENSE_ADAPTERS
+from app.infrastructure.persistence.sqlalchemy.imports import SQL_IMPORT_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.platform_uow import (
     SqlIdentityUnitOfWork,
     SqlShopJoin,
@@ -100,6 +101,7 @@ SQL_REGISTRY: SqlRepositoryRegistry = (
     *SQL_REPORTING_ADAPTERS,
     *SQL_SYNC_REPOSITORIES,
     *SQL_ATTACHMENT_REPOSITORIES,
+    *SQL_IMPORT_REPOSITORIES,
 )
 
 

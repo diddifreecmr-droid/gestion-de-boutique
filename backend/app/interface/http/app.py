@@ -18,6 +18,8 @@ from app.interface.http.routes.customers import build_customers_router
 from app.interface.http.routes.expense_components import ExpensesComponents
 from app.interface.http.routes.expense_settings import build_expense_settings_router
 from app.interface.http.routes.expenses import build_expenses_router
+from app.interface.http.routes.import_components import ImportsComponents
+from app.interface.http.routes.imports import build_imports_router
 from app.interface.http.routes.installments import build_installments_router
 from app.interface.http.routes.inventories import build_inventories_router
 from app.interface.http.routes.journal import JournalComponents, build_journal_router
@@ -55,6 +57,7 @@ def create_app(
     reporting: ReportingComponents | None = None,
     sync: SyncComponents | None = None,
     attachments: AttachmentsComponents | None = None,
+    imports: ImportsComponents | None = None,
 ) -> FastAPI:
     """`journal`/`shops` absents : leurs routes ne sont pas montées (outils, tests ciblés).
 
@@ -103,5 +106,7 @@ def create_app(
         shop.include(build_sync_router(sync), Module.CORE)
     if attachments is not None:
         shop.include(build_attachments_router(attachments, prefix), Module.CORE)
+    if imports is not None:  # module à venir (T46) : éteint pour toute boutique
+        shop.include(build_imports_router(imports), Module.IMPORT)
     require_declared_modules(app, prefix)
     return app
