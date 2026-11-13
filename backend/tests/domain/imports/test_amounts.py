@@ -5,7 +5,13 @@ from decimal import Decimal
 
 import pytest
 
-from app.domain.imports.amounts import INTEGER_EXPECTED, NEGATIVE, TOO_LARGE, UNREADABLE, parse_amount
+from app.domain.imports.amounts import (
+    INTEGER_EXPECTED,
+    NEGATIVE,
+    TOO_LARGE,
+    UNREADABLE,
+    parse_amount,
+)
 from app.domain.imports.problems import CellRejected
 
 NBSP, NNBSP, THIN = "\N{NO-BREAK SPACE}", "\N{NARROW NO-BREAK SPACE}", "\N{THIN SPACE}"

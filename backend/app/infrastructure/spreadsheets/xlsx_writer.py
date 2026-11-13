@@ -113,7 +113,9 @@ class OpenpyxlWriter(SpreadsheetWriter):
         _instructions(wb, workbook)
         if workbook.lists:
             sources = [c.choices for c in workbook.spec.columns if c.choices is not None]
-            ordered = [workbook.lists[source] for source in dict.fromkeys(sources)]  # ordre des colonnes
+            ordered = [
+                workbook.lists[source] for source in dict.fromkeys(sources)
+            ]  # ordre des colonnes
             _validations(data, workbook, _lists_sheet(wb, ordered))
         return _saved(wb)
 

@@ -8,7 +8,7 @@ import pytest
 from openpyxl import load_workbook
 
 from app.application.imports.choices import CUSTOMER_KIND_LABELS, choice_list
-from app.application.imports.models import ImportModel, ImportModels, ModelCheck
+from app.application.imports.models import ImportModels, ModelCheck
 from app.application.imports.use_cases.preview_import import PreviewCommand
 from app.application.imports.workbook import ChoiceList, TemplateWorkbook
 from app.application.ports.uow import UnitOfWork
@@ -75,8 +75,10 @@ def test_template_download_fills_lists_from_the_shop() -> None:
     assert found.media_type.endswith("spreadsheetml.sheet")
     workbook = load_workbook(io.BytesIO(found.content))
     assert workbook.sheetnames == ["Articles", "Mode d'emploi", "Listes"]
-    lists = [[c for c in col if c is not None] for col in workbook["Listes"].iter_cols(values_only=True)]  # fmt: skip
-    assert lists[0][0] == "Lieux" and "Garoua" in lists[0]
+    columns = workbook["Listes"].iter_cols(values_only=True)
+    lists = [[c for c in col if c is not None] for col in columns]
+    assert lists[0][0] == "Lieux"
+    assert "Garoua" in lists[0]
     assert lists[1] == ["Catégories", "Moto", "Scooter"]  # distinctes, sans la casse
     help_text = [c for row in workbook["Mode d'emploi"].iter_rows(values_only=True) for c in row]
     assert "Profil : Motos et camions" in help_text
@@ -100,7 +102,9 @@ def test_choice_lists() -> None:
         categories = choice_list(uow, ChoiceSource.CATEGORIES)
     assert (kinds.values, kinds.strict) == (("Particulier", "Entreprise"), True)
     assert CUSTOMER_KIND_LABELS["Entreprise"] is CustomerKind.COMPANY
-    assert places.strict and places.values and not categories.strict
+    assert places.strict
+    assert places.values
+    assert not categories.strict
     assert categories.values == ()
     with pytest.raises(ValueError, match="distinctes"):
         ChoiceList(source=ChoiceSource.LOCATIONS, title="L", values=("a", "a"), strict=True)

@@ -70,9 +70,11 @@ def test_cancel_until_the_seventh_calendar_day_included() -> None:
     last_minute = datetime(2026, 11, 17, 22, 59, tzinfo=UTC)  # 17/11 23 h 59 à Douala
     found.cancel(performer=OWNER, now=last_minute)
     assert found.status is ImportStatus.CANCELLED
-    assert found.cancellation is not None and found.cancellation.by == OWNER.user_id
+    assert found.cancellation is not None
+    assert found.cancellation.by == OWNER.user_id
     events = found.events.pull()
-    assert isinstance(events[-1], ImportCancelled) and events[-1].audit_record().sensitive
+    assert isinstance(events[-1], ImportCancelled)
+    assert events[-1].audit_record().sensitive
     with pytest.raises(InvalidStateTransition):
         found.cancel(performer=OWNER, now=last_minute)
 

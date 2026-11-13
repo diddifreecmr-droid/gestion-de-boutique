@@ -24,7 +24,6 @@ from app.application.shops.ports import ShopCatalog
 from app.domain.shared.ids import ShopId
 from app.infrastructure.persistence.sqlalchemy.alerts import SqlAlertRepository
 from app.infrastructure.persistence.sqlalchemy.attachments import SQL_ATTACHMENT_REPOSITORIES
-from app.infrastructure.persistence.sqlalchemy.imports import SQL_IMPORT_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.audit_log import SqlAuditLog
 from app.infrastructure.persistence.sqlalchemy.catalog import SQL_CATALOG_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.directories import (
@@ -34,6 +33,7 @@ from app.infrastructure.persistence.sqlalchemy.directories import (
 )
 from app.infrastructure.persistence.sqlalchemy.entitlements import SqlEntitlementOverrides
 from app.infrastructure.persistence.sqlalchemy.expense_query import SQL_EXPENSE_ADAPTERS
+from app.infrastructure.persistence.sqlalchemy.imports import SQL_IMPORT_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.platform_uow import (
     SqlIdentityUnitOfWork,
     SqlShopJoin,

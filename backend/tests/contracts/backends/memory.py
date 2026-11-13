@@ -13,7 +13,6 @@ from app.application.shops.ports import ShopCatalog
 from app.domain.shared.ids import ShopId
 from app.infrastructure.persistence.memory.alerts import MemoryAlertRepository
 from app.infrastructure.persistence.memory.attachments import MEMORY_ATTACHMENT_REPOSITORIES
-from app.infrastructure.persistence.memory.imports import MEMORY_IMPORT_REPOSITORIES
 from app.infrastructure.persistence.memory.audit_log import MemoryAuditLog
 from app.infrastructure.persistence.memory.catalog import MEMORY_CATALOG_REPOSITORIES
 from app.infrastructure.persistence.memory.database import MemoryDatabase
@@ -25,6 +24,7 @@ from app.infrastructure.persistence.memory.directories import (
 from app.infrastructure.persistence.memory.entitlements import InMemoryEntitlementOverrides
 from app.infrastructure.persistence.memory.expenses import EXPENSE_REPOSITORIES
 from app.infrastructure.persistence.memory.identity import MemoryIdentityUnitOfWork
+from app.infrastructure.persistence.memory.imports import MEMORY_IMPORT_REPOSITORIES
 from app.infrastructure.persistence.memory.joined import ShopJoin
 from app.infrastructure.persistence.memory.platform_store import MemoryPlatformStore
 from app.infrastructure.persistence.memory.purchasing import MEMORY_PURCHASING_REPOSITORIES

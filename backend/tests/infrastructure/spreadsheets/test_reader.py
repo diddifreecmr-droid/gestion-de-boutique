@@ -36,18 +36,21 @@ def test_csv_variants_give_the_same_sheet(content: bytes) -> None:
 
 
 def test_quoted_csv_keeps_commas_inside_cells() -> None:
-    content = 'Nom,Prix\n"Pagne, wax","1,00"\n'.encode()
+    content = b'Nom,Prix\n"Pagne, wax","1,00"\n'
     _, sheet = TabularReader().read(content)
     assert sheet.rows == (SheetRow(2, ("Pagne, wax", "1,00")),)
 
 
 def test_accented_windows_csv_is_decoded() -> None:
     _, sheet = TabularReader().read("Nom;Catégorie\nRobe;Été\n".encode("cp1252"))
-    assert sheet.header == ("Nom", "Catégorie") and sheet.rows[0].cells == ("Robe", "Été")
+    assert sheet.header == ("Nom", "Catégorie")
+    assert sheet.rows[0].cells == ("Robe", "Été")
 
 
 def test_xlsx_gives_the_same_sheet_with_typed_cells() -> None:
-    content = xlsx([["Nom", "Prix"], ["Chemise", "9 000"], [None, None], ["Pagne wax", "1 250 000 FCFA"]])
+    content = xlsx(
+        [["Nom", "Prix"], ["Chemise", "9 000"], [None, None], ["Pagne wax", "1 250 000 FCFA"]]
+    )
     assert TabularReader().read(content) == (SpreadsheetFormat.XLSX, EXPECTED)
     typed = xlsx([["Nom", "Prix", "Le", None], ["Chemise", 9000.0, datetime(2026, 1, 2), None],
                   ["Robe", 12.5, True]])  # fmt: skip
@@ -91,7 +94,9 @@ def test_malformed_csv_is_refused() -> None:
 
 
 def test_cell_values() -> None:
-    assert cell_value("  ") is None and cell_value(" a ") == "a"
-    assert cell_value(2.0) == 2 and cell_value(0.1) == Decimal("0.1")
+    assert cell_value("  ") is None
+    assert cell_value(" a ") == "a"
+    assert cell_value(2.0) == 2
+    assert cell_value(0.1) == Decimal("0.1")
     assert cell_value(datetime(2026, 1, 1, 9, 5).time()) == "09:05"
     assert cell_value(object()) is not None

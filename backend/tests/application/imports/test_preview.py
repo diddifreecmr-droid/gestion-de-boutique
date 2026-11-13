@@ -23,12 +23,14 @@ from app.domain.shops.errors import ModuleDisabled
 from tests.application.imports.support import ImportWorld
 
 CSV = (
-    "Nom;Prix;Lieu\nChemise;9 000;Garoua\nChemise;9 500;\nPantalon;;\nRobe;12,5;\n"
-    "Pagne;1 250 000 FCFA;Lune\n"
-).encode()
+    b"Nom;Prix;Lieu\nChemise;9 000;Garoua\nChemise;9 500;\nPantalon;;\nRobe;12,5;\n"
+    b"Pagne;1 250 000 FCFA;Lune\n"
+)
 
 
-def preview(world: ImportWorld, actor: Actor, content: bytes, kind: str = "articles") -> ImportPreview:
+def preview(
+    world: ImportWorld, actor: Actor, content: bytes, kind: str = "articles"
+) -> ImportPreview:
     command = PreviewCommand(kind=kind, content=content, file_name="stock.csv")
     return world.imports.http.preview.execute(actor, command)
 

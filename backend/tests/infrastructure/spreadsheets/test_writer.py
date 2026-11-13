@@ -42,8 +42,14 @@ def test_template_dropdowns_point_to_the_lists() -> None:
     content = OpenpyxlWriter().template(WORKBOOK)
     lists = _sheet(content, "Listes")
     assert [c.value for c in lists["A"] if c.value is not None] == ["Lieux", "Boutique", "Dépôt"]
-    assert [c.value for c in lists["B"] if c.value is not None] == ["Catégories"]  # aucune catégorie : pas de liste
-    assert [c.value for c in lists["C"] if c.value is not None] == ["Types de client", "Particulier", "Entreprise"]
+    assert [c.value for c in lists["B"] if c.value is not None] == [
+        "Catégories"
+    ]  # aucune catégorie : pas de liste
+    assert [c.value for c in lists["C"] if c.value is not None] == [
+        "Types de client",
+        "Particulier",
+        "Entreprise",
+    ]
     validations = {
         str(v.sqref): (v.formula1, v.errorStyle)
         for v in _sheet(content, "Articles").data_validations.dataValidation

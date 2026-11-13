@@ -123,7 +123,8 @@ def test_cleaner_problems(kind: ColumnKind, raw: CellValue, problem: str) -> Non
 
 
 def test_column_and_problem_invariants() -> None:
-    assert NAME.title == "Nom *" and QTY.title == "Quantité"
+    assert NAME.title == "Nom *"
+    assert QTY.title == "Quantité"
     assert fold_header(" Quantité * ") == "quantite"
     with pytest.raises(ValueError, match="snake_case"):
         ColumnSpec(key="Nom", header="Nom", subject="le nom")
