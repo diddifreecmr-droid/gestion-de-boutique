@@ -99,6 +99,8 @@ class SqlDeviceSessionRepository(
             "sliding": aggregate.sliding,
             "revoked": aggregate.revoked,
             "revoked_at": _optional(aggregate.revoked_at),
+            "previous_refresh_hash": aggregate.previous_refresh_hash,
+            "rotated_at": _optional(aggregate.rotated_at),
         }
 
     def _from_row(self, row: sa.RowMapping) -> DeviceSession:
@@ -114,6 +116,8 @@ class SqlDeviceSessionRepository(
             sliding=bool(row["sliding"]),
             revoked=bool(row["revoked"]),
             revoked_at=from_db_optional(row["revoked_at"]),
+            previous_refresh_hash=row["previous_refresh_hash"],
+            rotated_at=from_db_optional(row["rotated_at"]),
             version=int(row["version"]),
         )
 

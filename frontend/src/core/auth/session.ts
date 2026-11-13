@@ -8,7 +8,13 @@ import type { ChangePinRequest, TokenResponse } from "../api/types";
 import { createStore, type Store } from "../state/store";
 import { parseMe } from "./me";
 import { singleFlight } from "./singleFlight";
-import { endNotice, endsSession, SessionEndedError, type SessionState } from "./sessionState";
+import {
+  endNotice,
+  endsSession,
+  isServerVerdict,
+  SessionEndedError,
+  type SessionState,
+} from "./sessionState";
 
 /** Le jeton est rafraîchi avant son expiration quand il lui reste moins de 30 s. */
 export const REFRESH_MARGIN_MS = 30_000;
@@ -79,8 +85,9 @@ export class Session {
       return await call(token);
     } catch (error) {
       this.notePinChange(error);
-      const expired = error instanceof ApiError && error.status === 401;
-      if (!expired) throw error;
+      // 401 sans enveloppe de l'API (proxy, portail captif) : incident transitoire, remonté
+      // tel quel ; ni refresh ni déconnexion.
+      if (!(isServerVerdict(error) && error.status === 401)) throw error;
       if (error.code === "SESSION_REVOKED") throw this.end(error);
       const fresh = await this.refreshAfter(token);
       try {
@@ -98,7 +105,7 @@ export class Session {
       await this.refreshOnce();
       await this.loadMe();
     } catch (error) {
-      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+      if (endsSession(error) || (isServerVerdict(error) && error.status === 403)) {
         this.signOut(endNotice(error, true));
       } else if (error instanceof SessionEndedError) {
         return; // l'état « déconnecté » est déjà posé par end()

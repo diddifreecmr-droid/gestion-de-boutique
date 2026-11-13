@@ -5,6 +5,10 @@
 - `expires_at` : fin de validité. Glissante (`sliding=True`, utilisateurs de boutique : chaque
   rotation la repousse de la durée de vie) ou absolue (`sliding=False`, admin plateforme : 8 h
   depuis la connexion, § 15.1).
+- `previous_refresh_hash` / `rotated_at` : empreinte du jeton que la dernière rotation a
+  remplacé et instant de cette rotation ; servent seulement à tolérer, pendant
+  `REFRESH_REPLAY_GRACE`, une réponse de rafraîchissement perdue (`refresh_rotation.py`).
+  Une nouvelle connexion les efface.
 - `last_seen` : dernière activité, mise à jour à la connexion et à chaque rafraîchissement
   (granularité : la durée du jeton d'accès, pour ne pas écrire à chaque requête).
 - Une session révoquée ne revit jamais : une nouvelle connexion en ouvre une autre.
@@ -20,6 +24,7 @@ from app.domain.identity.events import (
     SessionId,
     SessionRevokedEvent,
 )
+from app.domain.identity.refresh_rotation import RefreshVerdict, judge_refresh
 from app.domain.shared.business_day import require_aware
 from app.domain.shared.errors import InvalidStateTransition, ValidationFailed
 from app.domain.shared.ids import DeviceId, UserId
@@ -55,6 +60,8 @@ class DeviceSession:
     sliding: bool
     revoked: bool = False
     revoked_at: datetime | None = None
+    previous_refresh_hash: str | None = None
+    rotated_at: datetime | None = None
     version: int = 0
     events: IdentityEvents = field(default_factory=IdentityEvents, repr=False)
 
@@ -90,10 +97,27 @@ class DeviceSession:
         """Comparaison à temps constant de l'empreinte présentée."""
         return hmac.compare_digest(self.refresh_hash, refresh_hash)
 
+    def judge_refresh(
+        self, presented_hash: str, successor_hash: str, device_id: DeviceId, now: datetime
+    ) -> RefreshVerdict:
+        """Verdict du jeton présenté (session active exigée), voir `refresh_rotation.py`."""
+        self._require_active(now)
+        return judge_refresh(
+            current_hash=self.refresh_hash,
+            previous_hash=self.previous_refresh_hash,
+            rotated_at=self.rotated_at,
+            presented_hash=presented_hash,
+            successor_hash=successor_hash,
+            same_device=device_id == self.device_id,
+            now=now,
+        )
+
     def rotate(self, refresh_hash: str, now: datetime, lifetime: timedelta) -> None:
-        """Nouveau jeton de rafraîchissement ; l'ancien devient une réutilisation."""
+        """Nouveau jeton ; l'ancien n'est plus rejouable qu'un court instant (même appareil)."""
         self._require_active(now)
         instant = require_aware(now)
+        self.previous_refresh_hash = self.refresh_hash
+        self.rotated_at = instant
         self.refresh_hash = refresh_hash
         self.last_seen = instant
         if self.sliding:
@@ -107,6 +131,8 @@ class DeviceSession:
         instant = require_aware(now)
         self.device_label = _clean_label(device_label)
         self.refresh_hash = refresh_hash
+        self.previous_refresh_hash = None
+        self.rotated_at = None
         self.last_seen = instant
         self.expires_at = instant + _require_lifetime(lifetime)
 

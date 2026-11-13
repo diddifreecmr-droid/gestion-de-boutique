@@ -16,7 +16,7 @@ from app.domain.identity.phone import PhoneNumber
 from app.domain.identity.user import User
 from app.domain.shared.ids import DeviceId, ShopId
 from app.infrastructure.auth.jwt_tokens import JwtTokenService
-from app.infrastructure.auth.opaque_tokens import RandomRefreshSecrets
+from app.infrastructure.auth.opaque_tokens import RandomRefreshSecrets, rotation_key_from
 from app.infrastructure.persistence.memory.clock import FixedClock
 from app.infrastructure.persistence.memory.identity import MemoryIdentityUnitOfWorkFactory
 from app.infrastructure.persistence.memory.memberships import InMemoryMembershipDirectory
@@ -70,7 +70,7 @@ class World:
     def __post_init__(self) -> None:
         self.uow_factory = MemoryIdentityUnitOfWorkFactory(self.store, [self.recorder])
         self.tokens = JwtTokenService(SECRET, self.clock)
-        self.secrets = RandomRefreshSecrets()
+        self.secrets = RandomRefreshSecrets(rotation_key_from(SECRET))
         self.issuer = SessionIssuer(self.tokens, self.secrets, self.policy_settings)
         self.login_uc = Login(
             self.uow_factory, self.hasher, self.issuer, self.clock, self.memberships
