@@ -125,12 +125,17 @@ describe("console — modules d'une boutique", () => {
   it("refus 422 du serveur : message lisible, la fiche reste", async () => {
     const { user } = openSheet(
       MINIMAL,
-      apiError(422, "MODULE_DEPENDENCY", "Transport a besoin de Transferts"),
+      apiError(422, "MODULE_DEPENDENCY", "Transport a besoin de Transferts", {
+        module: "transport",
+        requires: "transfers",
+      }),
     );
     await user.click(await screen.findByRole("switch", { name: "Dépenses" }));
     await user.click(saveButton());
     expect(
-      await screen.findByText("Refusé par le serveur : Transport a besoin de Transferts."),
+      await screen.findByText(
+        "Le module « Transport » a besoin du module « Transferts » : activez-le aussi, ou désactivez « Transport ». Rien n'a été enregistré.",
+      ),
     ).toBeVisible();
     expect(screen.getByRole("heading", { name: "Motos Garoua" })).toBeVisible();
   });

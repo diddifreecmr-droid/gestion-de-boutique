@@ -83,6 +83,6 @@ describe("accueils du comptable et du chauffeur (UC-TDB-05)", () => {
     expect(() => homeBlock({ role: "driver", today: "2026-11-11" }, "driver")).toThrow(
       "Accueil « driver » sans son bloc",
     );
-    expect(homeBlock(homeBody("driver"), "driver").current_trip.lot).toBe(2);
+    expect(homeBlock(homeBody("driver"), "driver").current_trip?.lot).toBe(2);
   });
 });

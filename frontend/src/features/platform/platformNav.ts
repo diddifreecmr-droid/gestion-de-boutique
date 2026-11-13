@@ -5,6 +5,7 @@
  */
 import { ApiError, NetworkError } from "../../core/api/errors";
 import { OFFLINE_MESSAGE } from "../expenses/expenseErrors";
+import { moduleRefusal } from "./moduleRefusals";
 
 export const VIEW = { create: "nouvelle" } as const;
 
@@ -46,6 +47,8 @@ function fieldsText(error: ApiError): string {
 export function platformErrorMessage(error: unknown): string {
   if (error instanceof NetworkError) return OFFLINE_MESSAGE;
   if (!(error instanceof ApiError)) throw error;
+  const refusal = moduleRefusal(error);
+  if (refusal !== undefined) return refusal;
   switch (error.code) {
     case "VALIDATION_ERROR":
       return fieldsText(error);

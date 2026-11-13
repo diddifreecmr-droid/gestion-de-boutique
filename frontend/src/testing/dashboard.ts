@@ -11,6 +11,7 @@ import type {
   PeriodOut,
   Valuation,
 } from "../core/gateways/reportingContract";
+import { ALL_MODULES } from "../core/profile/modules";
 import { profileBody } from "./catalog";
 import { json, meBody, ROUTES, SHOP_A, tokenBody, type Reply } from "./fakeApi";
 
@@ -25,10 +26,8 @@ export const HOME = `GET ${API}/home`;
 export const PRICE_REQUESTS = `GET ${API}/price-requests`;
 export const PROFILE = `GET ${API}/profile`;
 
-/** `GET /profile` avec les modules actifs donnés (le module `dashboard` par défaut). */
-export function modulesProfile(
-  modules: string[] = ["core", "audit", "catalog", "sales", "dashboard"],
-) {
+/** `GET /profile` avec les modules actifs donnés (tous par défaut, comme le profil Motos). */
+export function modulesProfile(modules: readonly string[] = ALL_MODULES) {
   return json(200, { ...profileBody("owner"), enabled_modules: modules });
 }
 
@@ -152,8 +151,8 @@ export function signedInAs(role: string): Record<string, Reply> {
 }
 
 /**
- * Écrans d'un rôle : session, `GET /home` ; propriétaire : tableau du jour, demandes de prix et
- * profil avec le module `dashboard` actif.
+ * Écrans d'un rôle : session, profil avec tous les modules actifs, `GET /home` ; propriétaire :
+ * tableau du jour et demandes de prix.
  */
 export function homeRoutes(
   role: "owner" | "seller" | "accountant" | "driver",
@@ -166,7 +165,7 @@ export function homeRoutes(
           [PRICE_REQUESTS]: json(200, []),
           [PROFILE]: modulesProfile(),
         }
-      : { [HOME]: json(200, homeBody(role)) };
+      : { [HOME]: json(200, homeBody(role)), [PROFILE]: modulesProfile() };
   return { ...signedInAs(role), ...home, ...extra };
 }
 
