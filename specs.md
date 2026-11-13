@@ -281,13 +281,13 @@ Un profil est un objet de domaine immuable, versionné dans le code ; la boutiqu
 
 | Élément du profil | Motos et camions | Prêt-à-porter | Textile |
 | --- | --- | --- | --- |
-| Modules | tous | tous sauf `transport` ; `transfers` si réserve | idem |
+| Modules | tous | tous sauf `transport` et `transfers` (pas de réserve au Lot 3, QC-5) | idem |
 | Champs d'article | marque*, modèle*, cylindrée | nom*, référence, catégorie, type, marque | nom*, référence, type, unité*, vente à la pièce, longueur de pièce |
-| Détails de vente | couleur, châssis (unique), moteur — 1 par unité | taille, couleur par ligne | longueur / mode (mètre ou pièce) |
+| Détails de vente | couleur, châssis (unique), moteur — 1 par unité | taille, couleur et prix négocié par ligne (aucune remise, QC-2) | longueur / mode (mètre ou pièce) |
 | Unités | `UNIT` entier | `UNIT` entier | `METER` (0,1) ou `PIECE` |
 | Rôles | Propriétaire, Vendeur, Comptable, Chauffeur | Propriétaire, Employé, Comptable | idem |
 | Libellés | « Vendeur » | « Employé » | « Employé » |
-| Défauts | 3 lieux, achats → Garoua-Boulaï, reçu 80 mm | 1 boutique, reçu 58 mm | idem |
+| Défauts | 3 lieux, achats → Garoua-Boulaï, reçu 80 mm | 1 lieu « Boutique » (point de vente, reçoit les achats), reçu 58 mm, `exchange_days` 7, `employee_exchange_allowed` faux | idem |
 | Menus (≤ 5 entrées) | CDC § 17.4 | § 18.5 | § 19.5 |
 
 **Modules par boutique (décision client du 2026-11-12, § 15.1) — mise en œuvre serveur.**
@@ -672,8 +672,6 @@ erDiagram
         uuid seller_id FK
         uuid customer_id FK
         text kind
-        bigint gross_total
-        bigint discount
         bigint total
         bool offline
         bool stock_to_verify
@@ -803,6 +801,7 @@ erDiagram
     PAYROLL ||--o{ PAYROLL_ADJUSTMENT : ajuste
     PAYROLL ||--o{ PAYROLL_PAYMENT : réglée_par
     IMPORT_BATCH ||--o{ STOCK_MOVEMENT : crée
+    IMPORT_BATCH ||--|{ IMPORT_ITEM : trace
     ATTACHMENT }o--|| SHOP : appartient
 
     EXPENSE {
@@ -927,6 +926,16 @@ erDiagram
         int rows_imported
         int rows_ignored
         text status
+        timestamptz imported_at
+        timestamptz cancelled_at
+    }
+    IMPORT_ITEM {
+        uuid id PK
+        uuid batch_id FK
+        int row_number
+        text entity_type
+        uuid entity_id
+        text action
     }
     ATTACHMENT {
         uuid id PK
@@ -945,6 +954,7 @@ Les montants de `PAYROLL` sont figés au moment du paiement (paie verrouillée, 
 
 - Alembic, dans l'adaptateur SQL uniquement ; une migration par changement, revue en PR, jamais éditée après fusion.
 - Les données de départ d'un profil (lieux, catégories, modes de paiement, villes) sont créées par le cas d'utilisation `OpenShop`, **pas** par une migration : elles sont propres à chaque boutique.
+- Lot 3 (décisions du 2026-11-13, `docs/plan-lot3.md`) : deux migrations seulement, chaînées après `0017_upcoming_modules` — `0018_exchange_rights` (réglage `employee_exchange_allowed`, T29) puis `0019_import_batches` (`import_batch`, `import_item`, T32). Aucune migration de remise (QC-2) ni de stock au centimètre (QC-3).
 
 ## 6. API Design
 
@@ -978,7 +988,16 @@ Les montants de `PAYROLL` sont figés au moment du paiement (paie verrouillée, 
 | 422 | `PRICE_BELOW_MINIMUM` | `details: {min_price, request_required: true}` |
 | 422 | `CREDIT_LIMIT_EXCEEDED`, `OVERPAYMENT`, `DATE_OUT_OF_RANGE`, `INVALID_STATE_TRANSITION`, `PIN_TOO_SIMPLE` | règles métier |
 | 422 | `MODULE_MANDATORY`, `MODULE_DEPENDENCY`, `MODULE_NOT_AVAILABLE`, `MODULE_NOT_YET_AVAILABLE` | combinaison de modules refusée (console plateforme, § 4.5) ; `MODULE_NOT_YET_AVAILABLE` : module à venir |
+| 422 | `PROFILE_CHANGE_BLOCKED` | Lot 3 (QC-1) : changement de type d'une boutique qui a des données — `details.blocking` par nature avec compte (articles, mouvements, ventes, achats, dépenses, créances, membres d'un rôle absent du profil) |
+| 422 | `EXCHANGE_PERIOD_OVER` | Lot 3 (QC-4) : échange par l'employé après le délai — `details: {sold_on, exchange_days}` (le propriétaire passe outre, journal sensible) |
+| 400 | `IMPORT_FILE_INVALID` | Lot 3 : fichier illisible, `.xls`, feuille vide — `details.reason` lisible |
+| 422 | `IMPORT_TOO_MANY_ROWS` | Lot 3 : plus de 5 000 lignes — `details: {max: 5000, rows}` |
+| 410 | `IMPORT_PREVIEW_EXPIRED` | Lot 3 : `preview_id` de plus de 30 min |
+| 422 | `IMPORT_CANCEL_BLOCKED` | Lot 3 (QC-6) : une vente, un achat, un ajustement, un inventaire ou un versement touche le lot — `details.blocking[]` (type, numéro) |
+| 422 | `IMPORT_CANCEL_TOO_LATE` | Lot 3 (QC-6) : au-delà de 7 jours calendaires (journée de Douala) — `details.imported_on` |
 | 423 | `ACCOUNT_LOCKED` | `details: {until}` |
+
+Aucun code de remise : il n'y a pas de remise (QC-2) ; une ligne vendue sous le prix minimum garde les règles du Lot 1 (avertissement + journal, `PRICE_BELOW_MINIMUM` seulement si le réglage d'accord est actif).
 
 ### 6.3 Catalogue des routes
 
@@ -986,6 +1005,7 @@ Les montants de `PAYROLL` sont figés au moment du paiement (paie verrouillée, 
 | --- | --- | --- |
 | Auth | `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`, `POST /auth/change-pin`, `GET /me` (boutiques + rôles) | 1 |
 | Plateforme | `POST /platform/shops`, `GET /platform/shops`, `PATCH /platform/shops/{id}` (modules, statut) | 1 |
+| Plateforme | `POST /platform/shops/{id}/profile` (changer le type d'une boutique **sans données**, admin seul, QC-1) ; ouverture avec `profile_code` = `motos`, `apparel`, `textile` | 3 |
 | Boutique | `GET /shops/{id}/profile`, `GET/PATCH /settings`, `GET/POST/PATCH /locations`, `GET/POST/PATCH /payment-modes`, `GET/POST /members`, `POST /members/{uid}/reset-pin`, `POST /members/{uid}/revoke-devices`, `POST /members/{uid}/unlock` | 1 |
 | Catalogue | `GET/POST /articles`, `PATCH /articles/{id}`, `PUT /articles/{id}/prices`, `POST /articles/{id}/archive`, `GET /articles/{id}/movements` | 1 |
 | Stock | `GET /stock` (matrice article × lieu), `GET /stock/value`, `GET /stock/damaged`, `POST /adjustments`, `POST /inventories`, `PUT /inventories/{id}/counts`, `POST /inventories/{id}/validate` | 1 |
@@ -1000,7 +1020,8 @@ Les montants de `PAYROLL` sont figés au moment du paiement (paie verrouillée, 
 | Sync | `GET /offline-snapshot?since=`, `POST /sync` | 1 |
 | Transferts | `GET/POST /transfers`, `POST /transfers/{id}/receptions`, `POST /transfers/{id}/cancel`, `POST /stock/damaged/{id}/restore` | 2 |
 | Transport | `trucks`, `drivers`, `trips` (+ `/steps`, `/loads`, `/expenses`, `/close`, `/cancel`), `trip-expenses/{id}/decision`, `bonuses`, `advances`, `payrolls/{month}` (+ `/adjustments`, `/payments`), `trucks/{id}/report`, `fleet` | 2 |
-| Import | `GET /imports/templates/{kind}`, `POST /imports/preview`, `POST /imports`, `POST /imports/{id}/cancel`, `GET /imports/{id}/errors.xlsx` | 3 |
+| Ventes (Lot 3) | `POST /sales` : panier multi-lignes, `details` taille et couleur, `unit_price` négocié **par ligne** (aucun champ de remise, QC-2), `sale_mode` `meter`/`piece` en Textile ; `POST /sales/{id}/returns` avec échange (délai `exchange_days`, employé si `employee_exchange_allowed`, QC-4) ; `GET /articles?with_thumbnails=true` ; `POST /adjustments` motif Chute | 3 |
+| Import | `GET /imports/templates/{kind}` (`kind` = `articles`, `opening_stock`, `customers`, `receivables`, `suppliers`), `POST /imports/preview`, `POST /imports`, `GET /imports`, `GET /imports/{id}`, `POST /imports/{id}/cancel`, `GET /imports/{id}/errors.xlsx` ; `trucks` et `drivers` reportés au Lot 2 (404 au Lot 3) | 3 |
 
 ### 6.4 Contrat clé — créer une vente
 
@@ -1399,12 +1420,14 @@ flowchart LR
         L2d["Primes, avances, paie, bilan camion"]
     end
     subgraph L3["Lot 3 — Extension"]
-        L3a["Import Excel (7 modèles)"]
-        L3b["Profil Prêt-à-porter (panier, remise, échange)"]
+        L3a["Import Excel (5 modèles ;<br/>camions et chauffeurs au Lot 2)"]
+        L3b["Profil Prêt-à-porter (panier multi-lignes,<br/>prix négocié par ligne, échange)"]
         L3c["Profil Textile (mètre, pièce, yard, chute)"]
     end
     L1 --> L2 --> L3
 ```
+
+Lot 3 (décision client du 2026-11-13) : il passe **avant** le Lot 2 ; 5 modèles d'import (Articles, Stock de départ, Clients, Créances en cours, Fournisseurs) ; les modèles **Camions** et **Chauffeurs** sont reportés au Lot 2 avec le transport. Aucune remise (QC-2).
 
 Chaque lot se termine par : tous les tests verts, critères d'acceptation du lot vérifiés, démonstration et mise en production sur le VPS et Vercel. Le découpage en micro-tâches par sous-agent (`@backend`, `@frontend`, `@qa`) se fera à l'étape 4.
 
@@ -1441,6 +1464,12 @@ Chaque lot se termine par : tous les tests verts, critères d'acceptation du lot
 | Changer mon code | **Compteur d'essais séparé** de la connexion : 5 codes actuels faux ⇒ changement de code bloqué 15 min (`PIN_CHANGE_LOCKED`, 423) ; la session et la connexion restent utilisables ; un code provisoire du propriétaire lève ce blocage |
 | Rafraîchissement perdu (audit du 2026-11-13) | Le jeton tout juste remplacé reste rejouable **30 s** (`REFRESH_REPLAY_GRACE`), depuis le **même appareil** seulement : le serveur renvoie le même successeur, sans révoquer ni alerter. Après 30 s, ou depuis un autre appareil : révocation et journal comme avant (§ 8.1) |
 | Q-51 Rapidité et cache | < 2 s aux visites suivantes ; première visite la plus légère possible avec indicateur de progression ; politique de cache § 7.3 |
+| QC-1 Type de boutique (2026-11-13) | La boutique « Pret a Porter » ouverte en Motos en production est **recréée** sur le profil Prêt-à-porter, l'ancienne passée « suspendue ». La console garde « Changer le type de boutique », permis **seulement** pour une boutique sans données (sinon `422 PROFILE_CHANGE_BLOCKED`) (T27) |
+| QC-2 Remise (2026-11-13) | **Pas de remise** (« On ne gère pas les remises… on enregistre juste les prix au moment de la vente… les prix ça se négocie »). Le prix de chaque ligne est saisi ou négocié à la vente ; règles du prix minimum du Lot 1 inchangées (avertissement + journal). Aucune architecture de remise (ni champ, ni table, ni code d'erreur) |
+| QC-3 Précision textile (2026-11-13) | Stock textile **au dixième de mètre** (inchangé) : une pièce de 5,49 m retire 5,5 m ; les écarts se corrigent par inventaire ou par chute. Pas de stock au centimètre |
+| QC-4 Échange par l'employé (2026-11-13) | Réglage `employee_exchange_allowed`, **désactivé par défaut**. Activé : l'employé échange **ses** ventes, **dans** le délai `exchange_days` (sinon `422 EXCHANGE_PERIOD_OVER`). Le propriétaire peut dépasser le délai (journal sensible) |
+| QC-5 Réserve (2026-11-13) | Pas de réserve au Lot 3 : un seul lieu « Boutique », qui reçoit les achats. Créer un entrepôt reste possible (Réglages → Lieux) avec un avertissement (déplacement disponible plus tard) |
+| QC-6 Annulation d'un import (2026-11-13) | Annuler = **archiver** : rien n'est effacé (articles archivés, fournisseurs et clients désactivés, créances annulées, stock de départ retiré par un mouvement « Annulation ») ; noms, références et téléphones **libérés**. Refusée (`422 IMPORT_CANCEL_BLOCKED`) si une vente, un achat, un ajustement, un inventaire ou un versement touche un élément du lot ; possible pendant **7 jours calendaires** à partir de la date de l'import, journée de Douala (`422 IMPORT_CANCEL_TOO_LATE` ensuite) |
 
 ### 15.2 Questions ouvertes
 
