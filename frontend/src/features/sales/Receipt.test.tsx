@@ -103,6 +103,7 @@ const RECEIPT: Receipt = {
   provisional_number: "P-07",
   sold_at: NOW,
   seller_name: "Issa Vendeur",
+  seller_role_label: "Vendeur",
   customer: { name: "Moussa Abdou", phone: "+237690000000" },
   lines: [
     {
