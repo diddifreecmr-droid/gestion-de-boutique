@@ -20,7 +20,9 @@ import { stockViewPath, VIEW } from "../features/stock/stockNav";
 import { PURCHASE_ROLES, PURCHASES_KEY } from "../features/purchasing/purchasingNav";
 import { RECEIVABLE_ROLES, RECEIVABLES_KEY } from "../features/receivables/receivablesNav";
 import { DASHBOARD_KEY } from "../features/dashboard/dashboardNav";
+import { IMPORTS_KEY } from "../features/imports/importsNav";
 import { DashboardSection } from "./DashboardSection";
+import { ImportsSection } from "./ImportsSection";
 import { NotFoundPage } from "./NotFoundPage";
 import { MorePage } from "./MorePage";
 import { ACCOUNT_KEY } from "./RoleHome";
@@ -80,6 +82,8 @@ export function SectionPage() {
   }
   // « Tableau de bord » : « Plus » du propriétaire, si le module `dashboard` est actif (§ 15.1).
   if (section === DASHBOARD_KEY && role === "owner") return <DashboardSection shopId={shopId} />;
+  // « Import » : sans entrée de menu servie pour l'instant ; module `import` actif seulement (T46).
+  if (section === IMPORTS_KEY) return <ImportsSection shopId={shopId} role={role} />;
   const entry = findSection(profile, section);
   if (entry === null) return <NotFoundPage />;
   if (entry.key === MORE_KEY) return <MorePage />;

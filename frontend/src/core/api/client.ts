@@ -88,8 +88,22 @@ export interface ApiClient {
     path: P,
     options: CallOptions<never> & { form: FormData },
   ): Promise<ResponseOf<P, "post">>;
+  /** Fichier binaire (modèle `.xlsx`) : contenu et nom donné par `Content-Disposition`. */
+  getFile(path: PathsWith<"get">, options?: CallOptions<never>): Promise<FetchedFile>;
   /** URL navigateur d'un chemin du contrat (ex. lien signé d'une pièce jointe). */
   href(path: string): string;
+}
+
+export interface FetchedFile {
+  blob: Blob;
+  /** Nom proposé par le serveur ; `null` sans en-tête `Content-Disposition` lisible. */
+  fileName: string | null;
+}
+
+/** `attachment; filename="modele.xlsx"` → `modele.xlsx`. */
+export function dispositionName(header: string | null): string | null {
+  const found = header === null ? null : /filename="?([^";]+)"?/i.exec(header);
+  return found?.[1] ?? null;
 }
 
 export function resolveUrl(base: string, path: string): string {
@@ -120,9 +134,10 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
   async function call(
     method: Method,
     path: string,
-    init: CallOptions<unknown> & { form?: FormData },
+    init: CallOptions<unknown> & { form?: FormData; file?: true },
   ): Promise<unknown> {
-    const headers = new Headers({ Accept: "application/json", "X-Device-Id": options.deviceId() });
+    const accept = init.file === true ? "*/*" : "application/json";
+    const headers = new Headers({ Accept: accept, "X-Device-Id": options.deviceId() });
     if (init.token !== undefined) headers.set("Authorization", `Bearer ${init.token}`);
     if (init.body !== undefined) headers.set("Content-Type", "application/json");
     const payload = init.form ?? (init.body === undefined ? undefined : JSON.stringify(init.body));
@@ -150,6 +165,10 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
       throw error;
     }
     options.onResponse?.();
+    if (init.file === true && response.ok) {
+      const fileName = dispositionName(response.headers.get("Content-Disposition"));
+      return { blob: await response.blob(), fileName } satisfies FetchedFile;
+    }
     const body = await readJson(response);
     if (!response.ok) throw parseErrorEnvelope(response.status, body);
     return body;
@@ -161,6 +180,7 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     patch: (path, init = {}) => call("patch", path, init) as never,
     put: (path, init = {}) => call("put", path, init) as never,
     postForm: (path, init) => call("post", path, init) as never,
+    getFile: (path, init = {}) => call("get", path, { ...init, file: true }) as never,
     href: (path) => resolveUrl(options.base, path),
   };
 }
