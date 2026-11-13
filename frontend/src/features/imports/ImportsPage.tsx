@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, History } from "lucide-react";
 import type { ImportBatch, ImportPreview } from "../../core/gateways/importsContract";
 import { useImports } from "../../core/gateways/httpImports";
 import { Button } from "../../shared/ui";
 import { asError } from "../expenses/useLoad";
+import { HISTORY_LABEL } from "./BatchList";
 import { FileStep } from "./FileStep";
 import { importFailure } from "./importErrors";
 import type { ImportModel } from "./importModels";
@@ -24,6 +25,8 @@ export interface ImportsPageProps {
   shopId: string;
   models: readonly ImportModel[];
   save: SaveFile;
+  /** Ouvre « Imports passés » (T45) ; absent : pas de lien. */
+  onHistory?: () => void;
 }
 
 /**
@@ -31,7 +34,7 @@ export interface ImportsPageProps {
  * modèle → fichier → aperçu (aucune écriture) → rapport `IMP-…`. Aperçu expiré (410) ou devenu
  * inutilisable : retour au dépôt du fichier avec le message. Une erreur imprévue est relancée.
  */
-export function ImportsPage({ shopId, models, save }: ImportsPageProps) {
+export function ImportsPage({ shopId, models, save, onHistory }: ImportsPageProps) {
   const gateway = useImports();
   const [stage, setStage] = useState<Stage>({ step: 1 });
   const [busy, setBusy] = useState<Busy>(null);
@@ -78,6 +81,11 @@ export function ImportsPage({ shopId, models, save }: ImportsPageProps) {
       )}
       <h1 className="m-0 text-title font-bold text-text">{title}</h1>
       <p className="m-0 text-body text-text-muted">Étape {stage.step} sur 4</p>
+      {stage.step === 1 && onHistory !== undefined && (
+        <Button variant="secondary" icon={History} onClick={onHistory}>
+          {HISTORY_LABEL}
+        </Button>
+      )}
       {stage.step === 1 && (
         <ModelChoice
           models={models}

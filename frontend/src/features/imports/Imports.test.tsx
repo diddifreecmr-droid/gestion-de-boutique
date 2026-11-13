@@ -1,14 +1,15 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi, type Mock } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Role } from "../../core/auth/me";
 import { ApiError, NetworkError } from "../../core/api/errors";
-import type { ImportsGateway } from "../../core/gateways/importsContract";
 import { ImportsContext } from "../../core/gateways/httpImports";
 import { MODULE_DISABLED_MESSAGE, type ModuleCode } from "../../core/profile/modules";
 import { axeViolations } from "../../testing/axe";
 import { SHOP_A } from "../../testing/fakeApi";
-import { forcedModules, importBatch, importPreview, PREVIEW_ID } from "../../testing/imports";
+import { fakeImportsGateway, type ImportsMocks } from "../../testing/importsGateway";
+import { forcedModules, importPreview, PREVIEW_ID } from "../../testing/imports";
+import type { ImportsGateway } from "../../core/gateways/importsContract";
 import { DOWNLOAD_LABEL, DROP_LABEL } from "./FileStep";
 import { EXPIRED, importFailure, NOTHING_VALID } from "./importErrors";
 import { modelsFor } from "./importModels";
@@ -16,19 +17,10 @@ import { ImportsPage } from "./ImportsPage";
 import type { SaveFile } from "./saveFile";
 import { CONFIRM_LABEL } from "./PreviewStep";
 
-type Mocks = { [K in keyof ImportsGateway]: Mock<ImportsGateway[K]> };
-
-function fakeGateway(overrides: Partial<Mocks> = {}): Mocks {
-  return {
-    template: vi.fn(() => Promise.resolve({ blob: new Blob(["x"]), fileName: "modele.xlsx" })),
-    preview: vi.fn(() => Promise.resolve(importPreview())),
-    confirm: vi.fn(() => Promise.resolve(importBatch())),
-    ...overrides,
-  };
-}
+const fakeGateway = fakeImportsGateway;
 
 interface Setup {
-  gateway?: Mocks;
+  gateway?: ImportsMocks;
   role?: Role;
   off?: ModuleCode[];
 }

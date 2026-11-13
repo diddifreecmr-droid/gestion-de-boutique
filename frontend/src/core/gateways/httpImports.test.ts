@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ApiError } from "../api/errors";
 import { signedIn } from "../../testing/catalog";
 import { apiError, createFakeFetch, json, SHOP_A, type Reply } from "../../testing/fakeApi";
-import { importBatch, importPreview, PREVIEW_ID } from "../../testing/imports";
+import { importBatch, importBatchDetail, importPreview, PREVIEW_ID } from "../../testing/imports";
 import { createServices } from "../services/createServices";
 import { createHttpImports } from "./httpImports";
 
@@ -10,6 +10,10 @@ const API = `/api/v1/shops/${SHOP_A}`;
 const TEMPLATE = `GET ${API}/imports/templates/articles`;
 const PREVIEW = `POST ${API}/imports/preview`;
 const CONFIRM = `POST ${API}/imports`;
+const LIST = `GET ${API}/imports`;
+const DETAIL = `GET ${API}/imports/batch-1`;
+const ERRORS = `GET ${API}/imports/batch-1/errors.xlsx`;
+const CANCEL = `POST ${API}/imports/batch-1/cancel`;
 const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 async function gateway(extra: Record<string, Reply>) {
@@ -68,6 +72,31 @@ describe("passerelle HTTP de l'import", () => {
     await expect(expired.imports.confirm(SHOP_A, PREVIEW_ID)).rejects.toMatchObject({
       status: 410,
       code: "IMPORT_PREVIEW_EXPIRED",
+    });
+  });
+
+  it("lots : liste, détail, rapport d'erreurs (nom par défaut), annulation sans corps", async () => {
+    const { fake, imports } = await gateway({
+      [LIST]: json(200, { items: [importBatch()] }),
+      [DETAIL]: json(200, importBatchDetail()),
+      [ERRORS]: xlsx(null),
+      [CANCEL]: json(200, importBatch({ status: "cancelled" })),
+    });
+    expect((await imports.list(SHOP_A)).map((b) => b.number)).toEqual(["IMP-000001"]);
+    expect((await imports.detail(SHOP_A, "batch-1")).imported_by.name).toBe("Awa Propriétaire");
+    expect((await imports.errors(SHOP_A, "batch-1")).fileName).toBe("erreurs-import.xlsx");
+    expect((await imports.cancel(SHOP_A, "batch-1")).status).toBe("cancelled");
+    expect(fake.calls.find((c) => `${c.method} ${c.url}` === CANCEL)?.body).toBeUndefined();
+  });
+
+  it("annulation refusée : `details.blocking` remonte tel quel", async () => {
+    const blocking = [{ type: "sale", number: "V-000003" }];
+    const { imports } = await gateway({
+      [CANCEL]: apiError(422, "IMPORT_CANCEL_BLOCKED", "Bloqué", { blocking }),
+    });
+    await expect(imports.cancel(SHOP_A, "batch-1")).rejects.toMatchObject({
+      code: "IMPORT_CANCEL_BLOCKED",
+      details: { blocking },
     });
   });
 });

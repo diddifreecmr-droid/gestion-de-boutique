@@ -3,7 +3,11 @@
  * de boutique **forcés** (le module `import` est à venir : jamais actif dans l'application
  * avant T46). Réservé aux tests.
  */
-import type { ImportBatch, ImportPreview } from "../core/gateways/importsContract";
+import type {
+  ImportBatch,
+  ImportBatchDetail,
+  ImportPreview,
+} from "../core/gateways/importsContract";
 import { ALL_MODULES, type ModuleCode, type ShopModules } from "../core/profile/modules";
 
 export const PREVIEW_ID = "prev-01890a5d-ac96";
@@ -44,6 +48,19 @@ export function importBatch(overrides: Partial<ImportBatch> = {}): ImportBatch {
     imported_at: "2026-11-13T10:05:00Z",
     cancellable_until: "2026-11-20",
     cancelled_at: null,
+    ...overrides,
+  };
+}
+
+export function importBatchDetail(overrides: Partial<ImportBatchDetail> = {}): ImportBatchDetail {
+  return {
+    ...importBatch(),
+    imported_by: { id: "u-owner", name: "Awa Propriétaire" },
+    problems_total: 2,
+    items: [
+      { line: 2, entity: "article", entity_id: "a-1" },
+      { line: 4, entity: "article", entity_id: "a-2" },
+    ],
     ...overrides,
   };
 }

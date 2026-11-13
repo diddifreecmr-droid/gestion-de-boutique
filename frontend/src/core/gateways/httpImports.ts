@@ -1,6 +1,6 @@
 /**
  * Passerelle réelle de l'import : `…/imports/templates/{kind}`, `…/imports/preview`
- * (multipart) et `POST …/imports`. Appels authentifiés par `session.authorized` ; rien n'est
+ * (multipart), `POST …/imports` et les lots (`GET …/imports`, détail, `errors.xlsx`, `cancel`). Appels authentifiés par `session.authorized` ; rien n'est
  * avalé (`ApiError`, `NetworkError` remontent à l'écran).
  *
  * `useImports()` : passerelle fournie par la route (ou par un test) ; absente → erreur de câblage.
@@ -12,6 +12,9 @@ import type { ImportsGateway } from "./importsContract";
 const TEMPLATE = "/api/v1/shops/{shop_id}/imports/templates/{kind}";
 const PREVIEW = "/api/v1/shops/{shop_id}/imports/preview";
 const CONFIRM = "/api/v1/shops/{shop_id}/imports";
+const BATCH = "/api/v1/shops/{shop_id}/imports/{batch_id}";
+const ERRORS = "/api/v1/shops/{shop_id}/imports/{batch_id}/errors.xlsx";
+const CANCEL = "/api/v1/shops/{shop_id}/imports/{batch_id}/cancel";
 
 export function createHttpImports({ api, session }: AppServices): ImportsGateway {
   return {
@@ -32,6 +35,26 @@ export function createHttpImports({ api, session }: AppServices): ImportsGateway
     confirm: (shopId, previewId) =>
       session.authorized((token) =>
         api.post(CONFIRM, { token, params: { shop_id: shopId }, body: { preview_id: previewId } }),
+      ),
+    list: async (shopId) => {
+      const page = await session.authorized((token) =>
+        api.get(CONFIRM, { token, params: { shop_id: shopId } }),
+      );
+      return page.items;
+    },
+    detail: (shopId, batchId) =>
+      session.authorized((token) =>
+        api.get(BATCH, { token, params: { shop_id: shopId, batch_id: batchId } }),
+      ),
+    errors: async (shopId, batchId) => {
+      const fetched = await session.authorized((token) =>
+        api.getFile(ERRORS, { token, params: { shop_id: shopId, batch_id: batchId } }),
+      );
+      return { blob: fetched.blob, fileName: fetched.fileName ?? "erreurs-import.xlsx" };
+    },
+    cancel: (shopId, batchId) =>
+      session.authorized((token) =>
+        api.post(CANCEL, { token, params: { shop_id: shopId, batch_id: batchId } }),
       ),
   };
 }

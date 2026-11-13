@@ -61,8 +61,7 @@ describe("mise en page des reçus", () => {
 
   it("reçu de vente : libellé du rôle du vendeur donné par le reçu", () => {
     const model = saleReceiptModel(saleReceipt({ seller_role_label: "Employé" }));
-    const all = model.lines.map((line) => line.text.trim()).join("
-");
+    const all = model.lines.map((line) => line.text.trim()).join("\n");
     expect(all).toContain("Employé : Issa Vendeur");
     expect(all).not.toContain("Vendeur : ");
   });
