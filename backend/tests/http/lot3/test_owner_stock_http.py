@@ -66,7 +66,7 @@ def test_rolls_in_owner_stock_and_receipt(bench: MemoryBench) -> None:
     assert receipt["lines"][0]["quantity_label"] == "1 rouleau (30 m)"
     profile = shop.call("GET", "/profile", shop.owner).json()
     assert (profile["piece_label"], profile["stock_reserved_to_owner"]) == ("rouleau", True)
-    assert profile["sale_refused_without_stock"] is False
+    assert profile["refused_when_out_of_stock"] is False
 
 
 def test_apparel_needs_only_a_name(bench: MemoryBench) -> None:

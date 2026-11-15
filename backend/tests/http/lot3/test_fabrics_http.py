@@ -45,6 +45,9 @@ def test_fabric_creates_one_article_per_color(bench: MemoryBench) -> None:
     assert [i["display_name"] for i in listed] == ["Djampar — Bleu", "Djampar — Rouge"]
     shop.article({"name": "Wax hollandais", "unit": "METER"})
     assert len(shop.call("GET", "/articles?fabric=Djampar", shop.owner).json()["items"]) == 2
+    journal = shop.call("GET", "/audit", shop.owner).json()["items"]
+    summaries = {entry["summary"] for entry in journal}
+    assert {"Article créé : Djampar — Rouge", "Article créé : Djampar — Bleu"} <= summaries
 
 
 def test_duplicate_fabric_or_color_is_refused_whole(bench: MemoryBench) -> None:

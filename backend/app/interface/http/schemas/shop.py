@@ -91,7 +91,7 @@ class ProfileResponse(_Strict):
     stock_units: list[str]
     piece_label: str
     """Mot de l'unité « pièce » à afficher (Textile : « rouleau », sinon « pièce »)."""
-    sale_refused_without_stock: bool
+    refused_when_out_of_stock: bool
     """Vrai (Motos) : vente refusée si le stock manque ; faux : la vente passe toujours."""
     stock_reserved_to_owner: bool
     """Vrai (Prêt-à-porter, Textile) : seul le gérant voit les quantités de stock."""

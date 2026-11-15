@@ -106,6 +106,21 @@ def read_version(backend: ContractBackend, shop_id: ShopId, article: Article) ->
         return ArticleRepository.within(uow).get(article.id).version
 
 
+def test_search_by_fabric(backend: ContractBackend, shop_a: ShopId) -> None:
+    """Couleurs d'un tissu (2026-11-15) : tissu comparé plié, colonne `fabric_key` en SQL."""
+    colors = [wax(shop_a, "Rouge"), wax(shop_a, "Bleu"), apparel(shop_a, "Chemise", "CH-1")]
+    with backend.uow(shop_a) as uow:
+        for article in colors:
+            ArticleRepository.within(uow).add(article)
+        uow.commit()
+    with backend.uow(shop_a) as uow:
+        repository = ArticleRepository.within(uow)
+        found = repository.search(ArticleQuery(fabric="WAX fleur"), ArticlePageRequest())
+        assert [a.display_name for a in found.items] == ["Wax Fleur — Bleu", "Wax Fleur — Rouge"]
+        assert {a.details.fields.fabric for a in found.items} == {"Wax Fleur"}
+        assert repository.search(ArticleQuery(fabric="Bazin"), ArticlePageRequest()).items == []
+
+
 def test_search_filters_orders_and_pages(backend: ContractBackend, shop_a: ShopId) -> None:
     models = ["HJ125-8", "DK150", "Éclair", "Boxer"]
     articles = [moto(shop_a, model=model) for model in models]

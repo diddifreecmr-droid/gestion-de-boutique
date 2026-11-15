@@ -36,10 +36,10 @@ def apparel(shop_id: ShopId, name: str, reference: str) -> Article:
     )
 
 
-def wax(shop_id: ShopId) -> Article:
+def wax(shop_id: ShopId, color: str = "Rouge") -> Article:
+    values = {"name": f"Wax Fleur — {color}", "fabric": "Wax Fleur", "color": color}
     fields = read_profile_fields(
-        TEXTILE,
-        {"name": "Wax Fleur", "unit": "METER", "sold_by_piece": True, "piece_length_m": "5.49"},
+        TEXTILE, values | {"unit": "METER", "sold_by_piece": True, "piece_length_m": "5.49"}
     )
     details = ArticleDetails(
         fields=fields, alert_threshold=Decimal("20.5"), photo_id=AttachmentId.new()

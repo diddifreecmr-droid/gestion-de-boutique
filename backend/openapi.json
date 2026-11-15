@@ -17368,9 +17368,9 @@
             "type": "string",
             "title": "Piece Label"
           },
-          "sale_refused_without_stock": {
+          "refused_when_out_of_stock": {
             "type": "boolean",
-            "title": "Sale Refused Without Stock"
+            "title": "Refused When Out Of Stock"
           },
           "stock_reserved_to_owner": {
             "type": "boolean",
@@ -17438,7 +17438,7 @@
           "sale_shortcuts",
           "stock_units",
           "piece_label",
-          "sale_refused_without_stock",
+          "refused_when_out_of_stock",
           "stock_reserved_to_owner",
           "receipt",
           "min_price_enabled",
