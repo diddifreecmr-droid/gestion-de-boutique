@@ -34,7 +34,9 @@ def test_customer_id_photo_upload_link_and_relayed_content(bench: MemoryBench) -
     assert issued["url"].startswith(prefix)
     assert (issued["mime"], issued["kind"]) == ("image/jpeg", "id_document")
     assert issued["expires_at"].startswith("2026-")
-    for text in (created.text, link.text):
+    # Le lien porte une signature aléatoire (« …s3… » possible par hasard) : on la retire.
+    unsigned = link.text.replace(issued["url"], "")
+    for text in (created.text, unsigned):
         assert not [word for word in FORBIDDEN_WORDS if word in text.lower()]
 
     content = bench.open(issued["url"])
