@@ -28,3 +28,15 @@ export function articlePath(shopId: string, articleId: string): string {
 export function newArticlePath(shopId: string): string {
   return articlePath(shopId, NEW_ARTICLE);
 }
+
+/** Textile (2026-11-15) : `?article=nouveau-tissu` (création) et `?tissu={nom}` (page du tissu). */
+export const NEW_FABRIC = "nouveau-tissu";
+export const FABRIC_PARAM = "tissu";
+
+export function newFabricPath(shopId: string): string {
+  return articlePath(shopId, NEW_FABRIC);
+}
+
+export function fabricPath(shopId: string, fabric: string): string {
+  return `${shopPath(shopId, STOCK_KEY)}?${FABRIC_PARAM}=${encodeURIComponent(fabric)}`;
+}

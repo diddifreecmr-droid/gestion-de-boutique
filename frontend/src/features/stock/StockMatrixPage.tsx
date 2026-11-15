@@ -3,9 +3,9 @@ import type { MatrixOrder, StockColumn } from "../../core/gateways/stockContract
 import { useStockGateway } from "../../core/gateways/httpStock";
 import { useActiveProfile } from "../../core/profile/activeProfile";
 import { listSearchHint } from "../../core/profile/vocabulary";
-import { EmptyState, ListCard, SearchField } from "../../shared/ui";
+import { EmptyState, SearchField } from "../../shared/ui";
 import { LoadPending, ScreenTitle } from "./Notice";
-import { StockItem } from "./StockItem";
+import { StockList } from "./StockList";
 import { ALL_LOCATIONS, StockFilters } from "./StockFilters";
 import { StockTools } from "./StockTools";
 import { useStockNav } from "./stockNav";
@@ -72,24 +72,11 @@ export function StockMatrixPage({ shopId, role }: StockMatrixPageProps) {
         />
       )}
       {load.status === "ready" && load.value.items.length > 0 && (
-        <ListCard label="Stock par article">
-          {load.value.items.map((raw) => {
-            const line = stockLine(role, raw, load.value.locations);
-            return (
-              <StockItem
-                key={line.articleId}
-                line={line}
-                {...(manager
-                  ? {
-                      onHistory: () => {
-                        nav.movements(line.articleId);
-                      },
-                    }
-                  : {})}
-              />
-            );
-          })}
-        </ListCard>
+        <StockList
+          lines={load.value.items.map((raw) => stockLine(role, raw, load.value.locations))}
+          byFabric={profile.articleFields.some((spec) => spec.code === "fabric")}
+          {...(manager ? { onHistory: nav.movements } : {})}
+        />
       )}
     </>
   );

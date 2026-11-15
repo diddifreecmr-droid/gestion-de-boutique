@@ -57,23 +57,23 @@ describe("fiche article Textile (T39)", () => {
       within(unit)
         .getAllByRole("radio")
         .map((r) => r.textContent),
-    ).toEqual(["Mètre", "Pièce"]);
-    expect(screen.queryByRole("radiogroup", { name: "Vente à la pièce" })).toBeNull();
+    ).toEqual(["Mètre", "Rouleau"]);
+    expect(screen.queryByRole("radiogroup", { name: "Vente au rouleau" })).toBeNull();
     await user.type(input("Nom"), "Wax Fleur de mariage");
     await user.click(within(unit).getByRole("radio", { name: "Mètre" }));
     expect(input("Prix au mètre (facultatif)")).toBeVisible();
-    const byPiece = screen.getByRole("radiogroup", { name: "Vente à la pièce" });
+    const byPiece = screen.getByRole("radiogroup", { name: "Vente au rouleau" });
     await user.click(within(byPiece).getByRole("radio", { name: "Oui" }));
-    expect(input("Prix à la pièce (facultatif)")).toBeVisible();
+    expect(input("Prix au rouleau (facultatif)")).toBeVisible();
     expect(await axeViolations(container)).toEqual([]);
     await user.click(screen.getByRole("button", { name: "Créer l'article" }));
     expect(
-      screen.getByText("Longueur de la pièce : obligatoire pour la vente à la pièce"),
+      screen.getByText("Longueur du rouleau : obligatoire pour la vente au rouleau"),
     ).toBeVisible();
     expect(fake.count(POST)).toBe(0);
-    await user.type(input("Longueur de la pièce (m)"), "5,49");
+    await user.type(input("Longueur du rouleau (m)"), "5,49");
     await replaceText(user, input("Prix au mètre (facultatif)"), "2500");
-    await replaceText(user, input("Prix à la pièce (facultatif)"), "13000");
+    await replaceText(user, input("Prix au rouleau (facultatif)"), "13000");
     await user.click(screen.getByRole("button", { name: "Créer l'article" }));
     expect(await screen.findByText("Article créé : Wax Fleur de mariage")).toBeVisible();
     expect(fake.calls.find((c) => `${c.method} ${c.url}` === POST)?.body).toMatchObject({
@@ -96,11 +96,11 @@ describe("fiche article Textile (T39)", () => {
     const unit = await screen.findByRole("radiogroup", { name: "Unité" });
     await user.click(within(unit).getByRole("radio", { name: "Mètre" }));
     await user.click(screen.getByRole("radio", { name: "Oui" }));
-    await user.type(input("Longueur de la pièce (m)"), "5,49");
-    await user.click(within(unit).getByRole("radio", { name: "Pièce" }));
-    expect(screen.queryByRole("radiogroup", { name: "Vente à la pièce" })).toBeNull();
-    expect(screen.queryByLabelText("Longueur de la pièce (m)")).toBeNull();
-    expect(input("Prix à la pièce (facultatif)")).toBeVisible();
+    await user.type(input("Longueur du rouleau (m)"), "5,49");
+    await user.click(within(unit).getByRole("radio", { name: "Rouleau" }));
+    expect(screen.queryByRole("radiogroup", { name: "Vente au rouleau" })).toBeNull();
+    expect(screen.queryByLabelText("Longueur du rouleau (m)")).toBeNull();
+    expect(input("Prix au rouleau (facultatif)")).toBeVisible();
     await user.type(input("Nom"), "Bazin riche");
     await user.click(screen.getByRole("button", { name: "Créer l'article" }));
     await screen.findByText(/Article créé/);
@@ -121,10 +121,10 @@ describe("fiche article Textile (T39)", () => {
     const prices = screen.getByRole("region", { name: "Prix de vente" });
     expect(within(prices).getByText("Prix au mètre")).toBeVisible();
     expect(within(prices).getByText(money(2500))).toBeVisible();
-    expect(within(prices).getByText("Prix à la pièce")).toBeVisible();
+    expect(within(prices).getByText("Prix au rouleau")).toBeVisible();
     expect(within(prices).getByText(money(13000))).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Modifier les prix" }));
-    await replaceText(user, input("Prix à la pièce"), "12500");
+    await replaceText(user, input("Prix au rouleau"), "12500");
     await user.click(screen.getByRole("button", { name: "Enregistrer les prix" }));
     await screen.findByText("Prix enregistrés");
     expect(fake.calls.find((c) => `${c.method} ${c.url}` === PUT)?.body).toMatchObject({
@@ -145,8 +145,11 @@ describe("garde-fou du nom à la création (VOC-04)", () => {
       apparel({ [POST]: json(201, robe), [GET]: json(200, robe) }),
     );
     await user.type(await screen.findByLabelText("Nom"), "Robe Bleu Marine Robe");
-    expect(input("Marque")).not.toBeVisible(); // facultative, sous « Plus de détails »
-    expect(input("Marque")).toHaveAttribute("aria-required", "false");
+    expect(input("SKU (référence)")).not.toBeVisible(); // facultatif, sous « Plus de détails »
+    expect(input("SKU (référence)")).toHaveAttribute("aria-required", "false");
+    // Prêt-à-porter simplifié (2026-11-15) : nom, prix, SKU facultatif ; aucun autre champ.
+    expect(screen.queryByLabelText(/Catégorie|Type|Marque|Taille|Couleur|Photo/)).toBeNull();
+    expect(input("Prix de base (facultatif)")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Créer l'article" }));
     expect(screen.getByText(/Mot répété dans le nom « Robe Bleu Marine Robe »/)).toBeVisible();
     expect(fake.count(POST)).toBe(0);

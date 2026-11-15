@@ -71,8 +71,37 @@ export function profileFromResponse(response: ProfileResponse, role: Role): Shop
     articleFields: response.article_fields,
     saleFields: response.sale_fields,
     stockUnits: response.stock_units,
+    pieceLabel: servedPieceLabel(response.piece_label),
+    stock: stockRules(response),
     exchange: exchangeRules(response),
   };
+}
+
+/**
+ * Mot de la pièce servi ; vide ou d'un autre type = rupture de contrat. Un profil gardé hors
+ * connexion avant le 2026-11-15 n'a pas ce champ : « pièce », le mot d'avant.
+ */
+function servedPieceLabel(label: unknown): string {
+  if (label === undefined) return "pièce";
+  if (typeof label !== "string" || label.trim() === "") {
+    throw new Error(`Profil servi : piece_label invalide (${JSON.stringify(label)})`);
+  }
+  return label.trim();
+}
+
+/** Règles de stock ; absentes d'un profil gardé avant le 2026-11-15 : celles d'avant. */
+function stockRules(response: ProfileResponse): ShopProfile["stock"] {
+  const refused: unknown = response.refused_when_out_of_stock;
+  const reserved: unknown = response.stock_reserved_to_owner;
+  for (const [name, value] of [
+    ["refused_when_out_of_stock", refused],
+    ["stock_reserved_to_owner", reserved],
+  ] as const) {
+    if (value !== undefined && typeof value !== "boolean") {
+      throw new Error(`Profil servi : ${name} invalide (${JSON.stringify(value)})`);
+    }
+  }
+  return { refusedWhenOut: refused !== false, reservedToOwner: reserved === true };
 }
 
 /**

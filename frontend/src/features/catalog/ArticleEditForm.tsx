@@ -14,6 +14,7 @@ import { notesValue, thresholdError, thresholdValue } from "./extraValues";
 import { changedValues, checkDraft, draftOf } from "./fieldValues";
 import { InlineMessage } from "./InlineMessage";
 import { shownFields, textileErrors, withChange } from "./textileFields";
+import { useActivePieceWords } from "../../core/profile/activeProfile";
 import { SubmitFailureNotice } from "./SubmitFailureNotice";
 import { useCatalogSubmit } from "./useCatalogSubmit";
 
@@ -34,6 +35,7 @@ export function ArticleEditForm(props: ArticleEditFormProps) {
   const { shopId, view, fields } = props;
   const gateway = useCatalogAdmin();
   const submit = useCatalogSubmit();
+  const words = useActivePieceWords();
   const initial = draftOf(fields, view.values);
   const [draft, setDraft] = useState(initial);
   const [extra, setExtra] = useState({
@@ -45,7 +47,7 @@ export function ArticleEditForm(props: ArticleEditFormProps) {
   const [unchanged, setUnchanged] = useState(false);
   const problems = () => ({
     ...checkDraft(shownFields(fields, draft), draft),
-    ...textileErrors(draft),
+    ...textileErrors(draft, words),
   });
   const errors = checked ? problems() : {};
 

@@ -4,8 +4,9 @@ import { Button, ListCardDetailRow } from "../../shared/ui";
 import { moneyOr, NOT_COMPUTABLE, NOT_SET } from "../catalog/money";
 import { Facts, type Fact } from "./Facts";
 import { StockBadge } from "./Notice";
-import { isZero, quantityText } from "./quantities";
+import { isZero, quantityText, rollsText } from "./quantities";
 import { basePriceOf, costsOf, type StockLine } from "./stockView";
+import { useActivePieceWords } from "../../core/profile/activeProfile";
 
 /**
  * Quantités : un lieu par ligne (ordre des lieux), « En route », puis « Total ». « En route »
@@ -56,11 +57,16 @@ export function StockItem({
   onHistory?: () => void;
 }) {
   const transfers = useModules().has("transfers");
+  const words = useActivePieceWords();
   const prices = priceFacts(line);
   return (
     <ListCardDetailRow
       title={line.name}
-      value={quantityText(line.total, line.unit)}
+      value={
+        line.rolls === null
+          ? quantityText(line.total, line.unit)
+          : rollsText(line.rolls, line.unit, words)
+      }
       valueLabel="En stock"
       badge={<StockBadge status={line.status} />}
     >

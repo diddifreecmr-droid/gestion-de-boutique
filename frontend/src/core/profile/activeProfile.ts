@@ -5,6 +5,7 @@
  * Hors d'une boutique, c'est une erreur de câblage (fail-fast), jamais un profil inventé.
  */
 import { useOutletContext } from "react-router";
+import { pieceWords, type PieceWords } from "./pieceWords";
 import type { ShopProfile } from "./types";
 
 function isProfile(value: unknown): value is ShopProfile {
@@ -25,4 +26,9 @@ export function useActiveProfile(): ShopProfile {
     throw new Error("useActiveProfile : écran rendu hors de la coquille d'une boutique");
   }
   return profile;
+}
+
+/** Mot de la pièce de la boutique active, décliné (« Au rouleau », « 7 rouleaux »). */
+export function useActivePieceWords(): PieceWords {
+  return pieceWords(useActiveProfile().pieceLabel);
 }

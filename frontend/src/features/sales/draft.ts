@@ -5,6 +5,7 @@
 import { uuidV7 } from "../../core/api/uuidv7";
 import type { CatalogArticle } from "../../core/gateways/catalogContract";
 import type { CustomerKind, CustomerSummary, SaleMode } from "../../core/gateways/salesContract";
+import { capped, statusOf } from "./saleStock";
 import { toTenths } from "./textile";
 
 /** Choix « À crédit » parmi les modes de paiement (ce n'est pas un mode de la boutique). */
@@ -19,8 +20,11 @@ export interface UnitDetail {
 export interface LineDraft {
   key: string;
   article: CatalogArticle;
-  /** Stock du lieu dans l'unité de stock : entier à l'unité, en mètres au mètre (« 54.9 »). */
-  available: number;
+  /**
+   * Borne de la quantité : stock du lieu dans l'unité de stock (entier à l'unité, en mètres au
+   * mètre), ou `null` quand la vente n'est jamais refusée pour manque de stock (2026-11-15).
+   */
+  available: number | null;
   /** Mode de la ligne : à l'unité, ou « Au mètre / À la pièce » (Textile, § 7.5). */
   mode: SaleMode;
   /** Unités vendues ; à la pièce : nombre de pièces ; au mètre : inutilisé (1). */
@@ -30,9 +34,6 @@ export interface LineDraft {
   unitPrice: number | null;
   /** Une entrée par unité (CDC § 17.3), toujours de longueur `quantity`. */
   units: UnitDetail[];
-  /** Taille et couleur de la ligne (Prêt-à-porter, § 7.4) ; vide = non précisée. */
-  size: string;
-  color: string;
 }
 
 export type CustomerDraft =
@@ -86,40 +87,56 @@ export function newDraft(payment: string | null): SaleDraft {
   };
 }
 
-/** Stock d'un article vendu à l'unité : un entier (« 4 » ou « 4.000 »), sinon incohérent. */
-export function unitStock(article: CatalogArticle): number {
-  if (!/^\d+(\.0+)?$/.test(article.available)) {
-    throw new Error(`Stock non entier pour « ${article.name} » : « ${article.available} »`);
+/** Chiffre du stock ; l'appeler sans chiffre servi (stock réservé au gérant) est une erreur. */
+function counted(article: CatalogArticle): string {
+  if (article.available === null) {
+    throw new Error(`« ${article.name} » : aucun chiffre de stock pour cet acteur`);
   }
-  return Number(article.available);
+  return article.available;
 }
 
-/** Stock d'un article au mètre, en dixièmes (« 54.900 » → 549). */
+/** Stock d'un article vendu à l'unité : un entier (« 4 », « 4.000 », « -2 » vendu sans stock). */
+export function unitStock(article: CatalogArticle): number {
+  const value = counted(article);
+  if (!/^-?\d+(\.0+)?$/.test(value)) {
+    throw new Error(`Stock non entier pour « ${article.name} » : « ${value} »`);
+  }
+  return Number(value);
+}
+
+/** Stock d'un article au mètre, en dixièmes (« 54.900 » → 549, « -1.5 » → -15). */
 export function meterStock(article: CatalogArticle): number {
-  return toTenths(article.available);
+  const value = counted(article);
+  return value.startsWith("-") ? -toTenths(value.slice(1)) : toTenths(value);
 }
 
-/** L'article a-t-il du stock à vendre ici (1 unité, ou 0,1 m au mètre) ? */
+/** L'article a-t-il du stock à vendre ici (1 unité, 0,1 m au mètre, ou pastille hors rupture) ? */
 export function inStock(article: CatalogArticle): boolean {
+  if (article.available === null) return statusOf(article, true) !== "out";
   if (article.sale_mode === "meter") return meterStock(article) > 0;
   if (article.sale_mode === "unit") return unitStock(article) >= 1;
   throw new Error(`« ${article.name} » : mode de vente « ${article.sale_mode} » sans ligne`);
 }
 
+/** Borne de la ligne : stock du lieu (Motos), ou `null` quand la vente passe sans stock. */
+function capOf(article: CatalogArticle): number | null {
+  if (!capped(article)) return null;
+  return article.sale_mode === "meter" ? meterStock(article) / 10 : unitStock(article);
+}
+
 export function newLine(article: CatalogArticle): LineDraft {
-  if (!inStock(article)) throw new Error(`« ${article.name} » est en rupture : ligne impossible`);
-  const meter = article.sale_mode === "meter";
+  if (capped(article) && !inStock(article)) {
+    throw new Error(`« ${article.name} » est en rupture : ligne impossible`);
+  }
   return {
     key: uuidV7(),
     article,
-    available: meter ? meterStock(article) / 10 : unitStock(article),
+    available: capOf(article),
     mode: article.sale_mode,
     quantity: 1,
     length: "",
     unitPrice: article.base_price,
     units: [{ ...EMPTY_UNIT }],
-    size: "",
-    color: "",
   };
 }
 

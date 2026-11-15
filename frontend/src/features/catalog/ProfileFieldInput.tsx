@@ -3,6 +3,7 @@ import { ChoiceChips, TextField } from "../../shared/ui";
 import { fieldKind } from "./fieldValues";
 import { InlineMessage } from "./InlineMessage";
 import { choiceLabel } from "./textileFields";
+import { useActivePieceWords } from "../../core/profile/activeProfile";
 
 export interface ProfileFieldInputProps {
   spec: ProfileFieldResponse;
@@ -19,11 +20,15 @@ const YES_NO = [
 /** Un champ d'article décrit par le profil : texte, nombre, Oui/Non ou liste de choix. */
 export function ProfileFieldInput({ spec, value, error, onChange }: ProfileFieldInputProps) {
   const kind = fieldKind(spec);
+  const words = useActivePieceWords();
   if (kind === "boolean" || kind === "choice") {
     const options =
       kind === "boolean"
         ? YES_NO
-        : spec.choices.map((choice) => ({ value: choice, label: choiceLabel(spec, choice) }));
+        : spec.choices.map((choice) => ({
+            value: choice,
+            label: choiceLabel(spec, choice, words),
+          }));
     return (
       <div className="flex flex-col gap-2">
         <ChoiceChips

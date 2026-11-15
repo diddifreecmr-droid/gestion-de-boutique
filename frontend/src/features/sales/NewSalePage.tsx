@@ -12,7 +12,9 @@ import { ReceiptPrint } from "./ReceiptPrint";
 import { locationChoice } from "./saleLocation";
 import { SALE_ROLES } from "./saleRoles";
 import { SaleConfirmation } from "./SaleConfirmation";
+import { PieceWordsContext } from "./saleStock";
 import { useLookup } from "./useLookup";
+import { pieceWords } from "../../core/profile/pieceWords";
 
 export interface NewSalePageProps {
   shopId: string;
@@ -121,18 +123,20 @@ function SaleFlow({ shopId, role, setup }: NewSalePageProps & { setup: SaleSetup
     </>
   );
   return (
-    <NewSaleForm
-      key={`${location.id}:${String(round)}`}
-      shopId={shopId}
-      role={role}
-      location={location}
-      modes={setup.payment_modes}
-      requiresApproval={setup.min_price_requires_approval}
-      onRecorded={setRecorded}
-      notice={notice}
-      searchHint={articleSearchHint(setup.article_fields)}
-      fields={lineFieldsOf(setup.sale_fields)}
-      shortcuts={setup.sale_shortcuts}
-    />
+    <PieceWordsContext.Provider value={pieceWords(setup.piece_label)}>
+      <NewSaleForm
+        key={`${location.id}:${String(round)}`}
+        shopId={shopId}
+        role={role}
+        location={location}
+        modes={setup.payment_modes}
+        requiresApproval={setup.min_price_requires_approval}
+        onRecorded={setRecorded}
+        notice={notice}
+        searchHint={articleSearchHint(setup.article_fields)}
+        fields={lineFieldsOf(setup.sale_fields)}
+        shortcuts={setup.sale_shortcuts}
+      />
+    </PieceWordsContext.Provider>
   );
 }

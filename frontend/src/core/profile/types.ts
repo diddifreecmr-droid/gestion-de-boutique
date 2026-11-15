@@ -47,8 +47,20 @@ export interface ShopProfile {
   articleFields: readonly ProfileField[];
   saleFields: readonly ProfileField[];
   stockUnits: readonly string[];
+  /** Mot de la pièce (`piece_label`) : « pièce », ou « rouleau » en Textile (2026-11-15). */
+  pieceLabel: string;
+  /** Règles de stock servies (`refused_when_out_of_stock`, `stock_reserved_to_owner`). */
+  stock: StockRules;
   /** Règles de l'échange (QC-4, T42) : délai et autorisation de l'employé. */
   exchange: ExchangeRules;
+}
+
+/** Stock vu par l'acteur (décisions du 2026-11-15). */
+export interface StockRules {
+  /** Une vente au-delà du stock est refusée (Motos) ; sinon elle passe, stock à vérifier. */
+  refusedWhenOut: boolean;
+  /** Stock réservé au gérant : l'employé ne voit aucun chiffre, seulement une pastille. */
+  reservedToOwner: boolean;
 }
 
 /** Réglages d'échange servis par `GET /profile` (`exchange_days`, `employee_exchange_allowed`). */

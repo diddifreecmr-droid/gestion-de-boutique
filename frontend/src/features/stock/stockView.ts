@@ -30,6 +30,15 @@ export interface StockLineCore {
   incoming: string;
   total: string;
   status: StockStatus;
+  /** Textile vendu au rouleau : « 7 rouleaux + 12 m » ; `null` ailleurs. */
+  rolls: StockRolls | null;
+}
+
+export interface StockRolls {
+  /** Rouleaux entiers. */
+  count: number;
+  /** Mètres du rouleau entamé (« 12.0 »). */
+  rest: string;
 }
 
 /** `null` = « non calculable » (aucun achat encore, RG-T15). */
@@ -97,7 +106,21 @@ function core(raw: StockRow, columns: readonly StockColumn[]): StockLineCore {
     incoming: raw.incoming,
     total: raw.total,
     status: status(raw),
+    rolls: rollsOf(raw),
   };
+}
+
+/** Rouleaux entiers + reste du rouleau entamé (Textile, `rolls` et `meters_rest`), sinon `null`. */
+function rollsOf(raw: StockRow): StockRolls | null {
+  const count = raw.rolls ?? null;
+  const rest = raw.meters_rest ?? null;
+  if (count === null && rest === null) return null;
+  if (count === null || rest === null || !Number.isSafeInteger(count) || count < 0) {
+    throw new Error(
+      `Rouleaux incohérents pour « ${raw.display_name} » (${String(count)}, ${String(rest)})`,
+    );
+  }
+  return { count, rest };
 }
 
 function costs(raw: StockRow, role: StockRole): StockCosts {

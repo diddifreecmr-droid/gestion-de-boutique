@@ -12,8 +12,8 @@ export interface TextileArticle {
   name: string;
   /** Stock vendable à la Boutique, au dixième (« 54.9 »). */
   stock: string;
-  /** Stock réel du serveur s'il diffère de l'affiché (vendu entre-temps ailleurs). */
-  real?: string;
+  /** Pastille servie à l'employé (`stock_status`) ; « ok » par défaut. */
+  status?: "ok" | "low" | "out";
   piece_length_m: string | null;
   sold_by_piece: boolean;
   base_price: number;
@@ -33,7 +33,7 @@ export function removedBy(article: TextileArticle, line: CommandLine): number {
 export function quantityLabel(article: TextileArticle, mode: string, quantity: string): string {
   if (mode === "meter") return metersText(toTenths(quantity));
   const length = (article.piece_length_m ?? "").replace(".", ",");
-  return `${quantity} pièce${Number(quantity) > 1 ? "s" : ""} (${length} m)`;
+  return `${quantity} rouleau${Number(quantity) > 1 ? "x" : ""} (${length} m)`;
 }
 
 export function saleResult(

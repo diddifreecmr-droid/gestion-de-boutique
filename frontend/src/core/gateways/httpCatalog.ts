@@ -7,99 +7,74 @@
  * - `searchArticles` : `GET /articles?sort=best_selling&status=active&q=&limit=` (plus vendus
  *   sur 30 jours, puis par nom) **et** `GET /stock?q=&location_id=` (stock du lieu de vente),
  *   joints par `article_id` ; un article sans ligne de stock au lieu a 0.
+ * - Stock réservé au gérant (2026-11-15) : l'employé n'a pas `GET /stock` (403). Il vend depuis
+ *   son lieu habituel et ne reçoit que la pastille `stock_status` de `GET /articles`.
  */
 import type { AppServices } from "../services/createServices";
 import type { components } from "../api/schema.gen";
-import type { CatalogArticle, CatalogGateway } from "./catalogContract";
-import type { SaleMode } from "./salesContract";
+import { stockPolicyOf, toCatalogArticle, unitWord, type StockPolicy } from "./catalogArticle";
+import type { CatalogGateway, SaleLocation } from "./catalogContract";
 
-type Article = components["schemas"]["ArticleResponse"];
-type StockRow = components["schemas"]["StockRow"];
+export { saleModeOf, toCatalogArticle, unitWord } from "./catalogArticle";
+
+type Profile = components["schemas"]["ProfileResponse"];
+type StockMatrix = components["schemas"]["StockMatrixResponse"];
 
 const SHOP = "/api/v1/shops/{shop_id}";
 
-/** Mot de l'unité selon le profil (« Couleur — moto 1 ») ; « unité » par défaut. */
-const UNIT_WORDS: Readonly<Record<string, string>> = { motos: "moto" };
+/** Nom affiché du lieu habituel quand l'acteur ne lit pas la liste des lieux. */
+export const USUAL_PLACE = "votre point de vente";
 
-export function unitWord(profileCode: string): string {
-  return UNIT_WORDS[profileCode] ?? "unité";
+interface ShopRules {
+  unit: string;
+  policy: StockPolicy;
 }
 
-/**
- * `stock_unit` de l'API (« UNIT », « PIECE », « METER ») → mode de vente par défaut de la ligne
- * (serveur, `application/sales/lines.py` : « à l'unité » pour Unité et Pièce).
- */
-export function saleModeOf(stockUnit: string): SaleMode {
-  const unit = stockUnit.toLowerCase();
-  if (unit === "unit" || unit === "piece") return "unit";
-  if (unit === "meter") return "meter";
-  throw new Error(`Unité de stock inconnue : « ${stockUnit} »`);
-}
-
-function availableAt(row: StockRow | undefined, locationId: string): string {
-  if (row === undefined) return "0";
-  const cell = row.cells.find((c) => c.location_id === locationId);
-  if (cell === undefined) throw new Error(`Stock : colonne « ${locationId} » absente de la ligne`);
-  return cell.sellable;
-}
-
-export function toCatalogArticle(
-  article: Article,
-  row: StockRow | undefined,
-  locationId: string,
-  unitLabel: string,
-): CatalogArticle {
-  const minActive = article.min_price_active !== false;
-  const length = article.piece_length_m;
-  const saleMode = saleModeOf(article.stock_unit);
-  if (article.sold_by_piece && (saleMode !== "meter" || length === null)) {
-    throw new Error(`« ${article.display_name} » : vente à la pièce sans longueur au mètre`);
-  }
-  return {
-    id: article.id,
-    name: article.display_name,
-    sale_mode: saleMode,
-    unit_label: unitLabel,
-    base_price: article.base_price ?? null,
-    min_price: minActive ? (article.min_price ?? null) : null,
-    available: availableAt(row, locationId),
-    ...(length === null ? {} : { piece_length_m: length }),
-    ...(article.sold_by_piece && length !== null
-      ? {
-          piece: {
-            length_m: length,
-            base_price: article.base_price_piece ?? null,
-            min_price: minActive ? (article.min_price_piece ?? null) : null,
-          },
-        }
-      : {}),
-  };
+function pointsOfSale(matrix: StockMatrix): SaleLocation[] {
+  return matrix.locations
+    .filter((column) => column.is_point_of_sale)
+    .map((column) => ({ id: column.location_id, name: column.name }));
 }
 
 export function createHttpCatalog({ api, session, offline }: AppServices): CatalogGateway {
   const shop = (shopId: string) => ({ shop_id: shopId });
-  const units = new Map<string, string>();
-  const profileOf = async (shopId: string) => {
+  const rules = new Map<string, ShopRules>();
+  const profileOf = async (shopId: string): Promise<Profile> => {
     const profile = await session.authorized((token) =>
       api.get(`${SHOP}/profile`, { token, params: shop(shopId) }),
     );
-    units.set(shopId, unitWord(profile.profile_code));
+    rules.set(shopId, { unit: unitWord(profile.profile_code), policy: stockPolicyOf(profile) });
     offline.rights.note(shopId, profile.entitlements); // droit hors connexion (T23, TR-26)
     return profile;
   };
+  const rulesOf = async (shopId: string): Promise<ShopRules> => {
+    const known = rules.get(shopId);
+    if (known !== undefined) return known;
+    await profileOf(shopId);
+    const loaded = rules.get(shopId);
+    if (loaded === undefined) throw new Error(`Profil de la boutique ${shopId} non chargé`);
+    return loaded;
+  };
+  const locationsOf = async (shopId: string, profile: Profile): Promise<SaleLocation[]> => {
+    if (!stockPolicyOf(profile).hidden) {
+      const matrix = await session.authorized((token) =>
+        api.get(`${SHOP}/stock`, { token, params: shop(shopId) }),
+      );
+      return pointsOfSale(matrix);
+    }
+    const usual = profile.default_location_id;
+    return usual === null ? [] : [{ id: usual, name: USUAL_PLACE }];
+  };
   return {
     saleSetup: async (shopId) => {
-      const [profile, modes, matrix] = await Promise.all([
+      const [profile, modes] = await Promise.all([
         profileOf(shopId),
         session.authorized((token) =>
           api.get(`${SHOP}/payment-modes`, { token, params: shop(shopId) }),
         ),
-        session.authorized((token) => api.get(`${SHOP}/stock`, { token, params: shop(shopId) })),
       ]);
       return {
-        locations: matrix.locations
-          .filter((column) => column.is_point_of_sale)
-          .map((column) => ({ id: column.location_id, name: column.name })),
+        locations: await locationsOf(shopId, profile),
         default_location_id: profile.default_location_id,
         min_price_requires_approval: profile.min_price_requires_approval,
         payment_modes: modes
@@ -108,10 +83,12 @@ export function createHttpCatalog({ api, session, offline }: AppServices): Catal
         article_fields: profile.article_fields.map(({ code, label }) => ({ code, label })),
         sale_fields: profile.sale_fields.map((field) => field.code),
         sale_shortcuts: profile.sale_shortcuts,
+        piece_label: profile.piece_label,
       };
     },
     searchArticles: async (shopId, { location_id, query, limit }) => {
       const q = query.trim() === "" ? null : query.trim();
+      const { unit, policy } = await rulesOf(shopId);
       const [articles, matrix] = await Promise.all([
         session.authorized((token) =>
           api.get(`${SHOP}/articles`, {
@@ -120,15 +97,16 @@ export function createHttpCatalog({ api, session, offline }: AppServices): Catal
             query: { q, status: "active", sort: "best_selling", limit },
           }),
         ),
-        session.authorized((token) =>
-          api.get(`${SHOP}/stock`, { token, params: shop(shopId), query: { q, location_id } }),
-        ),
+        policy.hidden
+          ? Promise.resolve(null)
+          : session.authorized((token) =>
+              api.get(`${SHOP}/stock`, { token, params: shop(shopId), query: { q, location_id } }),
+            ),
       ]);
-      const rows = new Map(matrix.items.map((row) => [row.article_id, row]));
-      const unit = units.get(shopId) ?? unitWord((await profileOf(shopId)).profile_code);
+      const rows = new Map((matrix?.items ?? []).map((row) => [row.article_id, row]));
       return {
         items: articles.items.map((article) =>
-          toCatalogArticle(article, rows.get(article.id), location_id, unit),
+          toCatalogArticle(article, rows.get(article.id), location_id, unit, policy),
         ),
       };
     },

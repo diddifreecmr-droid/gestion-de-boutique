@@ -36,8 +36,18 @@ export interface CatalogArticle {
   base_price: number | null;
   /** Prix minimum actif, sinon `null` (le serveur reste juge). */
   min_price: number | null;
-  /** Stock vendable au lieu de vente demandé (en mètres pour un article au mètre). */
-  available: DecimalString;
+  /**
+   * Stock vendable au lieu de vente demandé (en mètres pour un article au mètre) ; `null` quand
+   * le stock est réservé au gérant (2026-11-15) : l'acteur ne voit **aucun** chiffre.
+   */
+  available: DecimalString | null;
+  /** Pastille servie à la place des chiffres (`stock_status` de `GET /articles`). */
+  stock_status?: StockStatus;
+  /**
+   * La vente passe même sans stock (`refused_when_out_of_stock` faux : Prêt-à-porter,
+   * Textile) ; absent = la vente est refusée au-delà du stock (Motos).
+   */
+  sells_without_stock?: true;
   /**
    * Vente « à la pièce » d'un article au mètre (Textile, `sold_by_piece`) : longueur d'une
    * pièce et prix de la pièce. Absent si l'article ne se vend pas à la pièce.
@@ -46,6 +56,9 @@ export interface CatalogArticle {
   /** Longueur de la pièce (`piece_length_m`), même sans vente à la pièce (raccourcis RG-X05). */
   piece_length_m?: DecimalString;
 }
+
+/** Pastille de stock : en stock, stock bas, rupture. */
+export type StockStatus = "ok" | "low" | "out";
 
 export interface PieceSale {
   length_m: DecimalString;
@@ -84,6 +97,8 @@ export interface SaleSetup {
   sale_fields: string[];
   /** Raccourcis de longueur du profil (pièce, demi-pièce, 1, 2, 3 m), vides hors Textile. */
   sale_shortcuts: SaleShortcut[];
+  /** Mot de la pièce servi par le profil (« pièce », « rouleau » en Textile). */
+  piece_label: string;
 }
 
 export interface CatalogGateway {

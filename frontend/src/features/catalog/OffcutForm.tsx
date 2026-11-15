@@ -20,6 +20,7 @@ import { loadFailureMessage } from "./catalogErrors";
 import { InlineMessage } from "./InlineMessage";
 import { checkOffcut, offcutPlaces, type OffcutDraft, type OffcutPlace } from "./offcutRules";
 import { useLoad } from "./useLoad";
+import { useActivePieceWords } from "../../core/profile/activeProfile";
 
 export interface OffcutFormProps {
   shopId: string;
@@ -78,6 +79,7 @@ function OffcutEntry({
 }: OffcutFormProps & { places: readonly OffcutPlace[] }) {
   const gateway = useStockGateway();
   const toast = useToast();
+  const words = useActivePieceWords();
   const [id] = useState(() => uuidV7()); // même identifiant à chaque renvoi (idempotence)
   const [placeId, setPlaceId] = useState(places[0]?.id ?? "");
   const [draft, setDraft] = useState<OffcutDraft>({ length: "", note: "", photoId: null });
@@ -106,7 +108,8 @@ function OffcutEntry({
     <section aria-label="Déclarer une chute" className="flex flex-col gap-4">
       <h2 className="m-0 text-title-sm font-semibold text-text">Déclarer une chute</h2>
       <p className="m-0 text-body text-text-muted">
-        La chute sort du stock (motif « Chute »), comme un ajustement : elle est notée au journal.
+        Bout {words.of} trop court pour la vente. La chute sort du stock (motif « Chute »), comme un
+        ajustement : elle est notée au journal.
       </p>
       {places.length > 1 && (
         <ChoiceChips

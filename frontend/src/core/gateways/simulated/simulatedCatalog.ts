@@ -53,6 +53,7 @@ export function createSimulatedCatalog(world: World): CatalogGateway {
         ],
         sale_fields: ["color", "chassis_number", "engine_number"],
         sale_shortcuts: [], // Motos : aucun raccourci de longueur
+        piece_label: "pièce",
       };
     },
     async searchArticles(_shopId, search) {

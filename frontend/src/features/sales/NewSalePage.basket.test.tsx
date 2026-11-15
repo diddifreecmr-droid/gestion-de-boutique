@@ -58,14 +58,12 @@ function renderApparel() {
 const card = (name: string) => within(screen.getByRole("region", { name }));
 const total = () => plain(screen.getByText(/Total$/).closest("p")?.textContent ?? "");
 
-describe("panier multi-lignes Prêt-à-porter (T40, design-system § 7.4)", () => {
-  it("PAN-03 : taille, couleur, prix négocié par ligne, total recalculé, aucune remise ; axe", async () => {
+describe("vente Prêt-à-porter simplifiée (2026-11-15, design-system § 7.4)", () => {
+  it("PAN-03 : liste d'articles, quantité, prix négocié, total ; ni taille ni couleur ; axe", async () => {
     const { user, container, recordSale } = renderApparel();
     await user.click(await articleButton("Chemise lin"));
     const chemise = card("Chemise lin");
-    expect(chemise.getByRole("radiogroup", { name: "Taille" })).toBeVisible();
-    await user.click(chemise.getByRole("radio", { name: "M" }));
-    await user.click(chemise.getByRole("radio", { name: "Blanc" }));
+    expect(chemise.queryByRole("radiogroup", { name: /Taille|Couleur/ })).toBeNull();
     expect(plain(priceField("Prix unitaire").value)).toBe("15 000");
     expect(chemise.getByLabelText("Prix unitaire")).toHaveAccessibleDescription(
       /^Base 15\s000\sFCFA · minimum 12\s000\sFCFA/,
@@ -79,16 +77,9 @@ describe("panier multi-lignes Prêt-à-porter (T40, design-system § 7.4)", () =
 
     await user.click(screen.getByRole("button", { name: "Ajouter un article" }));
     await user.click(await articleButton("Baskets toile"));
-    // La première ligne se replie ; la nouvelle est ouverte, en pointures.
-    expect(screen.queryByRole("region", { name: "Chemise lin" })).toBeNull();
-    const folded = screen.getByRole("list", { name: "Ligne repliée : Chemise lin" });
-    expect(plain(folded.textContent)).toContain(`T. M · Blanc — 2 × ${money(14_000)}`);
-    const baskets = card("Baskets toile");
-    expect(baskets.queryByRole("radio", { name: "M" })).toBeNull();
-    await user.click(baskets.getByRole("radio", { name: "42" }));
-    const colors = within(baskets.getByRole("radiogroup", { name: "Couleur" }));
-    await user.click(colors.getByRole("radio", { name: "Autre" }));
-    await user.type(baskets.getByLabelText("Autre couleur"), "Kaki");
+    // Les deux lignes restent ouvertes : article, quantité, prix.
+    expect(card("Chemise lin").getByLabelText("Prix unitaire")).toBeVisible();
+    expect(card("Baskets toile").queryByRole("radio")).toBeNull();
     expect(total()).toBe(`2 articles · Total${money(45_500)}`);
     expect(container.textContent).not.toMatch(/remise|sous-total/i);
     expect(screen.getByRole("radio", { name: /Espèces/ })).toBeChecked();
@@ -102,41 +93,45 @@ describe("panier multi-lignes Prêt-à-porter (T40, design-system § 7.4)", () =
         article_id: CHEMISE.id,
         quantity: "2",
         unit_price: 14_000,
-        details: [{ size: "M", color: "Blanc" }],
+        details: [],
       }),
       expect.objectContaining({
         article_id: BASKETS.id,
         quantity: "1",
         unit_price: 17_500,
-        details: [{ size: "42", color: "Kaki" }],
+        details: [],
       }),
     ]);
-    expect(JSON.stringify(sent)).not.toMatch(/discount|gross_total/);
+    expect(JSON.stringify(sent)).not.toMatch(/discount|gross_total|size|"color"/);
 
-    // PAN-02 : reçu ligne par ligne (taille, couleur, quantité × prix), puis le total.
+    // PAN-02 : reçu ligne par ligne (quantité × prix), puis le total.
     await user.click(screen.getByRole("button", { name: "Imprimer" }));
     const receipt = plain((await screen.findByRole("article", { name: "Reçu" })).textContent);
-    expect(receipt).toContain(`Couleur : Blanc · Taille : M2 × ${money(14_000)}${money(28_000)}`);
-    expect(receipt).toContain(`Couleur : Kaki · Taille : 421 × ${money(17_500)}`);
+    expect(receipt).toContain(`2 × ${money(14_000)}${money(28_000)}`);
     expect(receipt).toContain(`Total${money(45_500)}`);
-    expect(receipt).not.toMatch(/remise|coût|marge/i);
+    expect(receipt).not.toMatch(/remise|coût|marge|Taille/i);
   });
 
-  it("même article en deux tailles ; une ligne repliée se rouvre ; stock partagé", async () => {
-    const { user } = renderApparel();
-    await user.click(await articleButton("Chemise lin"));
-    await user.click(card("Chemise lin").getByRole("radio", { name: "M" }));
+  it("employé : pastilles sans chiffre, rupture vendable au-delà du stock, article non reproposé", async () => {
+    const { user, container } = renderApparel();
+    const list = await screen.findByRole("list", { name: /Les plus vendus/ });
+    const row = (name: RegExp) => within(within(list).getByRole("button", { name }));
+    expect(row(/Chemise/).getByText("En stock")).toBeVisible(); // Chemise : 5
+    expect(row(/Baskets/).getByText("Stock bas")).toBeVisible(); // Baskets : 2
+    expect(plain(list.textContent)).not.toMatch(/Stock à|: \d/);
+    await user.click(await articleButton("Baskets toile"));
+    const baskets = card("Baskets toile");
+    const stockLine = baskets.getByText("Stock bas").closest("p");
+    expect(plain(stockLine?.textContent ?? "")).toBe("Stock : Stock bas");
+    for (let n = 0; n < 4; n += 1) {
+      await user.click(baskets.getByRole("button", { name: /plus un/ })); // jamais bloqué au stock
+    }
+    expect(baskets.getByRole("button", { name: /plus un/ })).toBeEnabled();
+    expect(plain(container.textContent)).not.toMatch(/Stock insuffisant|disponible à/);
     await user.click(screen.getByRole("button", { name: "Ajouter un article" }));
-    await user.click(await articleButton("Chemise lin"));
-    const open = card("Chemise lin");
-    await user.click(open.getByRole("radio", { name: "L" }));
-    const folded = screen.getByRole("list", { name: "Ligne repliée : Chemise lin" });
-    expect(plain(folded.textContent)).toContain("T. M");
-    await user.click(within(folded).getByRole("button"));
-    expect(card("Chemise lin").getByRole("radio", { name: "M" })).toBeChecked();
-    expect(plain(screen.getByRole("list", { name: /Ligne repliée/ }).textContent)).toContain(
-      "T. L",
-    );
+    const again = await screen.findByRole("list", { name: /Les plus vendus/ });
+    expect(within(again).queryByRole("button", { name: /Baskets/ })).toBeNull();
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("sous le minimum : avertissement sous le prix, la vente reste possible", async () => {

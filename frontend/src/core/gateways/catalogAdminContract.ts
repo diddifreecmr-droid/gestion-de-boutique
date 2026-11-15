@@ -27,7 +27,15 @@ export interface ArticleListQuery {
   /** Curseur opaque de la page suivante (`next_cursor`), `null` pour la première. */
   cursor: string | null;
   limit: number;
+  /** Couleurs d'un tissu seulement (`?fabric=`, Textile) ; absent = tous les articles. */
+  fabric?: string;
 }
+
+/** Tissu et ses couleurs (Textile, 2026-11-15) : un article par couleur « Tissu — Couleur ». */
+export type FabricCreateRequest = Schemas["FabricCreateRequest"];
+/** Changement d'un tissu, appliqué à toutes ses couleurs (champs présents seulement). */
+export type FabricPatchRequest = Schemas["FabricPatch"];
+export type FabricResponse = Schemas["FabricResponse"];
 
 /** Ce que le formulaire d'article lit du profil (`GET /shops/{id}/profile`). */
 export interface ArticleForm {
@@ -53,4 +61,7 @@ export interface CatalogAdminGateway {
   setPrices(shopId: string, articleId: string, body: PricesRequest): Promise<ArticleResponse>;
   archiveArticle(shopId: string, articleId: string): Promise<ArticleResponse>;
   reactivateArticle(shopId: string, articleId: string): Promise<ArticleResponse>;
+  createFabric(shopId: string, body: FabricCreateRequest): Promise<FabricResponse>;
+  updateFabric(shopId: string, fabric: string, body: FabricPatchRequest): Promise<FabricResponse>;
+  addColors(shopId: string, fabric: string, colors: readonly string[]): Promise<FabricResponse>;
 }

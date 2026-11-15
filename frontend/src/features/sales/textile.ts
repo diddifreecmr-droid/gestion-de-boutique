@@ -5,7 +5,10 @@
  * `domain/sales/lines.py`) : arrondi au dixième et au franc, demi vers le haut.
  */
 import type { CatalogArticle, SaleShortcut } from "../../core/gateways/catalogContract";
+import { countText, pieceWords, type PieceWords } from "../../core/profile/pieceWords";
 import { formatQuantity } from "../../shared/format";
+
+const PIECE = pieceWords("pièce");
 
 /** 1 yard = 0,9144 m : 6 yards en dix-millièmes de mètre (pièce sans longueur renseignée). */
 const SIX_YARDS = 6 * 9144;
@@ -31,9 +34,10 @@ export function toTenths(value: string): number {
   return exact / 1000;
 }
 
-/** Dixièmes → chaîne décimale envoyée à l'API (25 → « 2.5 »). */
+/** Dixièmes → chaîne décimale (25 → « 2.5 » ; -15 → « -1.5 », stock vendu sans stock). */
 export function tenthsValue(tenths: number): string {
-  return `${String(Math.floor(tenths / 10))}.${String(tenths % 10)}`;
+  const abs = Math.abs(tenths);
+  return `${tenths < 0 ? "-" : ""}${String(Math.floor(abs / 10))}.${String(abs % 10)}`;
 }
 
 /** « 54,9 m », « 3 m » (virgule décimale, zéro inutile retiré). */
@@ -46,9 +50,9 @@ export function lengthText(value: string): string {
   return formatQuantity(value, "m");
 }
 
-/** « 1 pièce », « 3 pièces ». */
-export function piecesText(count: number): string {
-  return `${String(count)} pièce${count > 1 ? "s" : ""}`;
+/** « 1 pièce », « 3 rouleaux » : selon le mot servi par le profil (`piece_label`). */
+export function piecesText(count: number, words: PieceWords = PIECE): string {
+  return countText(count, words);
 }
 
 /** Stock retiré par `pieces` pièces : longueur de la ligne arrondie au dixième (QC-3). */
@@ -64,10 +68,14 @@ export function maxPieces(availableTenths: number, lengthM: string): number {
 }
 
 /** « 54,9 m (≈ 9 pièces) » : stock toujours en mètres, pièces entières si la longueur est connue. */
-export function stockText(availableTenths: number, pieceLengthM: string | undefined): string {
+export function stockText(
+  availableTenths: number,
+  pieceLengthM: string | undefined,
+  words: PieceWords = PIECE,
+): string {
   const meters = metersText(availableTenths);
   if (pieceLengthM === undefined) return meters;
-  return `${meters} (≈ ${piecesText(maxPieces(availableTenths, pieceLengthM))})`;
+  return `${meters} (≈ ${piecesText(maxPieces(availableTenths, pieceLengthM), words)})`;
 }
 
 /** Total de ligne au mètre : longueur × prix au mètre, arrondi au franc (demi vers le haut). */

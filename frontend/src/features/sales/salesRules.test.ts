@@ -21,6 +21,7 @@ const setup = (overrides: Partial<SaleSetup> = {}): SaleSetup => ({
   article_fields: [],
   sale_fields: [],
   sale_shortcuts: [],
+  piece_label: "pièce",
   ...overrides,
 });
 

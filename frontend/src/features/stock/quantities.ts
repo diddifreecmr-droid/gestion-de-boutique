@@ -3,6 +3,7 @@
  * `shared/format` et saisies avec la virgule (« 2,5 »). Unités : `UNIT` et `PIECE` sont
  * entières (RG-T08 : 1,5 moto refusée), `METER` admet 3 décimales.
  */
+import { countText, type PieceWords } from "../../core/profile/pieceWords";
 import { formatQuantity, MAX_QUANTITY_DECIMALS } from "../../shared/format";
 
 const UNITS = ["UNIT", "PIECE", "METER"] as const;
@@ -31,6 +32,16 @@ export function signedQuantityText(value: string, unit: string): string {
 
 export function isZero(value: string): boolean {
   return Number(value) === 0;
+}
+
+/** « 7 rouleaux + 12 m » (gérant, Textile, 2026-11-15) ; « 7 rouleaux » sans rouleau entamé. */
+export function rollsText(
+  rolls: { count: number; rest: string },
+  unit: string,
+  words: PieceWords,
+): string {
+  const whole = countText(rolls.count, words);
+  return isZero(rolls.rest) ? whole : `${whole} + ${quantityText(rolls.rest, unit)}`;
 }
 
 /** Valeur décimale de l'API → texte d'un champ (« 2.500 » → « 2,5 »). */
