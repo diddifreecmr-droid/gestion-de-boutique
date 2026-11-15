@@ -57,7 +57,7 @@ class UpdateArticle:
             article = articles.get(article_id)
             require_version(article.version, version)
             profile = shop_context(uow).profile
-            details = build_details(profile, _merged(article.details, profile, patch))
+            details = build_details(profile, merged_input(article.details, profile, patch))
             require_unique(articles, details, own_id=article.id)
             details = ensure_reference(uow, profile, details)
             changed = article.change(
@@ -69,7 +69,7 @@ class UpdateArticle:
         return article
 
 
-def _merged(
+def merged_input(
     current: ArticleDetails, profile: ShopProfile, patch: Mapping[str, Any]
 ) -> ArticleInput:
     fields = current.profile_values(profile)

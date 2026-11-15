@@ -11,6 +11,7 @@
 
 from datetime import datetime
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -82,6 +83,9 @@ class ArticleResponse(_Strict):
     stock_unit: str
     sold_by_piece: bool
     piece_length_m: str | None
+    """Longueur d'un rouleau (Textile ; code interne « pièce »)."""
+    fabric: str | None
+    """Tissu (Textile : un article par couleur, la couleur est `attributes.color`)."""
     attributes: dict[str, FieldValue]
     alert_threshold: str | None
     effective_alert_threshold: str
@@ -104,6 +108,9 @@ class ArticleResponse(_Strict):
     thumbnail: ThumbnailResponse | None = None
     """Liste avec `with_thumbnails=true` seulement (clé absente sinon) ; `null` = pas de
     photo utilisable (le client affiche les initiales, UC-PAP-02)."""
+    stock_status: Literal["ok", "low", "out"] | None = None
+    """Liste seulement : pastille de stock (vert, orange, rouge), **aucune quantité** — c'est
+    tout ce que l'employé voit du stock en Prêt-à-porter et Textile (2026-11-15)."""
 
 
 class ArticleListResponse(_Strict):

@@ -34,6 +34,7 @@ class Permission(StrEnum):
     ARTICLE_WRITE = "ARTICLE_WRITE"
     ARTICLE_ARCHIVE = "ARTICLE_ARCHIVE"
     PRICE_SET = "PRICE_SET"
+    ARTICLE_READ = "ARTICLE_READ"
     # Stock
     STOCK_READ = "STOCK_READ"
     STOCK_VALUE_READ = "STOCK_VALUE_READ"
@@ -116,6 +117,7 @@ class Permission(StrEnum):
 READ_PERMISSIONS: frozenset[Permission] = frozenset(
     {
         Permission.LOCATION_READ,
+        Permission.ARTICLE_READ,
         Permission.STOCK_READ,
         Permission.STOCK_VALUE_READ,
         Permission.STOCK_HISTORY_READ,

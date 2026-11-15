@@ -117,6 +117,7 @@ class Authenticate:
             device_id=identity.device_id,
             shop_id=shop_id,
             role=membership.role,
+            profile=membership.profile_code,
         )
 
     def platform_actor(self, identity: AuthenticatedUser) -> Actor:

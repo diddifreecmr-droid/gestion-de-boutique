@@ -4,7 +4,7 @@
 | --- | --- | --- | --- | --- |
 | client | `sales` | `CUSTOMER_MANAGE` | `CUSTOMER_READ` | client créé par lui ou vente de lui |
 | créance, garants | `receivables` | `RECEIVABLE_FOLLOW_UP` | `RECEIVABLE_READ` | responsable |
-| article | `catalog` | `ARTICLE_WRITE` | `STOCK_READ` | — |
+| article | `catalog` | `ARTICLE_WRITE` | `ARTICLE_READ` | — |
 | dépense | `expenses` | `EXPENSE_CREATE` | `EXPENSE_READ` | — |
 | achat | `purchases` | `PURCHASE_WRITE` | `PURCHASE_READ` | — |
 | ajustement de stock | `catalog` | `STOCK_ADJUST` | `STOCK_HISTORY_READ` | — |
@@ -56,7 +56,7 @@ RIGHTS: Mapping[OwnerType, OwnerRights] = MappingProxyType(
     {
         OwnerType.CUSTOMER: OwnerRights(P.CUSTOMER_MANAGE, P.CUSTOMER_READ, M.SALES),
         OwnerType.RECEIVABLE: OwnerRights(P.RECEIVABLE_FOLLOW_UP, P.RECEIVABLE_READ, M.RECEIVABLES),
-        OwnerType.ARTICLE: OwnerRights(P.ARTICLE_WRITE, P.STOCK_READ, M.CATALOG),
+        OwnerType.ARTICLE: OwnerRights(P.ARTICLE_WRITE, P.ARTICLE_READ, M.CATALOG),
         OwnerType.EXPENSE: OwnerRights(P.EXPENSE_CREATE, P.EXPENSE_READ, M.EXPENSES),
         OwnerType.PURCHASE: OwnerRights(P.PURCHASE_WRITE, P.PURCHASE_READ, M.PURCHASES),
         OwnerType.STOCK_ADJUSTMENT: OwnerRights(P.STOCK_ADJUST, P.STOCK_HISTORY_READ, M.CATALOG),

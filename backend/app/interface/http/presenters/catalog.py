@@ -67,6 +67,7 @@ def article_response(
         stock_unit=fields.stock_unit.value,
         sold_by_piece=fields.sold_by_piece,
         piece_length_m=_optional(fields.piece_length_m),
+        fabric=fields.fabric,
         attributes=dict(fields.attributes),
         alert_threshold=_optional(details.alert_threshold),
         effective_alert_threshold=str(details.effective_threshold(shop_threshold)),
@@ -120,5 +121,7 @@ def list_response(found: ArticleList, api_prefix: str) -> ArticleListResponse:
         )
         if found.thumbnails is not None:
             item = _with_thumbnail(item, found.thumbnails[article.id], api_prefix)
+        if found.stock_badges is not None:
+            item = item.model_copy(update={"stock_status": found.stock_badges[article.id]})
         items.append(item)
     return ArticleListResponse(items=items, next_cursor=None if cursor is None else cursor.encode())

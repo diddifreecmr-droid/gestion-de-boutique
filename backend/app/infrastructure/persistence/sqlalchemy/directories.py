@@ -15,6 +15,7 @@ from app.application.identity.ports import (
 )
 from app.application.shops.ports import ShopCatalog, ShopSummary
 from app.domain.plans.entitlements import PlanCode
+from app.domain.profiles.profile import ProfileCode
 from app.domain.shared.ids import ShopId, UserId
 from app.domain.shared.roles import Role
 from app.domain.shops.ids import MerchantAccountId
@@ -38,7 +39,7 @@ class SqlMembershipDirectory(_Reader, MembershipDirectory):
     def _select(self, *conditions: sa.ColumnElement[bool]) -> list[MembershipView]:
         m, s = t.membership.c, t.shop.c
         statement = (
-            sa.select(m.shop_id, m.role, m.active, s.name, s.status)
+            sa.select(m.shop_id, m.role, m.active, s.name, s.status, s.profile_code)
             .select_from(t.membership.join(t.shop, s.id == m.shop_id))
             .where(*conditions)
             .order_by(s.name, m.shop_id)
@@ -50,6 +51,7 @@ class SqlMembershipDirectory(_Reader, MembershipDirectory):
                 role=Role(row["role"]),
                 active=bool(row["active"]),
                 shop_active=row["status"] == ShopStatus.ACTIVE.value,
+                profile_code=ProfileCode(row["profile_code"]),
             )
             for row in self._rows(statement)
         ]

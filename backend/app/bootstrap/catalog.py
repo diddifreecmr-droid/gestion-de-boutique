@@ -16,13 +16,16 @@ from app.application.catalog.stock_probe import ArticleStock
 from app.application.catalog.thumbnails import ArticleThumbnails
 from app.application.catalog.use_cases.archive_article import ArchiveArticle
 from app.application.catalog.use_cases.create_article import CreateArticle
+from app.application.catalog.use_cases.create_fabric import AddFabricColors, CreateFabric
 from app.application.catalog.use_cases.read_articles import GetArticle, SearchArticles
 from app.application.catalog.use_cases.set_prices import SetArticlePrices
 from app.application.catalog.use_cases.update_article import UpdateArticle
+from app.application.catalog.use_cases.update_fabric import UpdateFabric
 from app.application.security.policy import Policy
-from app.application.stock.probes import LedgerArticleStock
+from app.application.stock.probes import LedgerArticleStock, LedgerStockBadges
 from app.bootstrap.identity import IdentityModule
 from app.interface.http.routes.catalog import CatalogComponents
+from app.interface.http.routes.fabrics import FabricComponents
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -45,8 +48,14 @@ def build_catalog(
         update=UpdateArticle(uows, policy, clock),
         prices=SetArticlePrices(uows, policy, clock),
         archive=ArchiveArticle(uows, policy, stock or LedgerArticleStock(), clock),
-        search=SearchArticles(uows, policy, ranking, thumbnails),
+        search=SearchArticles(uows, policy, ranking, thumbnails, LedgerStockBadges()),
         get=GetArticle(uows, policy),
         guard=identity.auth.guard,
+        fabrics=FabricComponents(
+            create=CreateFabric(uows, policy, clock),
+            add_colors=AddFabricColors(uows, policy, clock),
+            update=UpdateFabric(uows, policy, clock),
+            guard=identity.auth.guard,
+        ),
     )
     return CatalogModule(http=http)

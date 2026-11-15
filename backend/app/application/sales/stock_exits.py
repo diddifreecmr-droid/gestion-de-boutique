@@ -3,8 +3,9 @@
 - `post_exits` : une « Sortie vente » **par article** (somme des lignes du même article,
   ERR-STK-02 : 2 + 1 contrôlés ensemble contre le stock du lieu) au lieu de vente, à l'instant
   de la vente, dans la transaction de la vente. En ligne, un stock insuffisant remonte tel quel
-  (`STOCK_INSUFFICIENT` : `article_id`, `available`, `other_locations`) ; en différé (T23) la
-  sortie est acceptée et la vente marquée « stock à vérifier » (RG-T18).
+  (`STOCK_INSUFFICIENT` : `article_id`, `available`, `other_locations`) ; en différé (T23), ou
+  pour un profil qui ne refuse jamais une vente (Prêt-à-porter, Textile), la sortie est
+  acceptée et la vente marquée « stock à vérifier » (RG-T18).
 - `reverse_exits` : annulation de la vente (UC-VEN-08) → « Annulation » de chaque sortie
   encore en vigueur ; la marchandise revient au lieu de vente.
 """

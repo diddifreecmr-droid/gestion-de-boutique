@@ -30,9 +30,9 @@ def _line(mode: SaleMode, quantity: str, stock: str, price: int) -> SaleLine:
 def test_labels_per_sale_mode() -> None:
     assert quantity_label(SaleMode.METER, Decimal("2.5"), None) == "2,5 m"
     assert quantity_label(SaleMode.METER, Decimal("3.0"), None) == "3 m"
-    assert quantity_label(SaleMode.PIECE, Decimal(1), PIECE) == "1 pièce (5,49 m)"
-    assert quantity_label(SaleMode.PIECE, Decimal(3), PIECE) == "3 pièces (5,49 m)"
-    assert quantity_label(SaleMode.PIECE, Decimal(2), None) == "2 pièces"
+    assert quantity_label(SaleMode.PIECE, Decimal(1), PIECE) == "1 rouleau (5,49 m)"
+    assert quantity_label(SaleMode.PIECE, Decimal(3), PIECE) == "3 rouleaux (5,49 m)"
+    assert quantity_label(SaleMode.PIECE, Decimal(2), None) == "2 rouleaux"
     assert quantity_label(SaleMode.UNIT, Decimal(2), None) == "2"
     assert length_text(Decimal("10.0")) == "10 m"
     with pytest.raises(ValueError, match="non entier"):

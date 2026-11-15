@@ -28,6 +28,7 @@ from app.domain.catalog.ids import ArticleId, AttachmentId
 from app.domain.catalog.prices import ArticlePrices
 from app.domain.shared.money import Money
 from app.interface.http.presenters.catalog import list_response, sheet_response
+from app.interface.http.routes.fabrics import FabricComponents, build_fabric_router
 from app.interface.http.schemas.catalog import (
     ArticleCreateRequest,
     ArticleListResponse,
@@ -49,6 +50,7 @@ class CatalogComponents:
     search: SearchArticles
     get: GetArticle
     guard: AuthGuard
+    fabrics: FabricComponents
 
 
 def _prices(body: ArticleCreateRequest | PricesRequest) -> ArticlePrices:
@@ -79,6 +81,7 @@ def _patch(body: ArticlePatch) -> dict[str, Any]:
 
 def build_catalog_router(catalog: CatalogComponents, api_prefix: str) -> APIRouter:
     router = APIRouter(tags=["catalog"])
+    router.include_router(build_fabric_router(catalog.fabrics))  # avant `/articles/{id}`
     Member = Annotated[Actor, Depends(catalog.guard.current_actor)]  # noqa: N806
     sparse: dict[str, Any] = {"response_model_exclude_unset": True}
 
@@ -97,11 +100,12 @@ def build_catalog_router(catalog: CatalogComponents, api_prefix: str) -> APIRout
         cursor: Annotated[str | None, Query(max_length=512)] = None,
         limit: int | None = None,
         with_thumbnails: bool = False,
+        fabric: Annotated[str | None, Query(max_length=120)] = None,
     ) -> ArticleListResponse:
         wanted = None if status_filter == ALL_STATUSES else ArticleStatus(status_filter)
         found = catalog.search.execute(
             actor,
-            ArticleQuery(q, wanted),
+            ArticleQuery(q, wanted, fabric),
             ArticlePageRequest.parse(cursor, limit),
             sort,
             with_thumbnails=with_thumbnails,

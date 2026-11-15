@@ -88,6 +88,15 @@ class ShopProfile:
     expense_categories: tuple[str, ...]
     payment_modes: tuple[PaymentModeTemplate, ...]
     settings: SettingsDefaults
+    sale_refused_without_stock: bool = True
+    """Vente refusée si le stock du lieu manque (Motos, RG-T17). Faux (Prêt-à-porter, Textile,
+    décision client du 2026-11-15) : la vente passe, le stock devient négatif et l'indicateur
+    « Stock à vérifier » le signale au gérant (RG-T18)."""
+    stock_reserved_to_owner: bool = False
+    """Seul le gérant voit les quantités (2026-11-15) : le vendeur n'a pas « Voir le stock » et
+    ne reçoit, à la vente, qu'une pastille `ok` | `low` | `out` sans chiffre."""
+    piece_word: str = "pièce"
+    """Mot servi pour l'unité « pièce » de vente (Textile : « rouleau »)."""
 
     def __post_init__(self) -> None:
         problems = list(self._problems())

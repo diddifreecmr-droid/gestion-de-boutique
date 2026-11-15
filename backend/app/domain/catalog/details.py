@@ -73,6 +73,12 @@ class ArticleDetails:
         return None if reference is None else identity_key(reference)
 
     @property
+    def fabric_key(self) -> str | None:
+        """Tissu plié : regroupe les couleurs d'un même tissu (Textile)."""
+        fabric = self.fields.fabric
+        return None if fabric is None else identity_key(fabric)
+
+    @property
     def search_key(self) -> str:
         f = self.fields
         return search_key((f.display_name, f.brand, f.model, f.reference))
@@ -97,6 +103,7 @@ class ArticleDetails:
             "unit": f.stock_unit.value,
             "sold_by_piece": f.sold_by_piece,
             "piece_length_m": None if f.piece_length_m is None else str(f.piece_length_m),
+            "fabric": f.fabric,
         }
         values: dict[str, object] = {}
         for spec in profile.article_fields:
@@ -113,6 +120,7 @@ class ArticleDetails:
             "stock_unit": f.stock_unit.value,
             "sold_by_piece": f.sold_by_piece,
             "piece_length_m": None if f.piece_length_m is None else str(f.piece_length_m),
+            "fabric": f.fabric,
             "alert_threshold": None if self.alert_threshold is None else str(self.alert_threshold),
             "photo_id": None if self.photo_id is None else str(self.photo_id),
             "notes": self.notes,

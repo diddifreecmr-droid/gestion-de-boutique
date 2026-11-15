@@ -15,6 +15,10 @@ Sans le module `receivables`, une vente (ou un échange) à crédit est refusée
   existante (`created=False`), **même si le contenu rejoué diffère**, sans second mouvement
   ni numéro consommé (comme les achats et les dépenses).
 - Rejoué sur course de concurrence (`with_sale_retry`).
+- Stock insuffisant : refus (`STOCK_INSUFFICIENT`) en Motos ; **jamais** en Prêt-à-porter et
+  Textile (`ShopProfile.sale_refused_without_stock`, 2026-11-15) : la vente passe, le stock
+  devient négatif, la vente est marquée `stock_to_verify` et l'alerte « Stock à vérifier »
+  part au gérant, comme une vente différée (RG-T18).
 """
 
 from dataclasses import dataclass
@@ -103,8 +107,11 @@ class RecordSale:
         """Vente neuve dans la transaction de l'appelant, **sans commit** (échange, UC-VEN-09)."""
         sale, view = self._build(uow, actor, command, now)
         # Sorties d'abord : en différé, elles posent `stock_to_verify` sur la vente (RG-T18),
-        # qui doit être écrit avec elle (T23).
-        post_exits(uow, self._ledger, sale, deferred=command.deferred)
+        # qui doit être écrit avec elle (T23). Profil sans refus (Prêt-à-porter, Textile,
+        # 2026-11-15) : même acceptation qu'en différé, en ligne aussi.
+        profile = profile_for(ShopRepository.within(uow).current().profile_code.value)
+        accept_negative = command.deferred or not profile.sale_refused_without_stock
+        post_exits(uow, self._ledger, sale, deferred=accept_negative)
         SaleRepository.within(uow).add(sale)
         sync_claims(uow, sale)
         return sale, view

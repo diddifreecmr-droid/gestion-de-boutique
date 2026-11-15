@@ -73,6 +73,7 @@ class MemoryMembershipDirectory(MembershipDirectory):
             role=membership.role,
             active=membership.active,
             shop_active=shop.status is ShopStatus.ACTIVE,
+            profile_code=shop.profile_code,
         )
 
 

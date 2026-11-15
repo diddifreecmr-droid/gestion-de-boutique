@@ -11,7 +11,11 @@ nomme le champ. Les champs à rôle particulier sont **promus** (colonnes dédi�
 | `brand`, `model` | marque + modèle unique dans la boutique quand le profil a `model` |
 | `reference` | référence unique, générée si vide (Prêt-à-porter, Textile) |
 | `unit` | unité de stock au choix (Textile) ; sinon l'unique unité du profil |
-| `sold_by_piece`, `piece_length_m` | vente à la pièce et longueur d'une pièce (Textile) |
+| `sold_by_piece`, `piece_length_m` | vente au rouleau et longueur d'un rouleau (Textile) |
+| `fabric` | tissu (Textile : un article par couleur, regroupés par tissu, 2026-11-15) |
+
+Longueur du rouleau **exigée** avec la vente au rouleau, **permise** sans elle (tissu vendu au
+mètre seulement : elle sert à afficher « 7 rouleaux + 12 m »).
 """
 
 from collections.abc import Mapping
@@ -27,7 +31,7 @@ from app.domain.shared.quantity import StockUnit
 from app.domain.shops.values import clean_optional, clean_text
 
 PROMOTED = frozenset(
-    {"name", "brand", "model", "reference", "unit", "sold_by_piece", "piece_length_m"}
+    {"name", "brand", "model", "reference", "unit", "sold_by_piece", "piece_length_m", "fabric"}
 )
 TEXT_MAX_LENGTH = 120
 INTEGER_MAX = 1_000_000
@@ -46,6 +50,7 @@ class ProfileFields:
     stock_unit: StockUnit
     sold_by_piece: bool = False
     piece_length_m: Decimal | None = None
+    fabric: str | None = None
     attributes: dict[str, Scalar] = field(default_factory=dict)
 
 
@@ -123,11 +128,13 @@ def _assemble(profile: ShopProfile, read: Mapping[str, Scalar | Decimal]) -> Pro
     length = read.get("piece_length_m")
     piece_length = length if isinstance(length, Decimal) else None
     if sold_by_piece and unit is not StockUnit.METER:
-        raise _invalid("sold_by_piece", "Vente à la pièce possible si l'unité est le mètre")
-    if sold_by_piece != (piece_length is not None):
-        raise _invalid("piece_length_m", "Longueur de la pièce exigée avec la vente à la pièce")
+        raise _invalid("sold_by_piece", "Vente au rouleau possible si l'unité est le mètre")
+    if sold_by_piece and piece_length is None:
+        raise _invalid("piece_length_m", "Longueur du rouleau exigée avec la vente au rouleau")
+    if piece_length is not None and unit is not StockUnit.METER:
+        raise _invalid("piece_length_m", "Longueur du rouleau possible si l'unité est le mètre")
     if piece_length is not None and not 0 < piece_length < PIECE_LENGTH_MAX:
-        raise _invalid("piece_length_m", "Longueur de pièce strictement positive attendue")
+        raise _invalid("piece_length_m", "Longueur de rouleau strictement positive attendue")
     brand, model, name = text("brand"), text("model"), text("name")
     display = name if "name" in read else " ".join(p for p in (brand, model) if p)
     if not display:
@@ -146,5 +153,6 @@ def _assemble(profile: ShopProfile, read: Mapping[str, Scalar | Decimal]) -> Pro
         stock_unit=unit,
         sold_by_piece=sold_by_piece,
         piece_length_m=piece_length,
+        fabric=text("fabric"),
         attributes=attributes,
     )
