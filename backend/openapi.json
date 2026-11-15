@@ -9540,6 +9540,118 @@
         "x-module": "dashboard"
       }
     },
+    "/api/v1/shops/{shop_id}/dashboard/margins": {
+      "get": {
+        "tags": [
+          "reporting"
+        ],
+        "summary": "Dashboard Margins",
+        "operationId": "dashboard_margins_api_v1_shops__shop_id__dashboard_margins_get",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PeriodKind",
+              "default": "today"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarginsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-module": "dashboard"
+      }
+    },
     "/api/v1/shops/{shop_id}/home": {
       "get": {
         "tags": [
@@ -11114,6 +11226,85 @@
         ],
         "title": "ArticleListResponse"
       },
+      "ArticleMarginOut": {
+        "properties": {
+          "article_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Article Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "fabric": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fabric"
+          },
+          "stock_unit": {
+            "type": "string",
+            "title": "Stock Unit"
+          },
+          "quantity": {
+            "type": "string",
+            "title": "Quantity"
+          },
+          "figures": {
+            "$ref": "#/components/schemas/MarginFigures"
+          },
+          "roll_length_m": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roll Length M"
+          },
+          "per_meter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PerUnitOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "per_roll": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PerUnitOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "article_id",
+          "name",
+          "fabric",
+          "stock_unit",
+          "quantity",
+          "figures",
+          "roll_length_m",
+          "per_meter",
+          "per_roll"
+        ],
+        "title": "ArticleMarginOut"
+      },
       "ArticleOrder": {
         "type": "string",
         "enum": [
@@ -12610,6 +12801,35 @@
         ],
         "title": "DashboardResponse"
       },
+      "DayMarginOut": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "revenue": {
+            "type": "integer",
+            "title": "Revenue"
+          },
+          "cost": {
+            "type": "integer",
+            "title": "Cost"
+          },
+          "margin": {
+            "type": "integer",
+            "title": "Margin"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "revenue",
+          "cost",
+          "margin"
+        ],
+        "title": "DayMarginOut"
+      },
       "DetailLineOut": {
         "properties": {
           "kind": {
@@ -13870,6 +14090,67 @@
           "colors"
         ],
         "title": "FabricCreateRequest"
+      },
+      "FabricMarginOut": {
+        "properties": {
+          "fabric": {
+            "type": "string",
+            "title": "Fabric"
+          },
+          "colors": {
+            "type": "integer",
+            "title": "Colors"
+          },
+          "quantity": {
+            "type": "string",
+            "title": "Quantity"
+          },
+          "figures": {
+            "$ref": "#/components/schemas/MarginFigures"
+          },
+          "roll_length_m": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roll Length M"
+          },
+          "per_meter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PerUnitOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "per_roll": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PerUnitOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "fabric",
+          "colors",
+          "quantity",
+          "figures",
+          "roll_length_m",
+          "per_meter",
+          "per_roll"
+        ],
+        "title": "FabricMarginOut"
       },
       "FabricPatch": {
         "properties": {
@@ -15912,6 +16193,86 @@
         "title": "LoginRequest",
         "description": "Code à 6 chiffres (membre) **ou** mot de passe (administrateur plateforme)."
       },
+      "MarginFigures": {
+        "properties": {
+          "revenue": {
+            "type": "integer",
+            "title": "Revenue"
+          },
+          "cost": {
+            "type": "integer",
+            "title": "Cost"
+          },
+          "margin": {
+            "type": "integer",
+            "title": "Margin"
+          },
+          "margin_rate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Rate"
+          },
+          "without_cost": {
+            "type": "integer",
+            "title": "Without Cost"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revenue",
+          "cost",
+          "margin",
+          "margin_rate",
+          "without_cost"
+        ],
+        "title": "MarginFigures"
+      },
+      "MarginsResponse": {
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/PeriodOut"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/MarginFigures"
+          },
+          "articles": {
+            "items": {
+              "$ref": "#/components/schemas/ArticleMarginOut"
+            },
+            "type": "array",
+            "title": "Articles"
+          },
+          "fabrics": {
+            "items": {
+              "$ref": "#/components/schemas/FabricMarginOut"
+            },
+            "type": "array",
+            "title": "Fabrics"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/DayMarginOut"
+            },
+            "type": "array",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "totals",
+          "articles",
+          "fabrics",
+          "days"
+        ],
+        "title": "MarginsResponse"
+      },
       "MatrixOrder": {
         "type": "string",
         "enum": [
@@ -16874,6 +17235,29 @@
           "recorded_by"
         ],
         "title": "PaymentResponse"
+      },
+      "PerUnitOut": {
+        "properties": {
+          "price": {
+            "type": "integer",
+            "title": "Price"
+          },
+          "cost": {
+            "type": "integer",
+            "title": "Cost"
+          },
+          "margin": {
+            "type": "integer",
+            "title": "Margin"
+          }
+        },
+        "type": "object",
+        "required": [
+          "price",
+          "cost",
+          "margin"
+        ],
+        "title": "PerUnitOut"
       },
       "PerformerResponse": {
         "properties": {

@@ -86,7 +86,8 @@ ROWS: Mapping[str, tuple[Cell, ...]] = {
     "M24": (Cell("POST /expense-categories", "Y---"),
             Cell("PATCH /expense-categories/{category_id}", "Y---"),
             Cell("GET /tags", "Y-Y-"), Cell("POST /tags/merge", "Y---")),
-    "M25": (Cell("GET /dashboard", "Y---"), Cell("GET /dashboard/details/{metric}", "Y---")),
+    "M25": (Cell("GET /dashboard", "Y---"), Cell("GET /dashboard/details/{metric}", "Y---"),
+            Cell("GET /dashboard/margins", "Y---")),
     "M26": (Cell("GET /home", "YYYY"),),
     "M27": tuple(Cell(r, "Y---") for r in (
         "GET /audit", "GET /audit/entities/{entity_type}/{entity_id}",
