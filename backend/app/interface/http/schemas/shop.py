@@ -87,8 +87,14 @@ class ProfileResponse(_Strict):
     article_fields: list[FieldResponse]
     sale_fields: list[FieldResponse]
     sale_shortcuts: list[SaleShortcutResponse]
-    """Raccourcis de longueur (Textile : pièce, demi-pièce, 1, 2, 3 m) ; vide sinon."""
+    """Raccourcis de longueur (Textile : rouleau, demi-rouleau, 1, 2, 3 m) ; vide sinon."""
     stock_units: list[str]
+    piece_label: str
+    """Mot de l'unité « pièce » à afficher (Textile : « rouleau », sinon « pièce »)."""
+    refused_when_out_of_stock: bool
+    """Vrai (Motos) : vente refusée si le stock manque ; faux : la vente passe toujours."""
+    stock_reserved_to_owner: bool
+    """Vrai (Prêt-à-porter, Textile) : seul le gérant voit les quantités de stock."""
     receipt: ReceiptSettingsResponse
     min_price_enabled: bool
     min_price_requires_approval: bool

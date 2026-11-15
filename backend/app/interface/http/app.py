@@ -18,6 +18,7 @@ from app.interface.http.routes.customers import build_customers_router
 from app.interface.http.routes.expense_components import ExpensesComponents
 from app.interface.http.routes.expense_settings import build_expense_settings_router
 from app.interface.http.routes.expenses import build_expenses_router
+from app.interface.http.routes.fabrics import build_fabric_router
 from app.interface.http.routes.import_components import ImportsComponents
 from app.interface.http.routes.imports import build_imports_router
 from app.interface.http.routes.installments import build_installments_router
@@ -83,6 +84,7 @@ def create_app(
         for build in (build_shop_profile_router, build_places_router, build_members_router):
             shop.include(build(shops), Module.CORE)
     if catalog is not None:
+        shop.include(build_fabric_router(catalog.fabrics), Module.CATALOG)
         shop.include(build_catalog_router(catalog, prefix), Module.CATALOG)
     if expenses is not None:
         shop.include(build_expenses_router(expenses), Module.EXPENSES)

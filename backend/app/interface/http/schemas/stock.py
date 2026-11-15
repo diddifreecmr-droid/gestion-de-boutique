@@ -46,6 +46,10 @@ class StockRow(_Strict):
     stock_status: Literal["ok", "low", "out"]
     """Pastille : `low` sous le seuil (orange), `out` à zéro (rouge) — stock vendable tous lieux."""
     alert_threshold: str
+    rolls: int | None = None
+    """Textile (article au mètre avec une longueur de rouleau) : rouleaux entiers du total…"""
+    meters_rest: str | None = None
+    """… et mètres du rouleau entamé (« 7 rouleaux + 12 m ») ; absents sinon ou si négatif."""
     base_price: int | None = None
     last_cost: int | None = None
     wac: int | None = None

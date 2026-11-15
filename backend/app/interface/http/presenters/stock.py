@@ -14,8 +14,9 @@ from app.application.stock.use_cases.stock_value import Valuation as ValuationDa
 from app.application.stock.visibility import StockVisibility
 from app.domain.catalog.article import Article
 from app.domain.shared.money import Money
-from app.domain.shared.quantity import Quantity
+from app.domain.shared.quantity import Quantity, StockUnit
 from app.domain.stock.movement import StockMovement
+from app.domain.stock.rolls import split_rolls
 from app.domain.stock.valuation import value_of
 from app.domain.stock.values import SourceType
 from app.interface.http.schemas import stock as s
@@ -31,6 +32,17 @@ def _costs(article: Article, visibility: StockVisibility) -> dict[str, Any]:
     return {"last_cost": amount(article.last_cost), "wac": amount(article.wac)}
 
 
+def _rolls(article: Article, total: Quantity) -> dict[str, Any]:
+    """« 7 rouleaux + 12 m » : article au mètre dont la longueur de rouleau est connue."""
+    fields = article.details.fields
+    if fields.stock_unit is not StockUnit.METER or fields.piece_length_m is None:
+        return {}
+    split = split_rolls(total.value, fields.piece_length_m)
+    if split is None:
+        return {}
+    return {"rolls": split.rolls, "meters_rest": str(split.meters_rest)}
+
+
 def _row(row: MatrixRow, visibility: StockVisibility) -> s.StockRow:
     article = row.article
     extra = _costs(article, visibility)
@@ -39,6 +51,7 @@ def _row(row: MatrixRow, visibility: StockVisibility) -> s.StockRow:
         extra["wac_value"] = amount(value_of(sellable, article.wac))
     if visibility.selling_prices:
         extra["base_price"] = amount(article.prices.base_price)
+    extra |= _rolls(article, row.total)
     return s.StockRow(
         article_id=str(article.id),
         display_name=article.display_name,

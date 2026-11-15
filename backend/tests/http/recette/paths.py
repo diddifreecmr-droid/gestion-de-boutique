@@ -19,7 +19,7 @@ PARAMS = {
     "report_id": "report", "request_id": "price_request", "reminder_id": "reminder",
     "alert_id": "alert", "entity_id": "sale_seller", "user_id": "seller2",
 }  # fmt: skip
-CONSTANTS = {"metric": "sales", "entity_type": "sale"}
+CONSTANTS = {"metric": "sales", "entity_type": "sale", "fabric": "Djampar"}
 _PARAM = re.compile(r"\{(\w+)\}")
 
 

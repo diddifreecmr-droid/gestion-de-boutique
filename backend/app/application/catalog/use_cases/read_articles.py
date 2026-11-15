@@ -1,12 +1,15 @@
 """Recherche d'articles et fiche article (UC-STK-05 côté catalogue, UC-STK-06 « fiche »).
 
-Lecture : quiconque voit le stock (`STOCK_READ` : propriétaire, comptable, vendeur ; chauffeur
+Lecture : quiconque lit le catalogue (`ARTICLE_READ` : propriétaire, comptable, vendeur ; chauffeur
 refusé). Ce que chacun voit des prix est décidé par `visibility.py` (TR-05) et appliqué par le
 présentateur : le vendeur ne reçoit jamais `last_cost` ni `wac` (RG-D02). La fiche porte aussi
 le seuil d'alerte appliqué (celui de l'article ou de la boutique) et l'historique des prix pour
 qui peut le voir. L'historique des **mouvements** de la fiche arrive avec le module Stock (T14).
-Sur demande (`with_thumbnails`), la liste porte un lien signé court par photo d'article, délivré
-après contrôle des droits, dans la même unité de travail (`thumbnails.py`, UC-PAP-02).
+La liste porte la **pastille** de stock de chaque article (`ok` | `low` | `out`, aucune
+quantité, 2026-11-15) : c'est tout ce que voit de son stock l'employé d'une boutique dont le
+profil réserve le stock au gérant. Sur demande (`with_thumbnails`), la liste porte un lien
+signé court par photo d'article, délivré après contrôle des droits, dans la même unité de
+travail (`thumbnails.py`, UC-PAP-02).
 """
 
 from collections.abc import Mapping
@@ -17,6 +20,7 @@ from app.application.attachments.links import SignedLink
 from app.application.catalog.ports import ArticleRepository, PriceHistoryLog
 from app.application.catalog.ranking import ArticleOrder, SalesRanking, SortUnavailable
 from app.application.catalog.search import ArticlePage, ArticlePageRequest, ArticleQuery
+from app.application.catalog.stock_probe import ArticleStockBadges
 from app.application.catalog.thumbnails import ArticleThumbnails, ThumbnailsUnavailable
 from app.application.catalog.use_cases.context import shop_context
 from app.application.catalog.visibility import READ_PERMISSION, CatalogVisibility, visibility_for
@@ -37,6 +41,9 @@ class ArticleList:
     shop_threshold: Decimal
     thumbnails: Mapping[ArticleId, SignedLink | None] | None = None
     """Lien de la photo de chaque article de la page ; `None` si non demandé."""
+    stock_badges: Mapping[ArticleId, str] | None = None
+    """Pastille de stock (`ok` | `low` | `out`) de chaque article, sans quantité (2026-11-15) ;
+    `None` si le module Stock n'est pas branché."""
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -56,11 +63,13 @@ class SearchArticles:
         policy: Policy,
         ranking: SalesRanking | None = None,
         thumbnails: ArticleThumbnails | None = None,
+        badges: ArticleStockBadges | None = None,
     ) -> None:
         self._uow_factory = uow_factory
         self._policy = policy
         self._ranking = ranking
         self._thumbnails = thumbnails
+        self._badges = badges
 
     def execute(
         self,
@@ -85,7 +94,13 @@ class SearchArticles:
                 found = ArticleRepository.within(uow).search(query, page)
             if with_thumbnails and self._thumbnails is not None:
                 thumbnails = self._thumbnails.issue(uow, actor, found.items)
+            badges = (
+                None
+                if self._badges is None
+                else self._badges.badges(uow, found.items, settings.low_stock_threshold)
+            )
         return ArticleList(
+            stock_badges=badges,
             page=found,
             visibility=visibility_for(self._policy, actor),
             min_price_enabled=settings.min_price_enabled,

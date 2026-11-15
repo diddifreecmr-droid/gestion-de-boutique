@@ -33,6 +33,8 @@ article = sa.Table(
     sa.Column("brand_model_key", sa.String(250), nullable=True),
     sa.Column("name_key", sa.String(250), nullable=True),
     sa.Column("reference_key", sa.String(250), nullable=True),
+    sa.Column("fabric", sa.String(120), nullable=True),
+    sa.Column("fabric_key", sa.String(250), nullable=True),
     sa.Column("search_key", sa.String(250), nullable=False),
     sa.Column("sort_key", sa.String(250), nullable=False),
     sa.Column("stock_unit", sa.String(8), nullable=False),
@@ -50,6 +52,7 @@ article = sa.Table(
     sa.UniqueConstraint("shop_id", "name_key", name="article_name"),
     sa.UniqueConstraint("shop_id", "reference_key", name="article_reference"),
     sa.Index("article_shop_sort_idx", "shop_id", "sort_key", "id"),
+    sa.Index("article_shop_fabric_idx", "shop_id", "fabric_key"),
     sa.CheckConstraint("version >= 1", name="version_positive"),
     *(sa.CheckConstraint(f"{name} >= 0", name=f"{name}_non_negative") for name in _PRICES),
 )

@@ -2702,6 +2702,265 @@
         "x-module": "core"
       }
     },
+    "/api/v1/shops/{shop_id}/articles/fabrics": {
+      "post": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Create Fabric",
+        "operationId": "create_fabric_api_v1_shops__shop_id__articles_fabrics_post",
+        "parameters": [
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FabricCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FabricResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-module": "catalog"
+      }
+    },
+    "/api/v1/shops/{shop_id}/articles/fabrics/{fabric}": {
+      "patch": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Update Fabric",
+        "operationId": "update_fabric_api_v1_shops__shop_id__articles_fabrics__fabric__patch",
+        "parameters": [
+          {
+            "name": "fabric",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "title": "Fabric"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FabricPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FabricResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-module": "catalog"
+      }
+    },
+    "/api/v1/shops/{shop_id}/articles/fabrics/{fabric}/colors": {
+      "post": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Add Colors",
+        "operationId": "add_colors_api_v1_shops__shop_id__articles_fabrics__fabric__colors_post",
+        "parameters": [
+          {
+            "name": "fabric",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "title": "Fabric"
+            }
+          },
+          {
+            "name": "shop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Shop Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-device-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "title": "X-Device-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FabricColorsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FabricResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-module": "catalog"
+      }
+    },
     "/api/v1/shops/{shop_id}/articles": {
       "get": {
         "tags": [
@@ -2797,6 +3056,23 @@
               "type": "boolean",
               "default": false,
               "title": "With Thumbnails"
+            }
+          },
+          {
+            "name": "fabric",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Fabric"
             }
           },
           {
@@ -10989,6 +11265,17 @@
             ],
             "title": "Piece Length M"
           },
+          "fabric": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fabric"
+          },
           "attributes": {
             "additionalProperties": {
               "$ref": "#/components/schemas/FieldValue"
@@ -11138,6 +11425,22 @@
                 "type": "null"
               }
             ]
+          },
+          "stock_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ok",
+                  "low",
+                  "out"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stock Status"
           }
         },
         "additionalProperties": false,
@@ -11153,6 +11456,7 @@
           "stock_unit",
           "sold_by_piece",
           "piece_length_m",
+          "fabric",
           "attributes",
           "alert_threshold",
           "effective_alert_threshold",
@@ -13435,6 +13739,276 @@
           "version"
         ],
         "title": "ExpenseResponse"
+      },
+      "FabricColorsRequest": {
+        "properties": {
+          "colors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Colors"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "colors"
+        ],
+        "title": "FabricColorsRequest"
+      },
+      "FabricCreateRequest": {
+        "properties": {
+          "base_price": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9.223372036854776e+18,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Price"
+          },
+          "base_price_piece": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9.223372036854776e+18,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Price Piece"
+          },
+          "min_price": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9.223372036854776e+18,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Price"
+          },
+          "min_price_piece": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9.223372036854776e+18,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Price Piece"
+          },
+          "fabric": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Fabric"
+          },
+          "colors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Colors"
+          },
+          "roll_length_m": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roll Length M"
+          },
+          "meter_only": {
+            "type": "boolean",
+            "title": "Meter Only",
+            "default": false
+          },
+          "alert_threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Threshold"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "fabric",
+          "colors"
+        ],
+        "title": "FabricCreateRequest"
+      },
+      "FabricPatch": {
+        "properties": {
+          "roll_length_m": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roll Length M"
+          },
+          "meter_only": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meter Only"
+          },
+          "alert_threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alert Threshold"
+          },
+          "prices": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FabricPrices"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "FabricPatch",
+        "description": "Champs présents seulement (`null` efface) ; s'applique à toutes les couleurs."
+      },
+      "FabricPrices": {
+        "properties": {
+          "base_price": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9.223372036854776e+18,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Price"
+          },
+          "base_price_piece": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9.223372036854776e+18,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Price Piece"
+          },
+          "min_price": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9.223372036854776e+18,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Price"
+          },
+          "min_price_piece": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9.223372036854776e+18,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Price Piece"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "FabricPrices"
+      },
+      "FabricResponse": {
+        "properties": {
+          "fabric": {
+            "type": "string",
+            "title": "Fabric"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ArticleResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "fabric",
+          "items"
+        ],
+        "title": "FabricResponse"
       },
       "FeeKind": {
         "type": "string",
@@ -16790,6 +17364,18 @@
             "type": "array",
             "title": "Stock Units"
           },
+          "piece_label": {
+            "type": "string",
+            "title": "Piece Label"
+          },
+          "refused_when_out_of_stock": {
+            "type": "boolean",
+            "title": "Refused When Out Of Stock"
+          },
+          "stock_reserved_to_owner": {
+            "type": "boolean",
+            "title": "Stock Reserved To Owner"
+          },
           "receipt": {
             "$ref": "#/components/schemas/ReceiptSettingsResponse"
           },
@@ -16851,6 +17437,9 @@
           "sale_fields",
           "sale_shortcuts",
           "stock_units",
+          "piece_label",
+          "refused_when_out_of_stock",
+          "stock_reserved_to_owner",
           "receipt",
           "min_price_enabled",
           "min_price_requires_approval",
@@ -20664,6 +21253,28 @@
           "alert_threshold": {
             "type": "string",
             "title": "Alert Threshold"
+          },
+          "rolls": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rolls"
+          },
+          "meters_rest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meters Rest"
           },
           "base_price": {
             "anyOf": [

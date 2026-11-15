@@ -62,6 +62,8 @@ class SqlArticleRepository(SqlListing[ArticleId, Article], ArticleRepository):
             "brand": fields.brand,
             "model": fields.model,
             "reference": fields.reference,
+            "fabric": fields.fabric,
+            "fabric_key": details.fabric_key,
             **{column: held_key(aggregate, name) for name, column in _KEY_COLUMNS.items()},
             "search_key": details.search_key,
             "sort_key": details.sort_key,
@@ -86,6 +88,7 @@ class SqlArticleRepository(SqlListing[ArticleId, Article], ArticleRepository):
             brand=row["brand"],
             model=row["model"],
             reference=row["reference"],
+            fabric=row["fabric"],
             stock_unit=StockUnit(row["stock_unit"]),
             sold_by_piece=bool(row["sold_by_piece"]),
             piece_length_m=_decimal(row["piece_length_m"]),
@@ -124,6 +127,9 @@ class SqlArticleRepository(SqlListing[ArticleId, Article], ArticleRepository):
         text = query.folded_text
         if text is not None:
             conditions.append(c.search_key.like(f"%{text}%"))
+        fabric = query.fabric_key
+        if fabric is not None:
+            conditions.append(c.fabric_key == fabric)
         after = page.after
         if after is not None:
             conditions.append(

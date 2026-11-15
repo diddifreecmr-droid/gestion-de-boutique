@@ -470,6 +470,57 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/shops/{shop_id}/articles/fabrics": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Create Fabric */
+    post: operations["create_fabric_api_v1_shops__shop_id__articles_fabrics_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/articles/fabrics/{fabric}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Update Fabric */
+    patch: operations["update_fabric_api_v1_shops__shop_id__articles_fabrics__fabric__patch"];
+    trace?: never;
+  };
+  "/api/v1/shops/{shop_id}/articles/fabrics/{fabric}/colors": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Add Colors */
+    post: operations["add_colors_api_v1_shops__shop_id__articles_fabrics__fabric__colors_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/shops/{shop_id}/articles": {
     parameters: {
       query?: never;
@@ -1831,6 +1882,8 @@ export interface components {
       sold_by_piece: boolean;
       /** Piece Length M */
       piece_length_m: string | null;
+      /** Fabric */
+      fabric: string | null;
       /** Attributes */
       attributes: {
         [key: string]: components["schemas"]["FieldValue"];
@@ -1865,6 +1918,8 @@ export interface components {
       /** Price History */
       price_history?: components["schemas"]["PriceHistoryResponse"][] | null;
       thumbnail?: components["schemas"]["ThumbnailResponse"] | null;
+      /** Stock Status */
+      stock_status?: ("ok" | "low" | "out") | null;
     };
     /**
      * AttachmentKind
@@ -2538,6 +2593,66 @@ export interface components {
       correction_deadline: string;
       /** Version */
       version: number;
+    };
+    /** FabricColorsRequest */
+    FabricColorsRequest: {
+      /** Colors */
+      colors: string[];
+    };
+    /** FabricCreateRequest */
+    FabricCreateRequest: {
+      /** Base Price */
+      base_price?: number | null;
+      /** Base Price Piece */
+      base_price_piece?: number | null;
+      /** Min Price */
+      min_price?: number | null;
+      /** Min Price Piece */
+      min_price_piece?: number | null;
+      /** Fabric */
+      fabric: string;
+      /** Colors */
+      colors: string[];
+      /** Roll Length M */
+      roll_length_m?: number | string | null;
+      /**
+       * Meter Only
+       * @default false
+       */
+      meter_only: boolean;
+      /** Alert Threshold */
+      alert_threshold?: number | string | null;
+    };
+    /**
+     * FabricPatch
+     * @description Champs présents seulement (`null` efface) ; s'applique à toutes les couleurs.
+     */
+    FabricPatch: {
+      /** Roll Length M */
+      roll_length_m?: number | string | null;
+      /** Meter Only */
+      meter_only?: boolean | null;
+      /** Alert Threshold */
+      alert_threshold?: number | string | null;
+      prices?: components["schemas"]["FabricPrices"] | null;
+    };
+    /** FabricPrices */
+    FabricPrices: {
+      /** Base Price */
+      base_price?: number | null;
+      /** Base Price Piece */
+      base_price_piece?: number | null;
+      /** Min Price */
+      min_price?: number | null;
+      /** Min Price Piece */
+      min_price_piece?: number | null;
+    };
+    /** FabricResponse */
+    FabricResponse: {
+      /** Fabric */
+      fabric: string;
+      /** Items */
+      items: components["schemas"]["ArticleResponse"][];
     };
     /**
      * FeeKind
@@ -3615,6 +3730,12 @@ export interface components {
       sale_shortcuts: components["schemas"]["SaleShortcutResponse"][];
       /** Stock Units */
       stock_units: string[];
+      /** Piece Label */
+      piece_label: string;
+      /** Refused When Out Of Stock */
+      refused_when_out_of_stock: boolean;
+      /** Stock Reserved To Owner */
+      stock_reserved_to_owner: boolean;
       receipt: components["schemas"]["ReceiptSettingsResponse"];
       /** Min Price Enabled */
       min_price_enabled: boolean;
@@ -4789,6 +4910,10 @@ export interface components {
       stock_status: "ok" | "low" | "out";
       /** Alert Threshold */
       alert_threshold: string;
+      /** Rolls */
+      rolls?: number | null;
+      /** Meters Rest */
+      meters_rest?: string | null;
       /** Base Price */
       base_price?: number | null;
       /** Last Cost */
@@ -6333,6 +6458,122 @@ export interface operations {
       };
     };
   };
+  create_fabric_api_v1_shops__shop_id__articles_fabrics_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FabricCreateRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["FabricResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_fabric_api_v1_shops__shop_id__articles_fabrics__fabric__patch: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        fabric: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FabricPatch"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["FabricResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  add_colors_api_v1_shops__shop_id__articles_fabrics__fabric__colors_post: {
+    parameters: {
+      query?: never;
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        fabric: string;
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FabricColorsRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["FabricResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   search_articles_api_v1_shops__shop_id__articles_get: {
     parameters: {
       query?: {
@@ -6342,6 +6583,7 @@ export interface operations {
         cursor?: string | null;
         limit?: number | null;
         with_thumbnails?: boolean;
+        fabric?: string | null;
       };
       header: {
         authorization?: string | null;

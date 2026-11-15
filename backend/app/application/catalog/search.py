@@ -4,6 +4,8 @@
   marque, du modèle et de la référence (`domain/catalog/keys.py`) : insensible à la casse, aux
   accents et à la ponctuation, sur toute base (aucun `ILIKE`/`unaccent`).
 - Statut : `ACTIVE` par défaut (listes de vente et d'achat, UC-STK-04) ; `None` = tous.
+- Tissu (Textile, 2026-11-15) : couleurs d'un tissu (`fabric_key` égal). Regrouper par tissu
+  n'exige aucun tri propre : le nom « <Tissu> — <Couleur> » range déjà les couleurs ensemble.
 - Ordre : nom plié croissant puis identifiant ; le curseur est la position `(clé, id)` du
   dernier article servi, opaque pour le client (base64 URL). Curseur illisible → 400.
 """
@@ -17,7 +19,7 @@ from uuid import UUID
 from app.application.ports.pagination import DEFAULT_LIMIT, MAX_LIMIT
 from app.domain.catalog.article import Article
 from app.domain.catalog.details import ArticleStatus
-from app.domain.catalog.keys import fold
+from app.domain.catalog.keys import fold, identity_key
 from app.domain.shared.errors import ValidationFailed
 
 TEXT_MAX_LENGTH = 100
@@ -28,11 +30,20 @@ _SEPARATOR = "|"
 class ArticleQuery:
     text: str | None = None
     status: ArticleStatus | None = ArticleStatus.ACTIVE
+    fabric: str | None = None
+    """Tissu (Textile) : seulement les couleurs de ce tissu, comparé plié (`fabric_key`)."""
 
     def __post_init__(self) -> None:
         if self.text is not None and len(self.text) > TEXT_MAX_LENGTH:
             msg = f"Recherche de {TEXT_MAX_LENGTH} caractères au plus"
             raise ValidationFailed(msg, details={"field": "q"})
+        if self.fabric is not None and not fold(self.fabric):
+            msg = "Tissu : au moins une lettre ou un chiffre attendu"
+            raise ValidationFailed(msg, details={"field": "fabric"})
+
+    @property
+    def fabric_key(self) -> str | None:
+        return None if self.fabric is None else identity_key(self.fabric)
 
     @property
     def folded_text(self) -> str | None:
@@ -42,9 +53,11 @@ class ArticleQuery:
 
     def matches(self, article: Article) -> bool:
         """Sémantique de référence (adaptateur mémoire, tests)."""
-        text = self.folded_text
-        return (self.status is None or article.status is self.status) and (
-            text is None or text in article.details.search_key
+        text, fabric = self.folded_text, self.fabric_key
+        return (
+            (self.status is None or article.status is self.status)
+            and (text is None or text in article.details.search_key)
+            and (fabric is None or article.details.fabric_key == fabric)
         )
 
 

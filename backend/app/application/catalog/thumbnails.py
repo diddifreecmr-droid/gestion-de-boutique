@@ -6,7 +6,7 @@ une lecture par article, et le client n'a pas à demander `GET /attachments/{id}
 par article.
 
 Droits, **avant** toute signature (TR-17) : ceux d'une pièce rattachée à un article
-(`access.RIGHTS[OwnerType.ARTICLE]`) — module `catalog` actif, permission `STOCK_READ`. Les
+(`access.RIGHTS[OwnerType.ARTICLE]`) — module `catalog` actif, permission `ARTICLE_READ`. Les
 pièces d'article ne sont jamais personnelles ni des pièces d'identité (`require_kind_allowed`) :
 ce contrôle unique vaut donc celui de `AttachmentAccess.require_read` pour chacune.
 

@@ -49,6 +49,11 @@ SHOP_ROUTES: Mapping[str, Body | None] = {
     "PUT /articles/{article_id}/prices": versioned("/articles/{article_id}", base_price=780_000),
     "POST /articles/{article_id}/archive": None,
     "POST /articles/{article_id}/reactivate": None,
+    # Tissus (Textile, 2026-11-15) : boutique Motos → 400 pour qui a le droit, 403 sinon
+    "POST /articles/fabrics": lambda s: {"fabric": unique("Djampar"), "colors": ["Rouge"],
+                                         "meter_only": True},
+    "PATCH /articles/fabrics/{fabric}": lambda s: {"alert_threshold": "5"},
+    "POST /articles/fabrics/{fabric}/colors": lambda s: {"colors": [unique("Vert")]},
     "GET /expenses": None,
     "POST /expenses": lambda s: {"amount": 5_000, "category_id": s.ids["fuel"]},
     "GET /expenses/{expense_id}": None,
@@ -85,3 +90,7 @@ def _member_version(side: Side) -> int:
 
 
 ROUTES: Mapping[str, Body | None] = {**SHOP_ROUTES, **TRADE_ROUTES}
+
+TEXTILE_ONLY = frozenset(route for route in ROUTES if "/articles/fabrics" in route)
+"""Routes des tissus : refusées (400) dans la boutique Motos de la recette ; leur journal est
+prouvé par `tests/http/lot3/test_fabrics_http.py`."""

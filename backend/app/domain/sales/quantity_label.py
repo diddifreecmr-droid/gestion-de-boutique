@@ -1,9 +1,10 @@
-"""Quantité d'une ligne imprimée sur le reçu (TEX-06, T31) : « 2,5 m », « 1 pièce (5,49 m) ».
+"""Quantité d'une ligne imprimée sur le reçu (TEX-06, T31) : « 2,5 m », « 1 rouleau (30 m) ».
 
 - À l'unité : le nombre (« 2 ») ;
 - au mètre : la longueur à virgule, sans zéro inutile (« 2,5 m », « 3 m ») ;
-- à la pièce : « 1 pièce », « 3 pièces », suivi de la longueur **d'une** pièce quand elle est
-  connue (« 1 pièce (5,49 m) »).
+- à la pièce (mode `piece`, Textile seulement) : « 1 rouleau », « 3 rouleaux » (décision client
+  du 2026-11-15 : « rouleau » remplace « pièce »), suivi de la longueur **d'un** rouleau quand
+  elle est connue (« 1 rouleau (30 m) »).
 
 Longueur d'une pièce vendue (`sold_piece_length`) : la vente ne garde pas la longueur de la
 pièce, seulement le stock retiré (au dixième, QC-3). On imprime la longueur **actuelle** de
@@ -39,7 +40,7 @@ def quantity_label(mode: SaleMode, quantity: Decimal, piece_length_m: Decimal | 
     count = _count(quantity)
     if mode is SaleMode.UNIT:
         return str(count)
-    pieces = f"{count} pièce{'s' if count > 1 else ''}"
+    pieces = f"{count} {'rouleaux' if count > 1 else 'rouleau'}"
     return pieces if piece_length_m is None else f"{pieces} ({length_text(piece_length_m)})"
 
 

@@ -1,10 +1,11 @@
 """Colonnes du modèle Articles, tirées des champs d'article du profil (CDC § 15.1, IMP-01).
 
 - Une colonne par champ du profil (Motos : Marque *, Modèle *, Cylindrée, Catégorie ;
-  Prêt-à-porter : Nom *, Référence, Catégorie, Type, Marque ; Textile : Nom *, Référence, Type,
-  Unité *, Vente à la pièce, Longueur d'une pièce), puis les prix et le seuil d'alerte.
-- Prix de vente à la pièce et prix minimum à la pièce : seulement pour un profil qui vend à la
-  pièce (champ `sold_by_piece`, Textile).
+  Prêt-à-porter : Nom *, Référence, Catégorie, Type, Marque ; Textile : Nom *, Référence,
+  Tissu, Couleur, Type, Unité *, Vente au rouleau, Longueur du rouleau), puis les prix et le
+  seuil d'alerte (« rouleau » remplace « pièce », décision client du 2026-11-15).
+- Prix de vente au rouleau et prix minimum au rouleau : seulement pour un profil qui vend au
+  rouleau (champ `sold_by_piece`, Textile).
 - `field_value` convertit une cellule nettoyée dans le type du champ du profil (entier, oui/non,
   unité) ; refus → `CellRejected` (message complet, la colonne est nommée par l'appelant).
 """
@@ -35,11 +36,12 @@ _SUBJECTS = MappingProxyType(
         "reference": "la référence",
         "type": "le type",
         "unit": "l'unité",
-        "sold_by_piece": "la vente à la pièce",
-        "piece_length_m": "la longueur d'une pièce",
+        "sold_by_piece": "la vente au rouleau",
+        "piece_length_m": "la longueur du rouleau",
+        "fabric": "le tissu",
+        "color": "la couleur",
     }
 )
-_HEADERS = MappingProxyType({"piece_length_m": "Longueur d'une pièce (m)"})
 _EXAMPLES = MappingProxyType(
     {
         "name": "Chemise lin",
@@ -57,7 +59,7 @@ _HELP = MappingProxyType(
     {
         "reference": "Laissée vide, elle est générée (REF-000001).",
         "unit": "« Mètre » ou « Pièce ».",
-        "sold_by_piece": "« Oui » si l'article se vend aussi à la pièce.",
+        "sold_by_piece": "« Oui » si l'article se vend aussi au rouleau.",
         "piece_length_m": "En mètres, au centième (6 yards = 5,49).",
         "category": "Choisie dans la liste ou nouvelle.",
     }
@@ -75,7 +77,7 @@ def _field_column(spec: FieldSpec) -> ColumnSpec:
     numeric = spec.kind in {FieldKind.INTEGER, FieldKind.DECIMAL}
     return ColumnSpec(
         key=spec.code,
-        header=_HEADERS.get(spec.code, spec.label),
+        header=spec.label,
         subject=_SUBJECTS.get(spec.code, f"« {spec.label} »"),
         kind=ColumnKind.NUMBER if numeric else ColumnKind.TEXT,
         required=spec.required,
@@ -94,8 +96,8 @@ def article_columns(profile: ShopProfile) -> tuple[ColumnSpec, ...]:
     columns.append(_amount("base_price", "Prix de vente", "le prix de vente", "9 000"))
     columns.append(_amount("min_price", "Prix minimum", "le prix minimum"))
     if sells_by_piece(profile):
-        columns.append(_amount("base_price_piece", "Prix à la pièce", "le prix à la pièce"))
-        columns.append(_amount("min_price_piece", "Minimum à la pièce", "le minimum à la pièce"))
+        columns.append(_amount("base_price_piece", "Prix au rouleau", "le prix au rouleau"))
+        columns.append(_amount("min_price_piece", "Minimum au rouleau", "le minimum au rouleau"))
     columns.append(
         ColumnSpec(
             key="alert_threshold",

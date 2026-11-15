@@ -11,7 +11,7 @@ L'OpenAPI n'expose aucune route `DELETE` métier.
 from typing import Any
 
 from tests.http.recette.paths import url
-from tests.http.recette.routes import ROUTES
+from tests.http.recette.routes import ROUTES, TEXTILE_ONLY
 from tests.http.recette.test_rights_matrix_http import denied_count
 from tests.http.recette.world import Side, World
 
@@ -39,7 +39,7 @@ def journal_size(side: Side) -> int:
 
 def test_every_successful_write_is_journaled(world: World) -> None:
     side = world.a
-    writes = [r for r in ROUTES if not r.startswith("GET ")]
+    writes = [r for r in ROUTES if not r.startswith("GET ") and r not in TEXTILE_ONLY]
     ordered = [r for r in writes if r not in LAST] + list(LAST)
     silent, exercised = [], []
     for route in ordered:

@@ -1,5 +1,9 @@
 """Profil Textile : raccourcis de longueur à la vente (RG-X05, UC-TEX-01, T31).
 
+Vocabulaire (décision client du 2026-11-15) : « rouleau » remplace « pièce » dans les libellés
+servis (« Rouleau complet », « Demi-rouleau ») ; les codes internes (`piece`, `half_piece`,
+`piece_length_m`) restent. Ci-dessous, « pièce » = rouleau.
+
 CDC § 19.3 : « pièce complète (6 yards), demi-pièce (3 yards), 1 m, 2 m, 3 m ». Servis par
 `GET /profile` (`sale_shortcuts`, vide pour les autres profils) dans cet ordre ; le client les
 applique à l'article choisi selon `resolve_shortcut`, seule règle de calcul :
@@ -84,8 +88,8 @@ def resolve_shortcut(
 
 
 TEXTILE_SHORTCUTS = (
-    SaleShortcut("piece", "Pièce complète", ShortcutBasis.PIECE),
-    SaleShortcut("half_piece", "Demi-pièce", ShortcutBasis.HALF_PIECE),
+    SaleShortcut("piece", "Rouleau complet", ShortcutBasis.PIECE),
+    SaleShortcut("half_piece", "Demi-rouleau", ShortcutBasis.HALF_PIECE),
     SaleShortcut("1m", "1 m", ShortcutBasis.LENGTH, Decimal(1)),
     SaleShortcut("2m", "2 m", ShortcutBasis.LENGTH, Decimal(2)),
     SaleShortcut("3m", "3 m", ShortcutBasis.LENGTH, Decimal(3)),

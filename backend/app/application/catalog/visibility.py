@@ -20,8 +20,9 @@ from app.application.security.permissions import Permission
 from app.application.security.policy import Policy
 from app.application.security.roles import Role
 
-READ_PERMISSION = Permission.STOCK_READ
-"""Consulter le catalogue : « Voir le stock disponible » (Tout | Lecture | Tout | —)."""
+READ_PERMISSION = Permission.ARTICLE_READ
+"""Consulter le catalogue (articles, prix, sans quantité) : Tout | Lecture | Tout | — ; reste
+accordé au vendeur même quand le profil lui retire « Voir le stock » (2026-11-15)."""
 
 MIN_PRICE_HIDDEN_FROM_SELLER = False
 """Décision en attente du client : cacher le prix minimum au vendeur ? (aujourd'hui : non)."""

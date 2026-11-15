@@ -4,6 +4,11 @@ Présents dès maintenant pour que l'ouverture d'une boutique et `GET /profile` 
 jamais le profil Motos ; leurs cas d'utilisation propres (échanges, vente au mètre) arrivent au
 Lot 3. Pas de Transport ni de Chauffeur ; Transferts inactif tant qu'aucune réserve n'existe ;
 une boutique point de vente ; reçu 58 mm (`thermal-58`) ; délai d'échange 7 jours.
+
+Décisions client du 2026-11-15 (version 2) : vente jamais refusée pour manque de stock, stock
+réservé au gérant (pas de menu Stock pour le vendeur), Prêt-à-porter sans champ de vente
+(un article = un nom + référence/SKU facultative + prix), Textile : tissu et couleur (un
+article par couleur) et « rouleau » au lieu de « pièce ».
 """
 
 from types import MappingProxyType
@@ -51,7 +56,6 @@ _MENUS = {
         entry("new_sale", "Nouvelle vente", M.SALES),
         entry("my_sales", "Mes ventes", M.SALES),
         entry("receivables", "Créances", M.RECEIVABLES),
-        entry("stock", "Stock", M.CATALOG),
     ),
     Role.ACCOUNTANT: menu(
         entry("home", "Accueil", M.CORE),
@@ -69,11 +73,15 @@ def _apparel_like(
     article_fields: tuple[FieldSpec, ...],
     sale_fields: tuple[FieldSpec, ...],
     stock_units: tuple[StockUnit, ...],
+    piece_word: str = "pièce",
 ) -> ShopProfile:
     """Prêt-à-porter et textile partagent rôles, menus, lieux et réglages (CDC § 19 « idem »)."""
     return ShopProfile(
         code=code,
-        version=1,
+        version=2,
+        sale_refused_without_stock=False,
+        stock_reserved_to_owner=True,
+        piece_word=piece_word,
         label=label,
         modules=_AVAILABLE & AVAILABLE_MODULES,
         available_modules=_AVAILABLE,
@@ -101,7 +109,7 @@ APPAREL = _apparel_like(
         FieldSpec("type", "Type", FieldKind.TEXT),
         FieldSpec("brand", "Marque", FieldKind.TEXT),
     ),
-    (FieldSpec("size", "Taille", FieldKind.TEXT), d.COLOR),
+    (),  # simplifié (2026-11-15) : ni taille ni couleur à la vente, remplace les choix de T40
     (StockUnit.PIECE,),
 )
 
@@ -111,11 +119,14 @@ TEXTILE = _apparel_like(
     (
         FieldSpec("name", "Nom", FieldKind.TEXT, required=True),
         d.REFERENCE,
+        FieldSpec("fabric", "Tissu", FieldKind.TEXT),
+        d.COLOR,
         FieldSpec("type", "Type", FieldKind.TEXT),
         FieldSpec("unit", "Unité", FieldKind.CHOICE, required=True, choices=("METER", "PIECE")),
-        FieldSpec("sold_by_piece", "Vente à la pièce", FieldKind.BOOLEAN),
-        FieldSpec("piece_length_m", "Longueur de la pièce (m)", FieldKind.DECIMAL),
+        FieldSpec("sold_by_piece", "Vente au rouleau", FieldKind.BOOLEAN),
+        FieldSpec("piece_length_m", "Longueur du rouleau (m)", FieldKind.DECIMAL),
     ),
     (FieldSpec("length_m", "Longueur (m)", FieldKind.DECIMAL),),
     (StockUnit.METER, StockUnit.PIECE),
+    piece_word="rouleau",
 )

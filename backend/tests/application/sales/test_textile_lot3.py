@@ -10,7 +10,6 @@ from app.domain.sales.errors import PriceBelowMinimum, ReturnExceedsSold
 from app.domain.sales.lines import SaleMode
 from app.domain.shared.errors import InvalidQuantity, ValidationFailed
 from app.domain.shared.money import Money
-from app.domain.stock.errors import StockInsufficient
 from tests.application.sales.textile_support import STORE, TextileWorld
 
 
@@ -38,9 +37,10 @@ def test_scn_l3_02_meter_then_pieces_at_the_tenth() -> None:
     assert world.matrix_total(world.x_owner, wax) == "46.9"
     for _ in range(8):  # étape 4 : 8 pièces passent (46,9 - 44 = 2,9)
         world.sell(world.employee, wax, "1", 13_000, SaleMode.PIECE)
-    with pytest.raises(StockInsufficient) as refused:
-        world.sell(world.employee, wax, "1", 13_000, SaleMode.PIECE)
-    assert refused.value.details["available"] == "2.9"
+    # 9e pièce : jamais refusée en Textile (2026-11-15), stock négatif « à vérifier »
+    ninth = world.sell(world.employee, wax, "1", 13_000, SaleMode.PIECE)
+    assert ninth.sale.stock_to_verify is True
+    assert world.matrix_total(world.x_owner, wax) == "-2.6"
 
 
 def test_scn_l3_03_bought_in_yards_and_pieces() -> None:
@@ -63,9 +63,9 @@ def test_tex_01_and_02_meter_precision_stock_and_piece_mode() -> None:
     assert view.sale.content.lines[0].base_price == Money(2_500)  # prix de base du mètre
     with pytest.raises(InvalidQuantity):
         world.sell(world.employee, wax, "2.55", 2_500)  # au dixième seulement
-    with pytest.raises(StockInsufficient) as refused:
-        world.sell(world.employee, wax, "60", 2_500)
-    assert refused.value.details["available"] == "52.4"  # en mètres
+    beyond = world.sell(world.employee, wax, "60", 2_500)  # jamais refusée (2026-11-15)
+    assert beyond.sale.stock_to_verify is True
+    assert world.matrix_total(world.x_owner, wax) == "-7.6"  # en mètres
     coton = world.textile({"name": "Coton uni", "unit": "METER"})
     world.stock_in(world.x_owner, coton, STORE, "10")
     with pytest.raises(ValidationFailed) as no_piece:

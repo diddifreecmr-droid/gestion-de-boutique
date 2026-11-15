@@ -45,6 +45,9 @@ export function profileBody(role: Role, minPriceEnabled = true) {
     sale_fields: [],
     sale_shortcuts: [],
     stock_units: ["unit"],
+    piece_label: "pièce",
+    refused_when_out_of_stock: true,
+    stock_reserved_to_owner: false,
     receipt: {
       format: "80mm",
       print_profile: "thermal-80",
@@ -87,6 +90,7 @@ export function ownerArticle(overrides: Partial<ArticleResponse> = {}): ArticleR
     stock_unit: "unit",
     sold_by_piece: false,
     piece_length_m: null,
+    fabric: null,
     attributes: { engine_cc: 125 },
     alert_threshold: null,
     effective_alert_threshold: "2",

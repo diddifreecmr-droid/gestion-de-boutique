@@ -22,8 +22,14 @@ from app.application.security.errors import (
 )
 from app.application.security.permissions import FIELD_PERMISSIONS, Mode, Permission
 from app.application.security.role_matrix import access_for
+from app.domain.profiles.registry import profile_for
 
 type UtcClock = Callable[[], datetime]
+
+
+def owner_only_stock(actor: Actor) -> bool:
+    """Le profil de la boutique réserve-t-il le stock au gérant (2026-11-15) ?"""
+    return actor.profile is not None and profile_for(actor.profile).stock_reserved_to_owner
 
 
 class Policy:
@@ -70,7 +76,7 @@ class Policy:
             if actor.role is None:  # exclu par Actor.__post_init__ : défense en profondeur
                 msg = "Membre de boutique sans rôle"
                 raise RuntimeError(msg)
-            return access_for(actor.role, permission)
+            return access_for(actor.role, permission, owner_only_stock=owner_only_stock(actor))
         if not self._delegation_active(actor):
             raise ShopAccessDenied(actor, permission)
         return Access.READ if permission.mode is Mode.READ else Access.NONE

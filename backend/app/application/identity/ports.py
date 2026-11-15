@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING
 from app.application.security.actor import Actor, require_utc
 from app.application.security.roles import Role
 from app.domain.identity.events import IdentityEvent, SessionId
+from app.domain.profiles.profile import ProfileCode
 from app.domain.shared.ids import ShopId, UserId
 
 if TYPE_CHECKING:
@@ -118,6 +119,8 @@ class MembershipView:
     """Rattachement actif (RG-D06 : un compte désactivé l'est **dans cette boutique**)."""
     shop_active: bool = True
     """Boutique ouverte ; une boutique fermée par l'administrateur est introuvable (404)."""
+    profile_code: ProfileCode | None = None
+    """Type de la boutique (porté par l'`Actor` : droits propres au profil)."""
 
     @property
     def usable(self) -> bool:

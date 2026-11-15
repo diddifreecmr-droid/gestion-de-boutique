@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 from typing import Self
 
 from app.application.security.roles import Role
+from app.domain.profiles.profile import ProfileCode
 from app.domain.shared.ids import DeviceId, ShopId, UserId
 
 DEFAULT_DELEGATION_DURATION = timedelta(hours=24)
@@ -69,10 +70,16 @@ class Actor:
     role: Role | None
     is_platform_admin: bool = False
     delegation: AdminDelegation | None = None
+    profile: ProfileCode | None = None
+    """Type de la boutique, relu avec le rôle : certaines cellules de la matrice en dépendent
+    (`role_matrix.OWNER_ONLY_STOCK`). `None` : matrice du CDC telle quelle."""
 
     def __post_init__(self) -> None:
         if not isinstance(self.user_id, UserId) or not isinstance(self.device_id, DeviceId):
             msg = "Actor exige un UserId et un DeviceId typés"
+            raise TypeError(msg)
+        if self.profile is not None and not isinstance(self.profile, ProfileCode):
+            msg = "Actor.profile doit être un ProfileCode"
             raise TypeError(msg)
         if self.shop_id is not None and not isinstance(self.shop_id, ShopId):
             msg = "Actor.shop_id doit être un ShopId"
@@ -90,8 +97,18 @@ class Actor:
             raise ValueError(msg)
 
     @classmethod
-    def member(cls, *, user_id: UserId, device_id: DeviceId, shop_id: ShopId, role: Role) -> Self:
-        return cls(user_id=user_id, device_id=device_id, shop_id=shop_id, role=role)
+    def member(
+        cls,
+        *,
+        user_id: UserId,
+        device_id: DeviceId,
+        shop_id: ShopId,
+        role: Role,
+        profile: ProfileCode | None = None,
+    ) -> Self:
+        return cls(
+            user_id=user_id, device_id=device_id, shop_id=shop_id, role=role, profile=profile
+        )
 
     @classmethod
     def platform_admin(

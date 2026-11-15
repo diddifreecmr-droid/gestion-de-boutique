@@ -32,8 +32,8 @@ def test_profile_serves_the_textile_shortcuts(bench: MemoryBench) -> None:
     shop = textile_shop(bench)
     served = shop.call("GET", "/profile", shop.staff["seller"]).json()["sale_shortcuts"]
     assert [(s["code"], s["label"], s["basis"]) for s in served] == [
-        ("piece", "Pièce complète", "piece"),
-        ("half_piece", "Demi-pièce", "half_piece"),
+        ("piece", "Rouleau complet", "piece"),
+        ("half_piece", "Demi-rouleau", "half_piece"),
         ("1m", "1 m", "length"),
         ("2m", "2 m", "length"),
         ("3m", "3 m", "length"),
@@ -68,7 +68,7 @@ def test_meter_and_piece_sale_receipt_without_costs(bench: MemoryBench) -> None:
     assert receipt.json()["seller_role_label"] == "Employé"  # profil Textile
     assert [(line["quantity_label"], line["unit_price"]) for line in lines] == [
         ("2,5 m", 2_500),
-        ("1 pièce (5,49 m)", 13_000),
+        ("1 rouleau (5,49 m)", 13_000),
     ]
     assert _leaks(receipt.json()) == []
     listed = shop.call("GET", "/articles?with_thumbnails=true", seller).json()
@@ -84,10 +84,10 @@ def test_length_is_entered_to_the_tenth(bench: MemoryBench) -> None:
     refused = shop.sell(seller, {**line, "quantity": "2.55"})
     assert refused.status_code == 400
     assert refused.json()["error"]["details"]["field"] == "lines.quantity"
-    short = shop.sell(seller, {**line, "quantity": "60"})
-    assert short.status_code == 422
-    error = short.json()["error"]
-    assert (error["code"], error["details"]["available"]) == ("STOCK_INSUFFICIENT", "54.9")
+    short = shop.sell(seller, {**line, "quantity": "60"})  # jamais refusée (2026-11-15)
+    assert short.status_code == 201, short.text
+    assert short.json()["stock_to_verify"] is True
+    assert shop.call("GET", "/stock", shop.owner).json()["items"][0]["total"] == "-5.1"
 
 
 def test_offcut_with_photo_and_rights(bench: MemoryBench) -> None:

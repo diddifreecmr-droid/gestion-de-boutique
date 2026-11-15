@@ -49,7 +49,11 @@ _MATRIX: dict[Permission, Mapping[Role, Access]] = {
     # [Q-14] le comptable ne voit pas non plus le prix de base ni le minimum.
     P.SELLING_PRICE_READ: _r(T, L, N, N),
     # « Voir le stock disponible (quantités) » : Tout | Lecture | Tout | —
+    # Prêt-à-porter et Textile (2026-11-15) : « — » pour le vendeur (`OWNER_ONLY_STOCK`).
     P.STOCK_READ: _r(T, L, T, N),
+    # Lister les articles et leurs prix pour vendre ou saisir (catalogue, sans quantité) : la
+    # ligne « Voir le stock » sans les quantités, gardée par le vendeur dans tous les profils.
+    P.ARTICLE_READ: _r(T, L, T, N),
     # « Voir les prix d'achat et la valeur du stock » : Tout | — | Tout | —
     # COST_READ (champ) couvre prix d'achat, CMP, marge et valeur (RG-D02) ; l'historique
     # d'article UC-STK-06 (Propriétaire, Comptable) expose des coûts : même ligne.
@@ -182,5 +186,14 @@ ROLE_MATRIX: Mapping[Permission, Mapping[Role, Access]] = validate_matrix(_MATRI
 """Matrice immuable, complète et cohérente (vérifiée au chargement du module)."""
 
 
-def access_for(role: Role, permission: Permission) -> Access:
+OWNER_ONLY_STOCK: Mapping[Permission, frozenset[Role]] = MappingProxyType(
+    {P.STOCK_READ: frozenset({Role.SELLER})}
+)
+"""Décision client du 2026-11-15 « seul le gérant voit le stock » : cellules retirées (« — »)
+dans un profil `stock_reserved_to_owner` (Prêt-à-porter, Textile) ; Motos inchangé."""
+
+
+def access_for(role: Role, permission: Permission, *, owner_only_stock: bool = False) -> Access:
+    if owner_only_stock and role in OWNER_ONLY_STOCK.get(permission, frozenset()):
+        return Access.NONE
     return ROLE_MATRIX[permission][role]

@@ -46,7 +46,7 @@ def test_objects_of_b_are_not_found_through_shop_a(world: World) -> None:
     before = _snapshot(world.b)
     gaps = []
     for route in ROUTES:
-        names = set(PARAM.findall(route)) - {"metric", "entity_type"}
+        names = set(PARAM.findall(route)) - {"metric", "entity_type", "fabric"}  # constantes
         if not names:
             continue
         response = _send(world.a, world.b, route, world.a.owner)
