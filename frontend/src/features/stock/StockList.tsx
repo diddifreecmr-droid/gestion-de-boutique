@@ -5,7 +5,7 @@ import type { StockLine } from "./stockView";
 
 export interface StockListProps {
   lines: readonly StockLine[];
-  /** Textile : lignes rangées sous leur tissu (design-system § 7.6). */
+  /** Textile : lignes rangées sous leur tissu (design-system § 7.8). */
   byFabric: boolean;
   onHistory?: (articleId: string) => void;
 }

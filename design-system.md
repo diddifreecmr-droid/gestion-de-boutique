@@ -212,6 +212,8 @@ Hauteur 28 px, `--radius-sm`, padding `--space-1` × `--space-2`, `--text-label`
 | Hors connexion (provisoire) | `bg` / `text-muted`, bordure `border-strong` | `WifiOff` |
 | Bientôt (module à venir, console) | `bg` / `text-muted`, bordure **pointillée** `border-strong` | `Hourglass` |
 
+**Pastille de stock de l'employé** (décision du 2026-11-15, Prêt-à-porter et Textile : stock réservé au gérant) : à la vente, l'employé ne voit **aucun chiffre** de stock, seulement `StockStatusBadge` — « En stock » (`success`), « Stock bas » (`warning`), « Rupture » (`danger`), servie par `stock_status` de `GET /articles`. Elle remplace le sous-titre « Stock à … : 4 » de la recherche et la ligne « Stock disponible » de la carte (« Stock : [En stock] »). « Rupture » n'empêche jamais d'ouvrir la ligne : la vente n'est jamais refusée pour manque de stock (le gérant régularise, « Stock à vérifier »). Motos inchangé (chiffres, rupture bloquante).
+
 Un élément annulé (RG-T03) garde sa ligne : le texte passe en `text-muted` et barré, sauf la pastille « Annulée » et la mention « Annulé le … par … — motif : … ».
 
 ### 6.5 Messages
@@ -345,7 +347,9 @@ Décision client du 12/11/2026 (specs § 15.1) : rien d'autre que ceci.
 - Titre de page « Accueil » gardé pour les lecteurs d'écran seulement (le nom de la boutique est dans la barre du haut).
 - Comptable et chauffeur : leur accueil simple (titre, salutation, leurs tuiles et chiffres), sans bouton de vente.
 
-### 7.4 Panier multi-lignes — Prêt-à-porter (Lot 3, T40)
+### 7.4 Panier multi-lignes — Prêt-à-porter (Lot 3, T40 ; simplifié le 2026-11-15)
+
+> **Simplifié (décision client du 2026-11-15)** : un article = **un nom** + **SKU facultatif** (champ « SKU (référence) », sous « Plus de détails ») + prix ; ni taille, ni couleur, ni photo, ni catégorie, ni type, ni marque au formulaire. La vente = **une liste d'articles avec quantité et prix négocié** : les choix rapides Taille / Couleur, les lignes repliées et le « même article en deux tailles » ci-dessous sont **retirés** ; un article déjà dans la vente n'est plus proposé (on change sa quantité), toutes les cartes restent ouvertes. Le stepper n'est **jamais plafonné au stock** (vente jamais refusée) ; l'employé voit la pastille du § 6.4. Le schéma ci-dessous est conservé pour l'historique : seules les lignes Taille, Couleur et « ligne repliée » n'existent plus.
 
 Décision client du 2026-11-13 (QC-2, specs § 15.1) : **aucune remise**. Il n'y a ni ligne « Remise », ni champ montant / %, ni sous-total : le prix se négocie **sur chaque ligne**, et le total est la somme des lignes.
 
@@ -382,7 +386,9 @@ Décision client du 2026-11-13 (QC-2, specs § 15.1) : **aucune remise**. Il n'y
 - Le **total** de la barre fixe est recalculé à chaque modification de quantité ou de prix ; il n'y a aucun autre chiffre (pas de sous-total, pas de remise).
 - **Reçu** : une ligne par article (« Chemise lin M Blanc — 2 × 14 000 = 28 000 »), puis le total ; jamais de coût ni de ligne de remise.
 
-### 7.5 Vente textile — « Au mètre / À la pièce » (Lot 3, T41)
+### 7.5 Vente textile — « Au mètre / Au rouleau » (Lot 3, T41 ; vocabulaire du 2026-11-15)
+
+> **Vocabulaire servi** : le mot de la pièce vient du profil (`piece_label` de `GET /profile`) — « **rouleau** » en Textile. Aucun écran n'écrit « pièce » en dur : bascule « Au mètre / **Au rouleau** », stepper « Rouleaux », « Prix du rouleau », raccourcis servis « Rouleau complet (30 m) » / « Demi-rouleau », « 1 rouleau = 30 m retirés du stock », reçu « 1 rouleau (30 m) », fiche « Prix au rouleau » / « Minimum au rouleau », unité « Rouleau », chute « Bout du rouleau trop court pour la vente ». Le gérant voit « 54,9 m (≈ 10 rouleaux) » ; l'employé, la pastille seule (§ 6.4). Aucune erreur « Stock insuffisant » à l'écran : la longueur et le nombre de rouleaux ne sont jamais plafonnés au stock (vente jamais refusée, 2026-11-15). Le schéma ci-dessous garde l'ancien mot.
 
 ```
 ┌──────────────────────────────────┐
@@ -448,6 +454,34 @@ Parcours en 4 étapes sur un seul écran (`features/imports/`), indicateur « É
 4. **Rapport** : numéro `IMP-000001`, lignes importées, ignorées, éléments créés ; bouton `secondary` « Télécharger les erreurs » (`errors.xlsx`).
 
 - **Lots** (T45) : liste `ListCard` (numéro, modèle, date, lignes importées, pastille « Importé » `success` ou « Annulé » `danger`). « Annuler l'import » (bouton `danger`, propriétaire seulement, dans les 7 jours) ouvre un `ConfirmDialog` qui dit l'effet (« Les éléments seront archivés, rien n'est effacé ») ; refus : liste des opérations qui bloquent (« Vente V-000003 »), délai dépassé : « Annulation possible jusqu'au 17/11 ».
+
+### 7.8 Tissus et couleurs — Textile (décision du 2026-11-15)
+
+Un tissu a ses **couleurs** ; le stock est tenu **par couleur** : chaque couleur est un article « Tissu — Couleur » (« Djampar — Rouge ») qui partage prix, longueur du rouleau et seuil. Adresses dans la section Stock : `?article=nouveau-tissu` (création), `?tissu={nom}` (page du tissu).
+
+```
+┌──────────────────────────────────┐
+│ Nouveau tissu                    │
+│ Nom du tissu                     │
+│ [ Djampar                     ]  │  TextField
+│ Couleurs                         │
+│ [ rouge, bleu, vert   ] [＋ Ajouter] │  TextField + Button secondary (Entrée ajoute)
+│ [✕ Rouge] [✕ Bleu] [✕ Vert]      │  Button secondary (icône X), « Retirer Rouge »
+│ 3 articles seront créés : …      │  text-muted
+│ Au mètre seulement        [ ○ ]  │  Switch : masque longueur et prix du rouleau
+│ Longueur du rouleau  [ 30    m ] │
+│ Prix au mètre / Minimum au mètre │  CreatePriceFields (propriétaire seul)
+│ Prix au rouleau / Minimum au rouleau │
+│ Seuil d'alerte (facultatif) [ m] │
+│ [        ⊕ Créer le tissu      ] │  primary lg
+└──────────────────────────────────┘
+```
+
+- **Saisie rapide** : virgule, point-virgule ou retour séparent les couleurs ; première lettre en capitale ; doublons ignorés (casse comprise) ; une couleur déjà en boutique n'est pas reproposée à l'ajout. Erreurs au premier appui : « Indiquez le nom du tissu », « Ajoutez au moins une couleur », « Indiquez la longueur d'un rouleau (ou « Au mètre seulement ») ».
+- **Page du tissu** : titre = nom du tissu ; `ListCard` « Couleurs de Djampar » (une ligne par couleur, ouvre la fiche) ; section « Ajouter une couleur » (même saisie, bouton `secondary` « Ajouter à Djampar ») ; carte « Modifier le tissu » — « S'applique à toutes les couleurs de Djampar », mêmes champs que la création, toast « Djampar enregistré pour ses 3 couleurs ». Le comptable crée et modifie sans les prix.
+- **Liste des articles** (propriétaire, comptable) : « Nouveau tissu » en `primary`, « Nouvel article » passe en `secondary` ; un bloc par tissu — titre `--text-title-sm` « Djampar · 3 couleurs », bouton `ghost` « Voir le tissu Djampar », `ListCard` de ses couleurs — puis « Autres articles ».
+- **Stock du gérant** : même regroupement (un bloc par tissu, `ListCard` « Stock du tissu Djampar ») ; la quantité de la ligne s'écrit **« 7 rouleaux + 12 m »** (`rolls`, `meters_rest`), « 2 rouleaux » sans rouleau entamé ; le détail garde les mètres par lieu.
+- **Employé** : aucune entrée Stock (menu servi), aucun chiffre à la vente (§ 6.4).
 
 ## 8. Accessibilité (critères bloquants)
 

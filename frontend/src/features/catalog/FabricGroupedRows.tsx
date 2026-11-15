@@ -13,7 +13,7 @@ export interface FabricGroupedRowsProps {
 }
 
 /**
- * Liste des articles Textile groupée par tissu (design-system § 7.6) : un bloc par tissu (nom,
+ * Liste des articles Textile groupée par tissu (design-system § 7.8) : un bloc par tissu (nom,
  * nombre de couleurs, « Voir le tissu »), ses couleurs dessous ; les articles sans tissu à la fin.
  */
 export function FabricGroupedRows({ role, items, onOpen, onOpenFabric }: FabricGroupedRowsProps) {

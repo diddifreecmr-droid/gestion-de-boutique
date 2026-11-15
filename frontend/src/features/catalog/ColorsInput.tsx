@@ -13,7 +13,7 @@ export interface ColorsInputProps {
 }
 
 /**
- * Saisie rapide des couleurs d'un tissu (design-system § 7.6) : on tape « Rouge, Bleu, Vert »
+ * Saisie rapide des couleurs d'un tissu (design-system § 7.8) : on tape « Rouge, Bleu, Vert »
  * puis « Ajouter » (ou Entrée) ; chaque couleur devient une pastille retirable.
  */
 export function ColorsInput({ value, onChange, error, existing = [] }: ColorsInputProps) {
