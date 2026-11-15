@@ -2,7 +2,7 @@
  * VOC-01 (T39) : les écrans principaux d'une boutique Prêt-à-porter ou Textile ne parlent
  * jamais de Motos. Le DOM entier (contenu replié compris) est balayé une fois l'écran chargé.
  */
-import { configure, screen, waitFor } from "@testing-library/react";
+import { configure, screen, waitFor, within } from "@testing-library/react";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { apparelShop, ARTICLE_ID, type ApparelCode, type ShopRole } from "../testing/apparelShop";
 import { SHOP_A } from "../testing/fakeApi";
@@ -68,9 +68,8 @@ const SCREENS: Record<ShopRole, Screen[]> = {
   seller: [
     { name: "accueil", path: SHOP, ready: () => screen.findAllByText("Ventes du jour") },
     { name: "mes ventes", path: `${SHOP}/mes-ventes`, ready: heading("Mes ventes") },
+    // Pas de Stock : réservé au gérant en Prêt-à-porter et Textile (2026-11-15).
     { name: "nouvelle vente", path: `${SHOP}/nouvelle-vente`, ready: heading("Nouvelle vente") },
-    { name: "stock", path: `${SHOP}/stock`, ready: article },
-    { name: "fiche article", path: `${SHOP}/stock?article=${ARTICLE_ID}`, ready: article },
   ],
 };
 
@@ -119,7 +118,7 @@ describe.each<ApparelCode>(["apparel", "textile"])("VOC-01 — profil %s", (code
 });
 
 describe("VOC-01 — nouvelle vente Prêt-à-porter : détails de l'article du profil", () => {
-  it("article ajouté : taille et couleur sur la ligne (panier), ni châssis ni moteur", async () => {
+  it("article ajouté : quantité et prix seulement, ni taille, ni couleur, ni châssis", async () => {
     const { user, container } = renderApp(
       `${SHOP}/nouvelle-vente`,
       apparelShop("apparel", "seller"),
@@ -127,10 +126,23 @@ describe("VOC-01 — nouvelle vente Prêt-à-porter : détails de l'article du p
     await screen.findByRole("heading", { name: "Nouvelle vente" });
     await user.click(await articleButton(ARTICLE_NAME.apparel));
     await screen.findByRole("heading", { name: ARTICLE_NAME.apparel });
-    // Panier (T40) : taille et couleur en choix rapides, pas de « Détails de l'article » par unité.
+    // Simplifié (2026-11-15) : plus de choix rapides taille/couleur (T40), pas de détails par unité.
     expect(screen.queryByRole("button", { name: "Détails de l'article" })).toBeNull();
-    expect(screen.getAllByText("Couleur")[0]).toBeVisible();
+    expect(screen.queryByText(/^(Taille|Couleur)$/)).toBeNull();
     expect(screen.queryByLabelText(/moteur|châssis/i)).toBeNull();
+    expect(screen.getByLabelText("Prix unitaire")).toBeVisible();
     expect(forbiddenIn(container)).toEqual([]);
   });
+
+  it.each<ApparelCode>(["apparel", "textile"])(
+    "%s, employé : aucune entrée Stock ; /stock n'ouvre pas le stock",
+    async (code) => {
+      renderApp(`${SHOP}/stock`, apparelShop(code, "seller"));
+      const nav = await screen.findByRole("navigation", { name: "Navigation principale" });
+      expect(within(nav).queryByRole("link", { name: "Stock" })).toBeNull();
+      await settled();
+      expect(screen.queryByRole("heading", { name: "Stock" })).toBeNull();
+      expect(screen.queryByText(/46,9|Stock disponible/)).toBeNull();
+    },
+  );
 });

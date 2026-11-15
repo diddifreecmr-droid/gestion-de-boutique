@@ -42,7 +42,7 @@ describe("menus servis selon le profil de la boutique", () => {
   it.each<[ServedProfileCode, Role, string[]]>([
     ["apparel", "owner", ["Accueil", "Ventes", "Stock", "Créances", "Plus"]],
     ["apparel", "accountant", ["Accueil", "Achats", "Stock", "Dépenses", "Inventaire"]],
-    ["textile", "seller", ["Accueil", "Nouvelle vente", "Mes ventes", "Créances", "Stock"]],
+    ["textile", "seller", ["Accueil", "Nouvelle vente", "Mes ventes", "Créances"]], // pas de Stock (2026-11-15),
     ["motos", "owner", ["Accueil", "Ventes", "Stock", "Plus"]],
   ])("%s, %s : barre du bas", async (code, role, labels) => {
     renderApp(SHOP_PATH, { ...memberSession(role), ...served(code, role) });

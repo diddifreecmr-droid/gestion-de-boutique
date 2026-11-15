@@ -8,28 +8,28 @@
 
 @theme {
   --color-*: initial; /* retire la palette Tailwind par défaut */
-  --color-bg: #F6F7F9;
-  --color-surface: #FFFFFF;
-  --color-text: #1A2230;
-  --color-text-muted: #4A5568;
-  --color-border: #D5DAE1;
-  --color-border-strong: #8A94A6;
-  --color-primary: #0B5D7A;
-  --color-primary-hover: #084A62;
-  --color-primary-soft: #E3F1F6;
-  --color-on-primary: #FFFFFF;
-  --color-success: #1E7A3C;
-  --color-success-text: #17602F;
-  --color-success-soft: #E4F4E9;
-  --color-warning-text: #8A3B00;
-  --color-warning-soft: #FFF1DB;
-  --color-warning-dot: #F59E0B;
-  --color-danger: #B42318;
-  --color-danger-text: #9A1C13;
-  --color-danger-soft: #FDE8E6;
-  --color-credit: #5B3FA6;
-  --color-credit-text: #4C3391;
-  --color-credit-soft: #EFEAFB;
+  --color-bg: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-text: #1a2230;
+  --color-text-muted: #4a5568;
+  --color-border: #d5dae1;
+  --color-border-strong: #8a94a6;
+  --color-primary: #0b5d7a;
+  --color-primary-hover: #084a62;
+  --color-primary-soft: #e3f1f6;
+  --color-on-primary: #ffffff;
+  --color-success: #1e7a3c;
+  --color-success-text: #17602f;
+  --color-success-soft: #e4f4e9;
+  --color-warning-text: #8a3b00;
+  --color-warning-soft: #fff1db;
+  --color-warning-dot: #f59e0b;
+  --color-danger: #b42318;
+  --color-danger-text: #9a1c13;
+  --color-danger-soft: #fde8e6;
+  --color-credit: #5b3fa6;
+  --color-credit-text: #4c3391;
+  --color-credit-soft: #efeafb;
 
   --font-sans: system-ui, Roboto, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "Roboto Mono", Consolas, monospace;

@@ -21,7 +21,7 @@ describe("menus servis par rôle (modules disponibles à l'ouverture)", () => {
     ["motos", "accountant", ["Accueil", "Achats", "Stock", "Dépenses"]],
     ["motos", "driver", ["Mon voyage"]],
     ["apparel", "owner", ["Accueil", "Ventes", "Stock", "Créances", "Plus"]],
-    ["apparel", "seller", ["Accueil", "Nouvelle vente", "Mes ventes", "Créances", "Stock"]],
+    ["apparel", "seller", ["Accueil", "Nouvelle vente", "Mes ventes", "Créances"]], // stock réservé au gérant,
     ["apparel", "accountant", ["Accueil", "Achats", "Stock", "Dépenses", "Inventaire"]],
     ["textile", "owner", ["Accueil", "Ventes", "Stock", "Créances", "Plus"]],
     ["textile", "accountant", ["Accueil", "Achats", "Stock", "Dépenses", "Inventaire"]],
@@ -86,10 +86,19 @@ describe("rôles et libellés du profil", () => {
     expect(textile.articleFields.map((f) => f.code)).toContain("piece_length_m");
     expect(textile.saleFields.map((f) => f.label)).toEqual(["Longueur (m)"]);
     expect(textile.stockUnits).toEqual(["METER", "PIECE"]);
-    expect(profile("apparel", "seller").saleFields.map((f) => f.label)).toEqual([
-      "Taille",
-      "Couleur",
-    ]);
+    expect(profile("apparel", "seller").saleFields).toEqual([]); // simplifié (2026-11-15)
+  });
+
+  it("mot de la pièce et règles de stock servis (2026-11-15)", () => {
+    const textile = profile("textile", "seller");
+    expect(textile.pieceLabel).toBe("rouleau");
+    expect(textile.stock).toEqual({ refusedWhenOut: false, reservedToOwner: true });
+    expect(profile("motos", "seller").stock).toEqual({
+      refusedWhenOut: true,
+      reservedToOwner: false,
+    });
+    const blank = { ...servedProfile("motos", "owner"), piece_label: " " };
+    expect(() => profileFromResponse(blank, "owner")).toThrow("piece_label vide");
   });
 });
 

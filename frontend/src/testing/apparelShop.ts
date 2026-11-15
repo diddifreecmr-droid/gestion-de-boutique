@@ -7,7 +7,7 @@
 import type { components } from "../core/api/schema.gen";
 import { ownerArticle } from "./catalog";
 import { dashboardBody, homeBody } from "./dashboard";
-import { json, meBody, ROUTES, SHOP_A, tokenBody, type Reply } from "./fakeApi";
+import { apiError, json, meBody, ROUTES, SHOP_A, tokenBody, type Reply } from "./fakeApi";
 import { paymentModes } from "./salesCatalog";
 import { page } from "./salesFixtures";
 import { member } from "./salesServer";
@@ -55,6 +55,7 @@ function article(code: ApparelCode, role: ShopRole): Schemas["ArticleResponse"] 
     delete raw.last_cost;
     delete raw.wac;
     delete raw.price_history;
+    raw.stock_status = "ok"; // pastille seule : stock réservé au gérant (2026-11-15)
   }
   return raw as Schemas["ArticleResponse"];
 }
@@ -97,7 +98,10 @@ function serve(code: ApparelCode, role: ShopRole, method: string, path: string):
   if (method !== "GET") return null;
   if (path === "/profile") return json(200, profile(code, role));
   if (path === "/payment-modes") return json(200, paymentModes());
-  if (path === "/stock") return json(200, matrix(code, role));
+  if (path === "/stock") {
+    if (role === "seller") return apiError(403, "PERMISSION_DENIED", "Stock réservé au gérant");
+    return json(200, matrix(code, role));
+  }
   if (path === "/articles") return json(200, { items: [article(code, role)], next_cursor: null });
   if (path === `/articles/${ARTICLE_ID}`) return json(200, article(code, role));
   if (path === "/sales") return json(200, page([]));

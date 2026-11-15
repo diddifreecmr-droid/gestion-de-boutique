@@ -2,18 +2,18 @@
  * Faux serveur de la vente **Textile** (tests seulement), au-dessus du faux serveur des ventes :
  * profil Textile avec ses raccourcis (RG-X05), un seul lieu « Boutique » (QC-5), articles au
  * mètre (jeu de la recette SCN-L3-02 : WX, pièce de 5,49 m) et `POST /sales` au dixième (QC-3) :
- * stock retiré, refus `422 STOCK_INSUFFICIENT` (`available` en mètres), reçu `quantity_label`.
+ * jamais refusé (2026-11-15), reçu `quantity_label` (« 1 rouleau (5,49 m) »). L'employé n'a pas
+ * `GET /stock` (403) et reçoit la pastille `stock_status` ; le gérant voit les mètres.
  */
 import type { components } from "../core/api/schema.gen";
 import type { RecordSaleCommand, SaleResult } from "../core/gateways/salesContract";
-import { tenthsValue, toTenths } from "../features/sales/textile";
 import { ownerArticle } from "./catalog";
 import { apiError, json, type Call } from "./fakeApi";
 import { saleReceipt } from "./receipts";
 import { paymentModes, saleProfile } from "./salesCatalog";
 import { API, saleServer, type SaleRole } from "./salesServer";
 import { servedProfile } from "./servedProfile";
-import { quantityLabel, removedBy, saleResult, type TextileArticle } from "./textileSaleResult";
+import { quantityLabel, saleResult, type TextileArticle } from "./textileSaleResult";
 
 export type { TextileArticle } from "./textileSaleResult";
 
@@ -23,8 +23,8 @@ export const BOUTIQUE = { id: "loc-boutique", name: "Boutique" };
 
 /** Raccourcis servis par `GET /profile` d'une boutique Textile (`domain/profiles/textile.py`). */
 export const TEXTILE_SHORTCUTS: Schemas["SaleShortcutResponse"][] = [
-  { code: "piece", label: "Pièce complète", basis: "piece", length_m: null, yards: "6" },
-  { code: "half_piece", label: "Demi-pièce", basis: "half_piece", length_m: null, yards: "3" },
+  { code: "piece", label: "Rouleau complet", basis: "piece", length_m: null, yards: "6" },
+  { code: "half_piece", label: "Demi-rouleau", basis: "half_piece", length_m: null, yards: "3" },
   { code: "1m", label: "1 m", basis: "length", length_m: "1.0", yards: null },
   { code: "2m", label: "2 m", basis: "length", length_m: "2.0", yards: null },
   { code: "3m", label: "3 m", basis: "length", length_m: "3.0", yards: null },
@@ -62,8 +62,8 @@ function textileProfile(role: SaleRole) {
   };
 }
 
-/** Vue de l'employé : prix de vente seulement, aucun coût (TR-05). */
-function articleView(article: TextileArticle): Schemas["ArticleResponse"] {
+/** Vue de la vente : prix de vente seulement, aucun coût (TR-05) ; pastille pour l'employé. */
+function articleView(article: TextileArticle, role: SaleRole): Schemas["ArticleResponse"] {
   const raw: Partial<Schemas["ArticleResponse"]> = ownerArticle({
     id: article.id,
     display_name: article.name,
@@ -77,6 +77,7 @@ function articleView(article: TextileArticle): Schemas["ArticleResponse"] {
     base_price_piece: article.base_price_piece,
     min_price: null,
     min_price_piece: null,
+    ...(role === "seller" ? { stock_status: article.status ?? "ok" } : {}),
   });
   delete raw.last_cost;
   delete raw.wac;
@@ -112,17 +113,10 @@ export function textileWorld(role: SaleRole, articles: TextileArticle[]) {
     if (found === undefined) throw new Error(`Faux serveur Textile : article ${id}`);
     return found;
   };
+  // Vente jamais refusée pour manque de stock (2026-11-15) : le serveur la passe toujours.
   const record = (call: Call) => {
     const body = call.body as RecordSaleCommand;
     server.recordSale("shop", body);
-    for (const line of body.lines) {
-      const sold = article(line.article_id);
-      const stock = toTenths(sold.real ?? sold.stock);
-      if (removedBy(sold, line) > stock) {
-        const details = { article_id: sold.id, available: tenthsValue(stock), other_locations: [] };
-        return apiError(422, "STOCK_INSUFFICIENT", "Stock insuffisant", details);
-      }
-    }
     const sale = saleResult(body, byId, sales.length + 1);
     sales.push(sale);
     return json(201, sale);
@@ -141,9 +135,14 @@ export function textileWorld(role: SaleRole, articles: TextileArticle[]) {
     get(target, key) {
       if (typeof key !== "string") return Reflect.get(target, key) as unknown;
       if (key.startsWith(`GET ${API}/articles`)) {
-        return json(200, { items: articles.map(articleView), next_cursor: null });
+        const items = articles.map((one) => articleView(one, role));
+        return json(200, { items, next_cursor: null });
       }
-      if (key.startsWith(`GET ${API}/stock`)) return json(200, matrix(articles));
+      if (key.startsWith(`GET ${API}/stock`)) {
+        // Stock réservé au gérant : l'employé n'a pas les routes de stock (403).
+        if (role === "seller") return apiError(403, "PERMISSION_DENIED", "Stock réservé");
+        return json(200, matrix(articles));
+      }
       if (key === `GET ${API}/payment-modes`) return json(200, paymentModes());
       if (key === `POST ${API}/sales`) return record;
       if (key.startsWith(`GET ${API}/sales/`) && key.endsWith("/receipt")) return receipt;

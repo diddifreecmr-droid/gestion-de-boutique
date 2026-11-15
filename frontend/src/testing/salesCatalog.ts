@@ -37,7 +37,10 @@ export function saleProfile(role: "owner" | "seller", requiresApproval = false) 
   };
 }
 
-/** Profil « Prêt-à-porter » vu par l'écran de vente : ni modèle ni châssis. */
+/**
+ * Profil « Prêt-à-porter » vu par l'écran de vente : ni modèle ni châssis ; simplifié
+ * (2026-11-15) : aucun champ de vente, stock réservé au gérant, vente jamais refusée.
+ */
 export function apparelSaleProfile(role: "owner" | "seller") {
   const field = (code: string, label: string) => ({
     code,
@@ -57,7 +60,9 @@ export function apparelSaleProfile(role: "owner" | "seller") {
       field("type", "Type"),
       field("brand", "Marque"),
     ],
-    sale_fields: [field("size", "Taille"), field("color", "Couleur")],
+    sale_fields: [],
+    refused_when_out_of_stock: false,
+    stock_reserved_to_owner: true,
   };
 }
 
@@ -103,6 +108,12 @@ export function stockMatrix(world: World, q: string | null): Schemas["StockMatri
   return { locations, items };
 }
 
+/** Pastille servie avec la liste (stock de Garoua) : bas à 2 et moins, rupture à 0. */
+function badge(article: WorldArticle): "ok" | "low" | "out" {
+  const garoua = listed(article, GAROUA.id);
+  return garoua <= 0 ? "out" : garoua <= 2 ? "low" : "ok";
+}
+
 /** Vue vendeur d'un article : prix de vente seulement, jamais de coût (TR-05). */
 function sellerArticle(article: WorldArticle): Schemas["ArticleResponse"] {
   const raw: Partial<Schemas["ArticleResponse"]> = ownerArticle({
@@ -112,6 +123,7 @@ function sellerArticle(article: WorldArticle): Schemas["ArticleResponse"] {
     base_price: article.base_price,
     min_price: article.min_price_shared ? article.min_price : null,
     min_price_active: article.min_price_shared ? true : null,
+    stock_status: badge(article),
   });
   delete raw.last_cost;
   delete raw.wac;
