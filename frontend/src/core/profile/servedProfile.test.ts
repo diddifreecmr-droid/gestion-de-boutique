@@ -98,7 +98,7 @@ describe("rôles et libellés du profil", () => {
       reservedToOwner: false,
     });
     const blank = { ...servedProfile("motos", "owner"), piece_label: " " };
-    expect(() => profileFromResponse(blank, "owner")).toThrow("piece_label vide");
+    expect(() => profileFromResponse(blank, "owner")).toThrow("piece_label invalide");
   });
 });
 

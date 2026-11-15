@@ -52,7 +52,7 @@ export function CreatePriceFields({
       )}
       {labels.piece !== null && minPriceEnabled && (
         <AmountField
-          label="Minimum à la pièce (facultatif)"
+          label={`${labels.pieceMinimum ?? "Minimum à la pièce"} (facultatif)`}
           value={value.minimumPiece}
           onChange={(minimumPiece) => {
             set({ minimumPiece });

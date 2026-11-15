@@ -3,6 +3,7 @@ import { costsOf, pricesOf, type ArticleView } from "./articleView";
 import { FactsCard, type Fact } from "./FactsCard";
 import { moneyOr, NOT_COMPUTABLE, NOT_SET } from "./money";
 import { articlePriceLabels, choiceLabel } from "./textileFields";
+import { useActivePieceWords } from "../../core/profile/activeProfile";
 
 const EMPTY = "—";
 
@@ -21,11 +22,12 @@ export function ArticleFacts({
   view: ArticleView;
   fields: readonly ProfileFieldResponse[];
 }) {
-  const labels = articlePriceLabels(fields, view.values);
+  const words = useActivePieceWords();
+  const labels = articlePriceLabels(fields, view.values, words);
   const valueOf = (spec: ProfileFieldResponse) => {
     const value = view.values[spec.code];
     return spec.kind === "choice" && typeof value === "string"
-      ? choiceLabel(spec, value)
+      ? choiceLabel(spec, value, words)
       : shown(value);
   };
   const details: Fact[] = [
@@ -59,7 +61,7 @@ export function ArticleFacts({
                   ...(prices.minPriceActive || prices.minPricePiece !== null
                     ? [
                         {
-                          label: "Minimum à la pièce",
+                          label: labels.pieceMinimum ?? `Minimum ${words.per}`,
                           value: moneyOr(prices.minPricePiece, NOT_SET),
                         },
                       ]

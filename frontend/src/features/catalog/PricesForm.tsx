@@ -79,7 +79,7 @@ export function PricesForm(props: PricesFormProps) {
       )}
       {showMinimumPiece && (
         <AmountField
-          label="Minimum à la pièce"
+          label={labels.pieceMinimum ?? "Minimum à la pièce"}
           hint={MINIMUM_HINT}
           value={minimumPiece}
           onChange={setMinimumPiece}

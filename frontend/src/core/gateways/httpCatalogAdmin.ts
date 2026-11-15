@@ -3,6 +3,7 @@
  * appelées avec le jeton de la session (rafraîchi puis rejoué au besoin).
  */
 import type { AppServices } from "../services/createServices";
+import { articleFormFields } from "./articleFormFields";
 import type { CatalogAdminGateway } from "./catalogAdminContract";
 
 const ARTICLES = "/api/v1/shops/{shop_id}/articles";
@@ -20,7 +21,10 @@ export function createHttpCatalogAdmin({
         api.get("/api/v1/shops/{shop_id}/profile", { token, params: { shop_id: shopId } }),
       );
       offline.rights.note(shopId, profile.entitlements); // droit hors connexion (T23, TR-26)
-      return { fields: profile.article_fields, minPriceEnabled: profile.min_price_enabled };
+      return {
+        fields: articleFormFields(profile.profile_code, profile.article_fields),
+        minPriceEnabled: profile.min_price_enabled,
+      };
     },
     listArticles: (shopId, { text, status, cursor, limit }) => {
       const q = text.trim();

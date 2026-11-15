@@ -12,6 +12,7 @@ import { OffcutForm } from "./OffcutForm";
 import { PriceHistoryList } from "./PriceHistoryList";
 import { PricesForm } from "./PricesForm";
 import { articlePriceLabels } from "./textileFields";
+import { useActivePieceWords } from "../../core/profile/activeProfile";
 
 export interface ArticleSheetProps {
   shopId: string;
@@ -33,6 +34,7 @@ const offcutAllowed = (article: ArticleResponse) =>
 export function ArticleSheet(props: ArticleSheetProps) {
   const { shopId, role, form, onReload } = props;
   const toast = useToast();
+  const words = useActivePieceWords();
   const [mode, setMode] = useState<Mode>("view");
   const view = articleView(role, props.article);
   const rights = catalogRights(role);
@@ -65,7 +67,7 @@ export function ArticleSheet(props: ArticleSheetProps) {
         <PricesForm
           shopId={shopId}
           article={view}
-          labels={articlePriceLabels(form.fields, view.values)}
+          labels={articlePriceLabels(form.fields, view.values, words)}
           minPriceEnabled={form.minPriceEnabled}
           onSaved={saved("Prix enregistrés")}
           onCancel={back}

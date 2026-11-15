@@ -20,6 +20,7 @@ import { RepeatedNameNotice } from "./RepeatedNameNotice";
 import { SubmitFailureNotice } from "./SubmitFailureNotice";
 import { draftPriceLabels, shownFields, textileErrors, withChange } from "./textileFields";
 import { useCatalogSubmit } from "./useCatalogSubmit";
+import { useActivePieceWords } from "../../core/profile/activeProfile";
 
 export interface ArticleCreateFormProps {
   shopId: string;
@@ -47,10 +48,11 @@ export function ArticleCreateForm(props: ArticleCreateFormProps) {
   /** Nom déjà signalé « mot répété » : un second appui le garde tel quel. */
   const [warnedName, setWarnedName] = useState<string | null>(null);
   const fields = shownFields(form.fields, draft);
-  const problems = () => ({ ...checkDraft(fields, draft), ...textileErrors(draft) });
+  const words = useActivePieceWords();
+  const problems = () => ({ ...checkDraft(fields, draft), ...textileErrors(draft, words) });
   const errors = checked ? problems() : {};
   const ownerPrices = catalogRights(props.role).setPrices;
-  const labels = draftPriceLabels(form.fields, draft);
+  const labels = draftPriceLabels(form.fields, draft, words);
   const name = draftName(draft);
   const fixed = repeatedNameFix(name);
 
