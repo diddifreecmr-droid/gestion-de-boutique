@@ -14,6 +14,7 @@ import type {
 import { ALL_MODULES } from "../core/profile/modules";
 import { profileBody } from "./catalog";
 import { json, meBody, ROUTES, SHOP_A, tokenBody, type Reply } from "./fakeApi";
+import { marginsBody, MARGINS_TODAY } from "./margins";
 
 export const TODAY = "2026-11-11";
 export const NOW = "2026-11-11T10:00:00Z";
@@ -162,6 +163,7 @@ export function homeRoutes(
     role === "owner"
       ? {
           [DASHBOARD_TODAY]: json(200, dashboardBody()),
+          [MARGINS_TODAY]: json(200, marginsBody()),
           [PRICE_REQUESTS]: json(200, []),
           [PROFILE]: modulesProfile(),
         }
