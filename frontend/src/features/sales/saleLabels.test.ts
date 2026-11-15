@@ -3,7 +3,7 @@ import type { CatalogArticle, PaymentMode } from "../../core/gateways/catalogCon
 import { sellableFirst } from "./articleOrder";
 import { articleTitle } from "./articleTitle";
 import { defaultPayment, groupModes } from "./paymentChoices";
-import { articleSearchHint, saleSearchLabel, searchesChassis } from "./profileLabels";
+import { articleSearchHint, saleSearchLabel } from "./profileLabels";
 
 const mode = (id: string, name: string, order: number): PaymentMode => ({
   id,
@@ -68,9 +68,7 @@ describe("libellés selon le profil", () => {
     expect(articleSearchHint([])).toBe("Cherchez par nom ou référence");
   });
 
-  it("le châssis seulement si le profil le saisit", () => {
-    expect(searchesChassis(["color", "chassis_number"])).toBe(true);
-    expect(searchesChassis(["size", "color"])).toBe(false);
+  it("libellé de la recherche des ventes", () => {
     expect(saleSearchLabel(true)).toBe("Chercher un n° de vente ou de châssis");
     expect(saleSearchLabel(false)).toBe("Chercher un n° de vente");
   });

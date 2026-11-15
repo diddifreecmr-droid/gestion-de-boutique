@@ -6,7 +6,6 @@ import type { CatalogGateway } from "../../core/gateways/catalogContract";
 import type { SaleMember, SalesGateway } from "../../core/gateways/salesContract";
 import type { ExchangeRules } from "../../core/profile/types";
 import { lineFieldsOf, type LineFields } from "./lineFields";
-import { searchesChassis } from "./profileLabels";
 import type { SaleRole } from "./salesNav";
 
 export interface SaleRefs {
@@ -38,7 +37,8 @@ export async function loadSaleRefs(
     locations: setup.locations,
     modes: setup.payment_modes,
     members,
-    searchChassis: searchesChassis(setup.sale_fields),
+    // Le n° de châssis n'est plus saisi à la vente (décision client du 2026-11-15).
+    searchChassis: false,
     lineFields: lineFieldsOf(setup.sale_fields),
   };
 }

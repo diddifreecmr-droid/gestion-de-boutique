@@ -155,19 +155,19 @@ describe("Nouvelle vente au comptant (UC-VEN-01)", () => {
     const line = screen.getByRole("region", { name: "Haojue HJ125-8" });
     await user.click(within(line).getByRole("button", { name: "Quantité : plus un" }));
     await user.click(within(line).getByRole("button", { name: "Détails de l'article" }));
-    await user.type(within(line).getByLabelText("N° de châssis — moto 2"), "lbx0002");
+    // Ni châssis ni moteur à la vente (décision client du 2026-11-15) : couleur seulement.
+    expect(within(line).queryByLabelText(/châssis|moteur/i)).toBeNull();
     await user.type(within(line).getByLabelText("Couleur — moto 1"), "Rouge");
 
     expect(screen.getByText(money(620_000 + 2 * 780_000))).toBeVisible();
     await user.click(validateButton());
     await screen.findByRole("heading", { name: /V-000124/ });
     const [, command] = recordSale.mock.calls[0] ?? [];
-    expect(command?.lines[1]).toMatchObject({
-      quantity: "2",
-      details: [
-        { color: "Rouge", chassis_number: null, engine_number: null },
-        { color: null, chassis_number: "LBX0002", engine_number: null },
-      ],
+    expect(command?.lines[1]).toMatchObject({ quantity: "2" });
+    expect(command?.lines[1]?.details?.[0]).toMatchObject({
+      color: "Rouge",
+      chassis_number: null,
+      engine_number: null,
     });
   });
 

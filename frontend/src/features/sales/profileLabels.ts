@@ -27,11 +27,6 @@ export function articleSearchHint(fields: readonly ProfileFieldLabel[]): string 
   return `Cherchez par ${labels.length === 0 ? DEFAULT_ARTICLE_SEARCH : joinOr(labels)}`;
 }
 
-/** Le profil saisit-il un n° de châssis à la vente (la recherche des ventes le trouve) ? */
-export function searchesChassis(saleFields: readonly string[]): boolean {
-  return saleFields.includes("chassis_number");
-}
-
 /** Libellé de la recherche de la liste des ventes. */
 export function saleSearchLabel(chassis: boolean): string {
   return chassis ? "Chercher un n° de vente ou de châssis" : "Chercher un n° de vente";

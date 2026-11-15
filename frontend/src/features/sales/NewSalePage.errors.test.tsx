@@ -90,17 +90,6 @@ describe("refus du serveur", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("châssis déjà vendu (RG-M01) : la vente concernée est citée", async () => {
-    const { user } = renderSale();
-    await user.click(await articleButton("Haojue HJ125-8"));
-    await user.click(screen.getByRole("button", { name: "Détails de l'article" }));
-    await user.type(screen.getByLabelText("N° de châssis — moto 1"), "lbxpcj0a1n0001234");
-    await user.click(validateButton());
-    expect(await saleAlert()).toHaveTextContent(
-      "Le numéro de châssis LBXPCJ0A1N0001234 a déjà été vendu (vente V-000098).",
-    );
-  });
-
   it("hors connexion : message clair, saisie conservée, renvoi en un appui (même id)", async () => {
     const { user, network, fake, container } = renderSale();
     await user.click(await articleButton("Haojue HJ125-8"));

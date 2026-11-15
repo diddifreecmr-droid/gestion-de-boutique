@@ -100,13 +100,7 @@ export function SaleLineCard(props: SaleLineCardProps) {
           onChange({ ...line, unitPrice });
         }}
       />
-      {fields.units && (
-        <UnitDetailsFields
-          line={line}
-          chassisErrors={showErrors ? (issues?.chassis ?? []) : []}
-          onChange={onChange}
-        />
-      )}
+      {fields.units && <UnitDetailsFields line={line} onChange={onChange} />}
       {onRemove !== undefined && (
         <Button variant="ghost" icon={Trash2} onClick={onRemove}>
           Retirer {title}

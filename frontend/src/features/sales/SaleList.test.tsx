@@ -103,7 +103,7 @@ describe("liste des ventes (UC-VEN-05)", () => {
     await user.click(screen.getByRole("radio", { name: "MTN MoMo" }));
     await user.click(screen.getByRole("radio", { name: "Issa Vendeur" }));
     expect(screen.getByRole("button", { name: "Filtres (3)" })).toBeVisible();
-    await user.type(screen.getByLabelText("Chercher un n° de vente ou de châssis"), "lbx");
+    await user.type(screen.getByLabelText("Chercher un n° de vente"), "lbx");
     await screen.findByRole("list", { name: "Liste des ventes" });
     const urls = listCalls(view.fake.calls);
     expect(urls).toContain(`${API}/sales?from=2026-11-05&to=2026-11-11`);

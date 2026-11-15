@@ -3,13 +3,15 @@ import type { LineDraft, UnitDetail } from "./draft";
 
 export interface UnitDetailsFieldsProps {
   line: LineDraft;
-  /** Erreur de châssis par unité (déjà filtrée par « montrer les erreurs »). */
-  chassisErrors: readonly (string | undefined)[];
   onChange: (line: LineDraft) => void;
 }
 
-/** « Détails de l'article » : une fiche par unité (couleur, châssis, moteur — CDC § 17.3). */
-export function UnitDetailsFields({ line, chassisErrors, onChange }: UnitDetailsFieldsProps) {
+/**
+ * « Détails de l'article » : la couleur de chaque unité (Motos). Les n° de châssis et de moteur
+ * ne sont plus saisis (décision client du 2026-11-15 : sans intérêt pour la boutique) ; le
+ * serveur les accepte toujours, facultatifs.
+ */
+export function UnitDetailsFields({ line, onChange }: UnitDetailsFieldsProps) {
   const unit = line.article.unit_label;
   return (
     <Disclosure label="Détails de l'article">
@@ -18,7 +20,6 @@ export function UnitDetailsFields({ line, chassisErrors, onChange }: UnitDetails
           key={index}
           title={`${unit} ${String(index + 1)}`}
           detail={detail}
-          chassisError={chassisErrors[index]}
           onChange={(next) => {
             onChange({ ...line, units: line.units.map((u, i) => (i === index ? next : u)) });
           }}
@@ -31,12 +32,10 @@ export function UnitDetailsFields({ line, chassisErrors, onChange }: UnitDetails
 function UnitFields({
   title,
   detail,
-  chassisError,
   onChange,
 }: {
   title: string;
   detail: UnitDetail;
-  chassisError: string | undefined;
   onChange: (detail: UnitDetail) => void;
 }) {
   return (
@@ -47,23 +46,6 @@ function UnitFields({
         value={detail.color}
         onChange={(event) => {
           onChange({ ...detail, color: event.target.value });
-        }}
-      />
-      <TextField
-        label={`N° de châssis — ${title}`}
-        value={detail.chassis}
-        error={chassisError}
-        autoCapitalize="characters"
-        onChange={(event) => {
-          onChange({ ...detail, chassis: event.target.value });
-        }}
-      />
-      <TextField
-        label={`N° de moteur — ${title}`}
-        value={detail.engine}
-        autoCapitalize="characters"
-        onChange={(event) => {
-          onChange({ ...detail, engine: event.target.value });
         }}
       />
     </fieldset>
