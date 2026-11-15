@@ -76,7 +76,7 @@ def test_textile_unit_and_piece_rules() -> None:
         {"name": "Wax"},  # unité obligatoire
         {"name": "Wax", "unit": "PIECE", "sold_by_piece": True, "piece_length_m": "5"},
         {"name": "Wax", "unit": "METER", "sold_by_piece": True},
-        {"name": "Wax", "unit": "METER", "piece_length_m": "5"},
+        {"name": "Wax", "unit": "PIECE", "piece_length_m": "5"},  # rouleau : au mètre
         {"name": "Wax", "unit": "METER", "sold_by_piece": True, "piece_length_m": "5.491"},
         {"name": "Wax", "unit": "METER", "sold_by_piece": True, "piece_length_m": "0"},
         {"name": "Wax", "unit": "METER", "sold_by_piece": True, "piece_length_m": 5.4},
@@ -86,3 +86,12 @@ def test_textile_unit_and_piece_rules() -> None:
     for values in bad:
         with pytest.raises(ValidationFailed):
             read_profile_fields(TEXTILE, values)
+    getzner = read_profile_fields(  # au mètre seulement, longueur du rouleau connue (2026-11-15)
+        TEXTILE,
+        {"name": "Getzner — Blanc", "fabric": "Getzner", "unit": "METER", "piece_length_m": "25"},
+    )
+    assert (getzner.sold_by_piece, getzner.piece_length_m, getzner.fabric) == (
+        False,
+        Decimal(25),
+        "Getzner",
+    )

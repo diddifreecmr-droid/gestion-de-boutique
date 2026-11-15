@@ -111,11 +111,11 @@ def test_motos_and_textile_fields_come_from_the_profile() -> None:
     textile = FlowWorld()
     weaver = textile.open_profile("textile")
     content = (
-        "Nom;Unité;Vente à la pièce;Longueur d'une pièce (m);Prix à la pièce\n"
+        "Nom;Unité;Vente au rouleau;Longueur du rouleau (m);Prix au rouleau\n"
         "Wax;Mètre;Oui;5,49;27 000\nBasin;Kilo;;;\nBazin;Pièce;peut-être;;\n"
     )
     found, _ = textile.run(weaver, "articles", content)
-    assert [(p.line, p.column) for p in found.problems] == [(3, "Unité"), (4, "Vente à la pièce")]
+    assert [(p.line, p.column) for p in found.problems] == [(3, "Unité"), (4, "Vente au rouleau")]
     wax = articles(textile, weaver)["Wax"]
     assert wax.details.fields.stock_unit is StockUnit.METER
     assert wax.details.fields.sold_by_piece

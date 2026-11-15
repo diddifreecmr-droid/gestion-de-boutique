@@ -32,6 +32,8 @@ EXPECTED: Mapping[str, str] = {
     # Fixer le prix de vente de base et le prix minimum — Q-14
     "PRICE_SET": "TNNN",
     "SELLING_PRICE_READ": "TLNN",
+    # Lister le catalogue (articles, prix) sans quantité : gardé par le vendeur partout
+    "ARTICLE_READ": "TLTN",
     # Voir le stock disponible (quantités)
     "STOCK_READ": "TLTN",
     # Voir les prix d'achat et la valeur du stock

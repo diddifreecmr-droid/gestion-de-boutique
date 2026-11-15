@@ -54,7 +54,12 @@ def test_prf03_apparel_profile_menus_and_labels(api: Api) -> None:
         "GET", f"/shops/{shop}/profile", staff(api, owner, shop, "677000002", "seller")
     )
     assert seller.json()["role_label"] == "Employé"
-    assert menu(seller.json()) == ["Accueil", "Nouvelle vente", "Mes ventes", "Créances", "Stock"]
+    assert menu(seller.json()) == [
+        "Accueil",
+        "Nouvelle vente",
+        "Mes ventes",
+        "Créances",
+    ]  # 2026-11-15
     accountant = staff(api, owner, shop, "677000003", "accountant")
     found = api.call("GET", f"/shops/{shop}/profile", accountant).json()
     assert menu(found) == ["Accueil", "Achats", "Stock", "Dépenses", "Inventaire"]

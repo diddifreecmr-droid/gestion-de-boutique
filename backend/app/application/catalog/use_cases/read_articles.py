@@ -8,7 +8,8 @@ qui peut le voir. L'historique des **mouvements** de la fiche arrive avec le mod
 La liste porte la **pastille** de stock de chaque article (`ok` | `low` | `out`, aucune
 quantité, 2026-11-15) : c'est tout ce que voit de son stock l'employé d'une boutique dont le
 profil réserve le stock au gérant. Sur demande (`with_thumbnails`), la liste porte un lien
-signé court par photo d'article, délivré après contrôle des droits, dans la même unité de travail (`thumbnails.py`, UC-PAP-02).
+signé court par photo d'article, délivré après contrôle des droits, dans la même unité de
+travail (`thumbnails.py`, UC-PAP-02).
 """
 
 from collections.abc import Mapping
