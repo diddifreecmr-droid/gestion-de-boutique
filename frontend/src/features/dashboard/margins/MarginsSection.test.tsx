@@ -46,7 +46,7 @@ describe("Coûts et marges du propriétaire (specs § 15.1, design-system § 7.2
     expect(totals.getByText(plain(`30,81${NBSP}%`))).toBeVisible();
     expect(screen.getByText("1 ligne sans coût d'achat, hors marge")).toBeVisible();
     const best = within(screen.getByRole("list", { name: "Articles qui rapportent le plus" }));
-    expect(best.getAllByRole("listitem").map((item) => plain(item.textContent ?? ""))).toEqual([
+    expect(best.getAllByRole("listitem").map((item) => plain(item.textContent))).toEqual([
       plain(`1. Haojue DR160${formatMoney(250_000)}`),
       plain(`2. Djampar — Rouge${formatMoney(30_000)}`),
       plain(`3. Djampar — Vert${formatMoney(20_000)}`),
