@@ -24,6 +24,12 @@ export type Home = Schemas["HomeResponse"];
 export type SellerHome = Schemas["SellerHomeOut"];
 export type AccountantHome = Schemas["AccountantHomeOut"];
 export type DriverHome = Schemas["DriverHomeOut"];
+export type Margins = Schemas["MarginsResponse"];
+export type ArticleMargin = Schemas["ArticleMarginOut"];
+export type FabricMargin = Schemas["FabricMarginOut"];
+export type DayMargin = Schemas["DayMarginOut"];
+export type MarginFigures = Schemas["MarginFigures"];
+export type PerUnit = Schemas["PerUnitOut"];
 
 /** Période demandée : `from` / `to` (AAAA-MM-JJ) seulement pour la période libre. */
 export type PeriodQuery =
@@ -34,6 +40,8 @@ export interface ReportingGateway {
   dashboard(shopId: string, period: PeriodQuery): Promise<Dashboard>;
   /** UC-TDB-04 : la liste qui explique un chiffre ; son total est le chiffre affiché. */
   detail(shopId: string, metric: DetailMetric, period: PeriodQuery): Promise<DashboardDetail>;
+  /** Coûts et marges (propriétaire seul) : par article, par tissu, jour par jour. */
+  margins(shopId: string, period: PeriodQuery): Promise<Margins>;
   /** UC-TDB-05 : accueil du rôle de l'utilisateur dans la boutique. */
   home(shopId: string): Promise<Home>;
 }

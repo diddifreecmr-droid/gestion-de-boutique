@@ -26,7 +26,7 @@ def _decimal(value: Decimal | None) -> str | None:
     return None if value is None else format(value.normalize(), "f")
 
 
-def _period(period: Period) -> s.PeriodOut:
+def period_out(period: Period) -> s.PeriodOut:
     return s.PeriodOut(
         kind=period.kind.value,
         first_day=period.first_day,
@@ -62,8 +62,8 @@ def _receivables(block: ReceivablesBlock | None) -> s.ReceivablesBlock | None:
 def dashboard_response(report: DashboardReport) -> s.DashboardResponse:
     summary, series, stock = report.summary, report.series, report.stock
     return s.DashboardResponse(
-        period=_period(report.period),
-        previous_period=_period(report.previous),
+        period=period_out(report.period),
+        previous_period=period_out(report.previous),
         summary=s.Summary(
             sales=_compared(summary.sales),
             sales_count=_compared(summary.sales_count),
@@ -110,7 +110,7 @@ def dashboard_response(report: DashboardReport) -> s.DashboardResponse:
 def detail_response(report: DetailReport) -> s.DashboardDetailResponse:
     return s.DashboardDetailResponse(
         metric=report.metric.value,
-        period=_period(report.period),
+        period=period_out(report.period),
         total=report.total,
         lines=[
             s.DetailLineOut(

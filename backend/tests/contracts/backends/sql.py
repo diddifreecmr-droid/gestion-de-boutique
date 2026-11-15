@@ -41,6 +41,7 @@ from app.infrastructure.persistence.sqlalchemy.platform_uow import (
 from app.infrastructure.persistence.sqlalchemy.purchasing import SQL_PURCHASING_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.receivables import SQL_RECEIVABLES_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.reporting import SQL_REPORTING_ADAPTERS
+from app.infrastructure.persistence.sqlalchemy.reporting_margins import SQL_MARGIN_ADAPTERS
 from app.infrastructure.persistence.sqlalchemy.repository import SqlRepository
 from app.infrastructure.persistence.sqlalchemy.sales_repository import SQL_SALES_REPOSITORIES
 from app.infrastructure.persistence.sqlalchemy.sales_returns import (
@@ -99,6 +100,7 @@ SQL_REGISTRY: SqlRepositoryRegistry = (
     *SQL_SALES_REPOSITORIES,
     *SQL_SALES_RETURNS_REPOSITORIES,
     *SQL_REPORTING_ADAPTERS,
+    *SQL_MARGIN_ADAPTERS,
     *SQL_SYNC_REPOSITORIES,
     *SQL_ATTACHMENT_REPOSITORIES,
     *SQL_IMPORT_REPOSITORIES,

@@ -61,3 +61,5 @@ export type { BottomNavProps } from "./BottomNav";
 export type { NavItem } from "./navigation";
 export { ActionBar } from "./ActionBar";
 export type { ActionBarProps } from "./ActionBar";
+export { SortHeader } from "./SortHeader";
+export type { SortDirection, SortHeaderProps } from "./SortHeader";

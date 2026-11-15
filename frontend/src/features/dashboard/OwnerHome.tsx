@@ -6,6 +6,7 @@ import { DayBars } from "./DayBars";
 import { DayFigures } from "./DayFigures";
 import { FIGURES_OFFLINE, FiguresPending } from "./FiguresOffline";
 import { FoldSectionsContext } from "./foldContext";
+import { MarginsSection } from "./margins/MarginsSection";
 import { periodText, queryKey, resolveChoice } from "./periods";
 import { PeriodPicker } from "./PeriodPicker";
 import { useFigures, useReporting } from "./reportingContext";
@@ -43,6 +44,7 @@ function Figures({
       <DayFigures dashboard={dashboard} open={nav.open} />
       <ResultFigures dashboard={dashboard} open={nav.open} />
       {dashboard.series !== null && <DayBars series={dashboard.series} />}
+      <MarginsSection shopId={shopId} query={query} />
       <StateBlocks shopId={shopId} dashboard={dashboard} open={nav.open} />
       <AlertsSection shopId={shopId} errorReports={dashboard.alerts.error_reports} />
     </>

@@ -4,6 +4,8 @@
   propriétaire seul (`DASHBOARD_READ`) ; vendeur, comptable, chauffeur : 403.
 - `GET /dashboard/details/{metric}?period=…` : liste qui explique un chiffre
   (`sales`, `payments`, `expenses`, `receivables`, `low_stock`).
+- `GET /dashboard/margins?period=…` : Coûts et marges (propriétaire seul, `DASHBOARD_READ` et
+  `COST_READ`) : par article, par tissu (au mètre et au rouleau en Textile) et jour par jour.
 - `GET /home` : accueil de son rôle (tous les membres), un seul bloc rempli.
 
 Toutes les réponses portent `Cache-Control: no-store` : les chiffres ne sont jamais servis
@@ -20,6 +22,7 @@ from app.application.reporting.details import DetailMetric
 from app.application.reporting.periods import PeriodKind
 from app.application.reporting.use_cases.dashboard import ReadDashboard
 from app.application.reporting.use_cases.home import ReadHome
+from app.application.reporting.use_cases.margins import ReadMargins
 from app.application.reporting.use_cases.read_details import ReadDashboardDetail
 from app.application.security.actor import Actor
 from app.interface.http.presenters.reporting import (
@@ -27,11 +30,13 @@ from app.interface.http.presenters.reporting import (
     detail_response,
     home_response,
 )
+from app.interface.http.presenters.reporting_margins import margins_response
 from app.interface.http.schemas.reporting import (
     DashboardDetailResponse,
     DashboardResponse,
     HomeResponse,
 )
+from app.interface.http.schemas.reporting_margins import MarginsResponse
 from app.interface.http.security import AuthGuard
 
 
@@ -40,6 +45,7 @@ class ReportingComponents:
     dashboard: ReadDashboard
     details: ReadDashboardDetail
     home: ReadHome
+    margins: ReadMargins
     guard: AuthGuard
 
 
@@ -76,6 +82,17 @@ def build_reporting_router(c: ReportingComponents) -> APIRouter:
         _no_store(response)
         report = c.details.execute(actor, metric, period, first_day, last_day)
         return detail_response(report)
+
+    @router.get("/shops/{shop_id}/dashboard/margins")
+    def dashboard_margins(
+        actor: Member,
+        response: Response,
+        period: PeriodKind = PeriodKind.TODAY,
+        first_day: From = None,
+        last_day: To = None,
+    ) -> MarginsResponse:
+        _no_store(response)
+        return margins_response(c.margins.execute(actor, period, first_day, last_day))
 
     @router.get("/shops/{shop_id}/home", response_model_exclude_unset=True)
     def home(actor: Member, response: Response) -> HomeResponse:

@@ -30,6 +30,7 @@ from app.infrastructure.persistence.memory.platform_store import MemoryPlatformS
 from app.infrastructure.persistence.memory.purchasing import MEMORY_PURCHASING_REPOSITORIES
 from app.infrastructure.persistence.memory.receivables import MEMORY_RECEIVABLES_REPOSITORIES
 from app.infrastructure.persistence.memory.reporting import MEMORY_REPORTING_ADAPTERS
+from app.infrastructure.persistence.memory.reporting_margins import MEMORY_MARGIN_ADAPTERS
 from app.infrastructure.persistence.memory.repository import MemoryRepository
 from app.infrastructure.persistence.memory.sales import MEMORY_SALES_REPOSITORIES
 from app.infrastructure.persistence.memory.sales_returns import (
@@ -59,6 +60,7 @@ REGISTRY: RepositoryRegistry = (
     *MEMORY_SALES_REPOSITORIES,
     *MEMORY_SALES_RETURNS_REPOSITORIES,
     *MEMORY_REPORTING_ADAPTERS,
+    *MEMORY_MARGIN_ADAPTERS,
     *MEMORY_SYNC_REPOSITORIES,
     *MEMORY_ATTACHMENT_REPOSITORIES,
     *MEMORY_IMPORT_REPOSITORIES,

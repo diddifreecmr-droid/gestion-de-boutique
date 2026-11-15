@@ -91,6 +91,7 @@ TRADE_ROUTES: Mapping[str, Body | None] = {
     "GET /customers/{customer_id}/statement": None,
     "GET /dashboard": None,
     "GET /dashboard/details/{metric}": None,
+    "GET /dashboard/margins": None,
     "GET /home": None,
     "POST /sync": lambda s: {"device_id": str(DeviceId.new()), "operations": []},
     "GET /offline-snapshot": None,

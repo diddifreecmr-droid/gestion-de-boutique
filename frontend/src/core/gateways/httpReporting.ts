@@ -9,6 +9,7 @@ import type { PeriodQuery, ReportingGateway } from "./reportingContract";
 
 const DASHBOARD = "/api/v1/shops/{shop_id}/dashboard";
 const DETAIL = "/api/v1/shops/{shop_id}/dashboard/details/{metric}";
+const MARGINS = "/api/v1/shops/{shop_id}/dashboard/margins";
 const HOME = "/api/v1/shops/{shop_id}/home";
 
 /** `?period=…` ; `from` / `to` ne partent qu'avec la période libre (le serveur refuse sinon). */
@@ -33,6 +34,10 @@ export function createHttpReporting({ api, session }: AppServices): ReportingGat
           params: { shop_id: shopId, metric },
           query: periodParams(period),
         }),
+      ),
+    margins: (shopId, period) =>
+      session.authorized((token) =>
+        api.get(MARGINS, { token, params: { shop_id: shopId }, query: periodParams(period) }),
       ),
     home: (shopId) =>
       session.authorized((token) => api.get(HOME, { token, params: { shop_id: shopId } })),

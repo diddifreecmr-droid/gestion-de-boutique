@@ -318,6 +318,12 @@ Audit UX du 13/11/2026 (téléphone 360 × 800 d'abord) :
 
 Audit UX du 13/11/2026 : en haut, **trois chiffres seulement** (ventes, argent encaissé, marge) ; « Jour par jour » (périodes de plusieurs jours), dépenses et résultat, créances, stock et camions sont repliés derrière leur titre, un appui les ouvre. Le bloc d'un module éteint reste absent (titre compris).
 
+**Coûts et marges (2026-11-15, propriétaire seul)** — section repliée « Coûts et marges », après « Jour par jour » ; ouverte, elle lit `GET /dashboard/margins` pour la période choisie (coûts figés à la vente, ventes annulées exclues ; lignes sans coût signalées en `warning-text`, hors marge).
+
+- **Téléphone** (< 1024 px) : une carte `dl` (marge totale en `--text-amount`, taux en `--text-lead`, coût des articles vendus), puis la liste « Articles qui rapportent le plus » (3 au plus, rang · nom · marge). **Aucun graphique**, aucun tableau : rien n'est téléchargé de plus.
+- **Grand écran** (≥ 1024 px, point de rupture `lg`, `useWideScreen`) : en plus, chargé à la demande (`MarginsWide`, import dynamique) — partie « Tableaux » : tableaux triables « Par article », « Par tissu (toutes couleurs) » (Textile) et « Historique des derniers jours » (14 au plus) ; en Textile, colonnes **Coût / Marge au mètre** et **au rouleau** (longueur du rouleau de l'article). Partie « Graphiques », à part : barres ventes (`fill-primary`) et marge (`fill-text-muted`) par jour, SVG maison sans bibliothèque, `role="img"` et résumé en `aria-label` (le tableau « Historique » porte les mêmes chiffres).
+- **En-tête triable** (`SortHeader`, `shared/ui`) : bouton pleine cellule de 48 px, `--text-label` gras, flèche `lucide` (↕ inactive, ↑/↓ active), `aria-sort` sur la colonne active ; montants alignés à droite en `tabular-nums` ; « — » pour une valeur non calculable, toujours triée en dernier. Premier appui : du plus grand au plus petit ; second : l'inverse.
+
 ### 7.3 Page d'accueil minimale (propriétaire et vendeur)
 
 Décision client du 12/11/2026 (specs § 15.1) : rien d'autre que ceci.

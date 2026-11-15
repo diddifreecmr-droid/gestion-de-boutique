@@ -1456,6 +1456,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/shops/{shop_id}/dashboard/margins": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Dashboard Margins */
+    get: operations["dashboard_margins_api_v1_shops__shop_id__dashboard_margins_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/shops/{shop_id}/home": {
     parameters: {
       query?: never;
@@ -1837,6 +1854,27 @@ export interface components {
       items: components["schemas"]["ArticleResponse"][];
       /** Next Cursor */
       next_cursor: string | null;
+    };
+    /** ArticleMarginOut */
+    ArticleMarginOut: {
+      /**
+       * Article Id
+       * Format: uuid
+       */
+      article_id: string;
+      /** Name */
+      name: string;
+      /** Fabric */
+      fabric: string | null;
+      /** Stock Unit */
+      stock_unit: string;
+      /** Quantity */
+      quantity: string;
+      figures: components["schemas"]["MarginFigures"];
+      /** Roll Length M */
+      roll_length_m: string | null;
+      per_meter: components["schemas"]["PerUnitOut"] | null;
+      per_roll: components["schemas"]["PerUnitOut"] | null;
     };
     /**
      * ArticleOrder
@@ -2268,6 +2306,20 @@ export interface components {
       trucks: components["schemas"]["TrucksBlock"] | null;
       alerts: components["schemas"]["AlertsBlock"];
     };
+    /** DayMarginOut */
+    DayMarginOut: {
+      /**
+       * Day
+       * Format: date
+       */
+      day: string;
+      /** Revenue */
+      revenue: number;
+      /** Cost */
+      cost: number;
+      /** Margin */
+      margin: number;
+    };
     /** DetailLineOut */
     DetailLineOut: {
       /** Kind */
@@ -2622,6 +2674,20 @@ export interface components {
       meter_only: boolean;
       /** Alert Threshold */
       alert_threshold?: number | string | null;
+    };
+    /** FabricMarginOut */
+    FabricMarginOut: {
+      /** Fabric */
+      fabric: string;
+      /** Colors */
+      colors: number;
+      /** Quantity */
+      quantity: string;
+      figures: components["schemas"]["MarginFigures"];
+      /** Roll Length M */
+      roll_length_m: string | null;
+      per_meter: components["schemas"]["PerUnitOut"] | null;
+      per_roll: components["schemas"]["PerUnitOut"] | null;
     };
     /**
      * FabricPatch
@@ -3253,6 +3319,30 @@ export interface components {
        */
       device_label: string;
     };
+    /** MarginFigures */
+    MarginFigures: {
+      /** Revenue */
+      revenue: number;
+      /** Cost */
+      cost: number;
+      /** Margin */
+      margin: number;
+      /** Margin Rate */
+      margin_rate: string | null;
+      /** Without Cost */
+      without_cost: number;
+    };
+    /** MarginsResponse */
+    MarginsResponse: {
+      period: components["schemas"]["PeriodOut"];
+      totals: components["schemas"]["MarginFigures"];
+      /** Articles */
+      articles: components["schemas"]["ArticleMarginOut"][];
+      /** Fabrics */
+      fabrics: components["schemas"]["FabricMarginOut"][];
+      /** Days */
+      days: components["schemas"]["DayMarginOut"][];
+    };
     /**
      * MatrixOrder
      * @enum {string}
@@ -3569,6 +3659,15 @@ export interface components {
       recorded_at: string;
       /** Recorded By */
       recorded_by: string;
+    };
+    /** PerUnitOut */
+    PerUnitOut: {
+      /** Price */
+      price: number;
+      /** Cost */
+      cost: number;
+      /** Margin */
+      margin: number;
     };
     /** PerformerResponse */
     PerformerResponse: {
@@ -9245,6 +9344,44 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["DashboardDetailResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  dashboard_margins_api_v1_shops__shop_id__dashboard_margins_get: {
+    parameters: {
+      query?: {
+        period?: components["schemas"]["PeriodKind"];
+        from?: string | null;
+        to?: string | null;
+      };
+      header: {
+        authorization?: string | null;
+        "x-device-id": string;
+      };
+      path: {
+        shop_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MarginsResponse"];
         };
       };
       /** @description Validation Error */

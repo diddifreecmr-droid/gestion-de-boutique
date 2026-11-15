@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 from app.application.reporting.use_cases.dashboard import ReadDashboard
 from app.application.reporting.use_cases.home import ReadHome
+from app.application.reporting.use_cases.margins import ReadMargins
 from app.application.reporting.use_cases.read_details import ReadDashboardDetail
 from app.application.security.policy import Policy
 from app.bootstrap.identity import IdentityModule
@@ -27,6 +28,7 @@ def build_reporting(identity: IdentityModule) -> ReportingModule:
         dashboard=dashboard,
         details=ReadDashboardDetail(uows, policy, clock),
         home=ReadHome(uows, policy, clock, dashboard),
+        margins=ReadMargins(uows, policy, clock),
         guard=identity.auth.guard,
     )
     return ReportingModule(http=http)
