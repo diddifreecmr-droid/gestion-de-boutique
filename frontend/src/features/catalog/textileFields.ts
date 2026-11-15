@@ -58,7 +58,10 @@ export function withChange(draft: FieldDraft, code: string, value: string): Fiel
 }
 
 /** Erreur propre au Textile : la longueur manque alors que l'article se vend au rouleau. */
-export function textileErrors(draft: FieldDraft, words: PieceWords = PIECE): Record<string, string> {
+export function textileErrors(
+  draft: FieldDraft,
+  words: PieceWords = PIECE,
+): Record<string, string> {
   if (soldByPiece(draft) && (draft[LENGTH] ?? "").trim() === "") {
     return { [LENGTH]: `Longueur ${words.of} : obligatoire pour la vente ${words.per}` };
   }

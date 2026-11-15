@@ -18,13 +18,16 @@ export function ArticleRows({
   role,
   items,
   onOpen,
+  label = "Articles trouvés",
 }: {
   role: CatalogRole;
   items: readonly ArticleResponse[];
   onOpen: (articleId: string) => void;
+  /** Nom de la liste (lecteurs d'écran) : « Couleurs de Djampar »… */
+  label?: string;
 }) {
   return (
-    <ListCard label="Articles trouvés">
+    <ListCard label={label}>
       {items.map((raw) => {
         const view = articleView(role, raw);
         return (

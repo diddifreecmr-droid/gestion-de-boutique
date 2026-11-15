@@ -108,8 +108,8 @@ function OffcutEntry({
     <section aria-label="Déclarer une chute" className="flex flex-col gap-4">
       <h2 className="m-0 text-title-sm font-semibold text-text">Déclarer une chute</h2>
       <p className="m-0 text-body text-text-muted">
-        Bout {words.of} trop court pour la vente. La chute sort du stock (motif « Chute »), comme
-        un ajustement : elle est notée au journal.
+        Bout {words.of} trop court pour la vente. La chute sort du stock (motif « Chute »), comme un
+        ajustement : elle est notée au journal.
       </p>
       {places.length > 1 && (
         <ChoiceChips

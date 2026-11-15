@@ -12,7 +12,8 @@ import {
 } from "../../shared/ui";
 import { ArticleRows } from "./ArticleRows";
 import { loadFailureMessage } from "./catalogErrors";
-import { articlePath, newArticlePath } from "./catalogPaths";
+import { articlePath, fabricPath, newArticlePath, newFabricPath } from "./catalogPaths";
+import { FabricGroupedRows } from "./FabricGroupedRows";
 import { catalogRights, type CatalogRole } from "./catalogRights";
 import { useActiveProfile } from "../../core/profile/activeProfile";
 import { listSearchHint } from "../../core/profile/vocabulary";
@@ -38,14 +39,27 @@ export function CatalogListPage({ shopId, role }: CatalogListPageProps) {
   const pages = useArticlePages(shopId, text, status);
   const profile = useActiveProfile();
   const { first } = pages;
+  /** Textile : le profil sert le champ « Tissu » (articles groupés, « Nouveau tissu »). */
+  const fabrics = profile.articleFields.some((spec) => spec.code === "fabric");
 
   return (
     <>
       <h1 className="m-0 text-title font-bold text-text">Articles</h1>
+      {catalogRights(role).edit && fabrics && (
+        <Button
+          size="lg"
+          fullWidth
+          icon={CirclePlus}
+          onClick={() => void navigate(newFabricPath(shopId))}
+        >
+          Nouveau tissu
+        </Button>
+      )}
       {catalogRights(role).edit && (
         <Button
           size="lg"
           fullWidth
+          variant={fabrics ? "secondary" : "primary"}
           icon={CirclePlus}
           onClick={() => void navigate(newArticlePath(shopId))}
         >
@@ -79,11 +93,20 @@ export function CatalogListPage({ shopId, role }: CatalogListPageProps) {
       )}
       {first.status === "ready" && first.value.items.length > 0 && (
         <>
-          <ArticleRows
-            role={role}
-            items={first.value.items}
-            onOpen={(id) => void navigate(articlePath(shopId, id))}
-          />
+          {fabrics ? (
+            <FabricGroupedRows
+              role={role}
+              items={first.value.items}
+              onOpen={(id) => void navigate(articlePath(shopId, id))}
+              onOpenFabric={(name) => void navigate(fabricPath(shopId, name))}
+            />
+          ) : (
+            <ArticleRows
+              role={role}
+              items={first.value.items}
+              onOpen={(id) => void navigate(articlePath(shopId, id))}
+            />
+          )}
           {pages.moreFailure?.kind === "message" && <InlineMessage text={pages.moreFailure.text} />}
           {first.value.next !== null && (
             <Button

@@ -4,7 +4,7 @@ import type { Role } from "../../core/auth/me";
 import { createHttpStock, StockContext } from "../../core/gateways/httpStock";
 import { useServices } from "../../core/services/servicesContext";
 import CatalogRoute from "../catalog/CatalogRoute";
-import { ARTICLE_PARAM } from "../catalog/catalogPaths";
+import { ARTICLE_PARAM, FABRIC_PARAM } from "../catalog/catalogPaths";
 import { AdjustmentPage } from "./AdjustmentPage";
 import { DamagedPage } from "./DamagedPage";
 import { InventoryPage } from "./InventoryPage";
@@ -34,7 +34,9 @@ function StockScreen({ shopId, role }: { shopId: string; role: StockRole }) {
   const [params] = useSearchParams();
   if (!isManager(role)) return <StockMatrixPage shopId={shopId} role={role} />;
   // La fiche et la création d'un article gardent les adresses du catalogue (`?article=`).
-  if (params.get(ARTICLE_PARAM) !== null) return <CatalogRoute shopId={shopId} role={role} />;
+  if (params.get(ARTICLE_PARAM) !== null || params.get(FABRIC_PARAM) !== null) {
+    return <CatalogRoute shopId={shopId} role={role} />;
+  }
   const view = params.get(VIEW_PARAM);
   if (view === VIEW.articles) {
     return (
