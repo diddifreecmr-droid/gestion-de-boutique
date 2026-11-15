@@ -31,13 +31,17 @@ export function removedTenths(line: LineDraft): number | null {
   return piecesTenths(line.quantity, piece.length_m);
 }
 
-/** Erreur de quantité d'une ligne Textile : longueur illisible, ou plus que le stock du lieu. */
+/**
+ * Erreur de quantité d'une ligne Textile : longueur illisible, ou plus que le stock du lieu
+ * quand la vente est bornée au stock (sinon la vente passe et le gérant régularise).
+ */
 export function quantityIssue(line: LineDraft): string | undefined {
   if (line.mode === "unit") return undefined;
   if (line.mode === "meter") {
     const length = parseLength(line.length);
     if (!length.ok) return length.error;
   }
+  if (line.available === null) return undefined; // vente jamais refusée (2026-11-15)
   const removed = removedTenths(line);
   const stock = meterStock(line.article);
   if (removed === null || removed <= stock) return undefined;

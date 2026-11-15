@@ -51,6 +51,9 @@ const field = (code: string, label: string, kind = "text", required = false): Fi
   choices: code === "unit" ? ["METER", "PIECE"] : [],
 });
 
+/** Prêt-à-porter et Textile (2026-11-15) : stock réservé au gérant, vente jamais refusée. */
+const OWNER_STOCK = { refused_when_out_of_stock: false, stock_reserved_to_owner: true };
+
 const APPAREL_FIELDS = {
   profile_label: "Prêt-à-porter",
   article_fields: [
@@ -60,8 +63,9 @@ const APPAREL_FIELDS = {
     field("type", "Type"),
     field("brand", "Marque"),
   ],
-  sale_fields: [field("size", "Taille"), field("color", "Couleur")],
+  sale_fields: [], // simplifié (2026-11-15) : ni taille ni couleur à la vente
   stock_units: ["PIECE"],
+  ...OWNER_STOCK,
 };
 
 const TEXTILE_FIELDS = {
@@ -69,13 +73,17 @@ const TEXTILE_FIELDS = {
   article_fields: [
     field("name", "Nom", "text", true),
     field("reference", "Référence"),
+    field("fabric", "Tissu"),
+    field("color", "Couleur"),
     field("type", "Type"),
     field("unit", "Unité", "choice", true),
-    field("sold_by_piece", "Vente à la pièce", "boolean"),
-    field("piece_length_m", "Longueur de la pièce (m)", "decimal"),
+    field("sold_by_piece", "Vente au rouleau", "boolean"),
+    field("piece_length_m", "Longueur du rouleau (m)", "decimal"),
   ],
   sale_fields: [field("length_m", "Longueur (m)", "decimal")],
   stock_units: ["METER", "PIECE"],
+  ...OWNER_STOCK,
+  piece_label: "rouleau",
 };
 
 /** Modules de départ d'un profil : Motos tous (disponibles), les autres de même ici. */

@@ -17,6 +17,8 @@ import { articleTitle } from "./articleTitle";
 import { inStock, meterStock } from "./draft";
 import { articleSearchHint } from "./profileLabels";
 import { metersText } from "./textile";
+import { capped, statusOf } from "./saleStock";
+import { StockStatusBadge } from "./StockStatusBadge";
 import { useLookup } from "./useLookup";
 
 /** Nombre d'articles proposés (plus vendus ou résultats). */
@@ -87,21 +89,35 @@ export function ArticlePicker(props: ArticlePickerProps) {
   );
 }
 
-/** Article non vendable ici : une pastille dit pourquoi ; sinon la ligne s'ouvre. */
+/**
+ * Motos : un article en rupture ne s'ouvre pas (la pastille dit pourquoi). Vente jamais refusée
+ * (2026-11-15) : la ligne s'ouvre toujours ; sans chiffre servi, la pastille dit l'état du stock.
+ */
 function pickState(article: CatalogArticle, onPick: (article: CatalogArticle) => void) {
-  if (!inStock(article)) return { badge: <Badge status="danger">Rupture</Badge> };
-  return {
+  const open = {
     onOpen: () => {
       onPick(article);
     },
   };
+  if (article.available === null) {
+    return { ...open, badge: <StockStatusBadge status={statusOf(article, true)} /> };
+  }
+  if (inStock(article)) return open;
+  const badge = <Badge status="danger">Rupture</Badge>;
+  return capped(article) ? { badge } : { ...open, badge };
 }
 
-/** Stock du lieu : « 4 », ou en mètres au mètre (« 54,9 m »). */
-function stockOf(article: CatalogArticle): string {
-  if (article.sale_mode === "meter") return metersText(meterStock(article));
-  return formatQuantity(article.available);
+/** Stock du lieu : « 4 », ou en mètres au mètre (« 54,9 m ») ; rien sans chiffre servi. */
+function stockOf(article: CatalogArticle, locationName: string): string | undefined {
+  if (article.available === null) return undefined;
+  const text =
+    article.sale_mode === "meter"
+      ? metersText(meterStock(article))
+      : formatQuantity(article.available);
+  return `Stock à ${locationName} : ${text}`;
 }
+
+const withSubtitle = (subtitle: string | undefined) => (subtitle === undefined ? {} : { subtitle });
 
 function Results({
   label,
@@ -134,7 +150,7 @@ function Results({
         <ListCardRow
           key={article.id}
           title={articleTitle(article.name)}
-          subtitle={`Stock à ${locationName} : ${stockOf(article)}`}
+          {...withSubtitle(stockOf(article, locationName))}
           {...(article.base_price === null ? {} : { amount: article.base_price })}
           {...pickState(article, onPick)}
         />

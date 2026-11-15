@@ -11,6 +11,7 @@ import {
   resolveShortcut,
   shortcutLabel,
 } from "./textile";
+import { usePieceWords } from "./saleStock";
 
 export interface TextileQuantityProps {
   line: LineDraft;
@@ -21,12 +22,7 @@ export interface TextileQuantityProps {
   onChange: (line: LineDraft) => void;
 }
 
-const MODES = [
-  { value: "meter", label: "Au mètre" },
-  { value: "piece", label: "À la pièce" },
-] as const;
-
-type TextileMode = (typeof MODES)[number]["value"];
+type TextileMode = "meter" | "piece";
 
 function textileMode(line: LineDraft): TextileMode {
   if (line.mode === "meter" || line.mode === "piece") return line.mode;
@@ -50,8 +46,13 @@ function activeShortcut(line: LineDraft, shortcuts: readonly SaleShortcut[]): st
  * pièce, nombre de pièces et longueur retirée du stock (au dixième, QC-3).
  */
 export function TextileQuantity({ line, shortcuts, error, onChange }: TextileQuantityProps) {
+  const words = usePieceWords();
   const mode = textileMode(line);
   const piece = line.article.piece;
+  const modes = [
+    { value: "meter", label: "Au mètre" },
+    { value: "piece", label: words.perTitle },
+  ] as const;
   const pick = (code: string) => {
     const shortcut = shortcuts.find((one) => one.code === code);
     if (shortcut === undefined) throw new Error(`Raccourci inconnu : « ${code} »`);
@@ -63,8 +64,8 @@ export function TextileQuantity({ line, shortcuts, error, onChange }: TextileQua
     <>
       {piece !== undefined && (
         <SegmentedControl
-          label="Vendre au mètre ou à la pièce"
-          options={MODES}
+          label={`Vendre au mètre ou ${words.per}`}
+          options={modes}
           value={mode}
           onChange={(next) => {
             onChange(withMode(line, next));
@@ -101,17 +102,21 @@ export function TextileQuantity({ line, shortcuts, error, onChange }: TextileQua
         <>
           <QuantityStepper
             inline
-            label="Pièces"
+            label={`${words.title}${words.many.slice(words.one.length)}`}
             value={line.quantity}
-            max={Math.max(line.quantity, maxPieces(meterStock(line.article), piece.length_m))}
+            {...(line.available === null
+              ? {}
+              : {
+                  max: Math.max(line.quantity, maxPieces(meterStock(line.article), piece.length_m)),
+                })}
             error={error}
             onChange={(quantity) => {
               onChange({ ...line, quantity });
             }}
           />
           <p className="m-0 text-body text-text-muted">
-            {piecesText(line.quantity)} = {metersText(piecesTenths(line.quantity, piece.length_m))}{" "}
-            retirés du stock
+            {piecesText(line.quantity, words)} ={" "}
+            {metersText(piecesTenths(line.quantity, piece.length_m))} retirés du stock
           </p>
         </>
       )}

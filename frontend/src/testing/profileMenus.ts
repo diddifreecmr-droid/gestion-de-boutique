@@ -73,7 +73,7 @@ const APPAREL: Partial<Record<Role, Entry[]>> = {
       e("settings", "Réglages", "core"),
     ]),
   ],
-  seller: SELLER,
+  seller: SELLER.filter((entry) => entry !== STOCK), // stock réservé au gérant (2026-11-15)
   accountant: [
     HOME,
     e("purchases", "Achats", "purchases"),

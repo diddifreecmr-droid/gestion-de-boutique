@@ -44,16 +44,6 @@ function details(units: readonly UnitDetail[]): SoldDetailInput[] {
     .filter((detail) => Object.values(detail).some((value) => value !== null));
 }
 
-/**
- * Taille et couleur de la ligne (Prêt-à-porter, § 7.4) : une seule entrée pour toute la ligne
- * (le serveur en accepte au plus une par unité) ; rien si ni l'une ni l'autre n'est précisée.
- */
-function lineAttributes(line: LineDraft): SoldDetailInput[] {
-  const size = orNull(line.size);
-  const color = orNull(line.color);
-  return size === null && color === null ? [] : [{ size, color }];
-}
-
 /** Quantité envoyée : unités ou pièces (« 2 »), mètres au dixième (« 2.5 »). */
 function lineQuantity(line: LineDraft): string {
   if (line.mode !== "meter") return String(line.quantity);
@@ -116,7 +106,7 @@ export function buildCommand(
         sale_mode: line.mode,
         quantity: lineQuantity(line),
         unit_price: line.unitPrice,
-        details: [...lineAttributes(line), ...details(line.units)],
+        details: details(line.units),
       };
     }),
     payments: payments(draft, total),

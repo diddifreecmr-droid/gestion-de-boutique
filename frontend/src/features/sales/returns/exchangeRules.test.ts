@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ApiError } from "../../../core/api/errors";
 import { profileFromResponse } from "../../../core/profile/servedProfile";
 import { servedProfile } from "../../../testing/servedProfile";
-import { attributesText, lineFieldsOf, sizeChoices, SHOE_SIZES } from "../lineFields";
+import { lineFieldsOf } from "../lineFields";
 import { addDays, deadlineText, exchangeAccess } from "./exchangeRules";
 import { EMPLOYEE_EXCHANGE_OFF, returnErrorMessage } from "./returnErrorMessage";
 
@@ -86,20 +86,9 @@ describe("refus du serveur dits en clair", () => {
 });
 
 describe("champs d'une ligne selon le profil", () => {
-  it("Motos : détails par unité ; Prêt-à-porter : taille et couleur ; Textile : rien", () => {
-    expect(lineFieldsOf(["color", "chassis_number", "engine_number"])).toEqual({
-      units: true,
-      size: false,
-      color: false,
-    });
-    expect(lineFieldsOf(["size", "color"])).toEqual({ units: false, size: true, color: true });
-    expect(lineFieldsOf(["length_m"])).toEqual({ units: false, size: false, color: false });
-  });
-
-  it("pointures pour un article chaussant ; résumé « T. M · Blanc »", () => {
-    expect(sizeChoices("Baskets toile")).toBe(SHOE_SIZES);
-    expect(sizeChoices("Chemise lin")).toContain("XXL");
-    expect(attributesText({ size: "M", color: "Blanc" })).toBe("T. M · Blanc");
-    expect(attributesText({ size: " ", color: "Rouge" })).toBe("Rouge");
+  it("Motos : détails par unité ; Prêt-à-porter simplifié et Textile : rien (2026-11-15)", () => {
+    expect(lineFieldsOf(["color", "chassis_number", "engine_number"])).toEqual({ units: true });
+    expect(lineFieldsOf([])).toEqual({ units: false });
+    expect(lineFieldsOf(["length_m"])).toEqual({ units: false });
   });
 });

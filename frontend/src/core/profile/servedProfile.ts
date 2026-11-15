@@ -71,8 +71,19 @@ export function profileFromResponse(response: ProfileResponse, role: Role): Shop
     articleFields: response.article_fields,
     saleFields: response.sale_fields,
     stockUnits: response.stock_units,
+    pieceLabel: servedPieceLabel(response.piece_label),
+    stock: {
+      refusedWhenOut: response.refused_when_out_of_stock,
+      reservedToOwner: response.stock_reserved_to_owner,
+    },
     exchange: exchangeRules(response),
   };
+}
+
+/** Mot de la pièce servi ; vide = rupture de contrat (les libellés en dépendent). */
+function servedPieceLabel(label: string): string {
+  if (label.trim() === "") throw new Error("Profil servi : piece_label vide");
+  return label.trim();
 }
 
 /**

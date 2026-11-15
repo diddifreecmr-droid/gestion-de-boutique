@@ -1,8 +1,10 @@
 import { AlertTriangle } from "lucide-react";
 import { formatMoney } from "../../shared/format";
 import { AmountField } from "../../shared/ui";
+import type { PieceWords } from "../../core/profile/pieceWords";
 import { pricesOf, type LineDraft } from "./draft";
 import { lineTotal, type LineIssues } from "./saleChecks";
+import { usePieceWords } from "./saleStock";
 import { belowMinimumText } from "./warningText";
 
 export interface LinePriceProps {
@@ -10,7 +12,7 @@ export interface LinePriceProps {
   issues: LineIssues | undefined;
   /** Erreur du prix, déjà filtrée par « montrer les erreurs ». */
   error: string | undefined;
-  /** Panier à la ligne (§ 7.4) : « Prix unitaire », base et minimum, total de la ligne. */
+  /** Ligne à quantité libre (hors Motos) : « Prix unitaire », base et minimum, total. */
   basket: boolean;
   onChange: (unitPrice: number | null) => void;
 }
@@ -24,9 +26,9 @@ function priceHint(line: LineDraft): string | undefined {
   return parts.length === 0 ? undefined : parts.join(" · ");
 }
 
-function priceLabel(line: LineDraft, basket: boolean): string {
+function priceLabel(line: LineDraft, basket: boolean, words: PieceWords): string {
   if (line.mode === "meter") return "Prix au mètre";
-  if (line.mode === "piece") return "Prix de la pièce";
+  if (line.mode === "piece") return `Prix ${words.of}`;
   if (basket) return "Prix unitaire";
   return line.quantity > 1 ? `Prix d'une ${line.article.unit_label}` : "Prix";
 }
@@ -38,11 +40,12 @@ function priceLabel(line: LineDraft, basket: boolean): string {
  * mètre ou de la pièce, et le total de la ligne calculé dessous.
  */
 export function LinePrice({ line, issues, error, basket, onChange }: LinePriceProps) {
+  const words = usePieceWords();
   const detailed = basket || line.mode !== "unit";
   return (
     <>
       <AmountField
-        label={priceLabel(line, basket)}
+        label={priceLabel(line, basket, words)}
         value={line.unitPrice}
         error={error}
         hint={detailed ? priceHint(line) : undefined}

@@ -4,10 +4,9 @@ import type { SaleShortcut } from "../../core/gateways/catalogContract";
 import { Button } from "../../shared/ui";
 import { ArticlePicker } from "./ArticlePicker";
 import { newLine, type LineDraft } from "./draft";
-import { isBasket, UNIT_FIELDS, type LineFields } from "./lineFields";
-import { lineBlocking, type LineIssues } from "./saleChecks";
+import { UNIT_FIELDS, type LineFields } from "./lineFields";
+import type { LineIssues } from "./saleChecks";
 import { SaleLineCard } from "./SaleLineCard";
-import { SaleLineSummary } from "./SaleLineSummary";
 
 export interface SaleBasketProps {
   shopId: string;
@@ -27,81 +26,48 @@ export interface SaleBasketProps {
 }
 
 /**
- * Lignes de la vente et recherche d'article. Panier à la ligne (Prêt-à-porter, § 7.4) : un
- * article peut revenir (autre taille, autre couleur) tant qu'il en reste ; seule la dernière
- * ligne ajoutée est ouverte, les autres se replient (une ligne en erreur reste ouverte).
+ * Lignes de la vente et recherche d'article : une liste d'articles, chacun avec sa quantité et
+ * son prix négocié (Prêt-à-porter simplifié, 2026-11-15). Un article déjà dans la vente n'est
+ * plus proposé : on change sa quantité.
  */
 export function SaleBasket(props: SaleBasketProps) {
   const { shopId, location, lines, issues, showErrors, onLines, searchHint } = props;
   const { fields = UNIT_FIELDS, removeLast = false } = props;
-  const basket = isBasket(fields);
   const [picking, setPicking] = useState(false);
-  const [openKey, setOpenKey] = useState<string | null>(lines.at(-1)?.key ?? null);
   const showPicker = picking || lines.length === 0;
-  const takenBy = (article: string, except: string) =>
-    lines
-      .filter((l) => l.article.id === article && l.key !== except)
-      .reduce((sum, l) => sum + l.quantity, 0);
-  const exhausted = lines
-    .filter((l) => !basket || takenBy(l.article.id, "") >= l.available)
-    .map((l) => l.article.id);
 
   return (
     <>
-      {lines.map((line) => {
-        const open = !basket || lines.length === 1 || line.key === openKey;
-        if (!open && !(showErrors && lineBlocking(issues[line.key]))) {
-          return (
-            <SaleLineSummary
-              key={line.key}
-              line={line}
-              onOpen={() => {
-                setOpenKey(line.key);
-              }}
-            />
-          );
-        }
-        return (
-          <SaleLineCard
-            key={line.key}
-            line={line}
-            locationName={location.name}
-            issues={issues[line.key]}
-            showErrors={showErrors}
-            fields={fields}
-            shortcuts={props.shortcuts ?? []}
-            reserved={basket ? takenBy(line.article.id, line.key) : 0}
-            onChange={(next) => {
-              onLines(lines.map((l) => (l.key === line.key ? next : l)));
-            }}
-            {...(basket && lines.length > 1 && line.key === openKey
-              ? {
-                  onCollapse: () => {
-                    setOpenKey(null);
-                  },
-                }
-              : {})}
-            {...(removeLast || lines.length > 1
-              ? {
-                  onRemove: () => {
-                    onLines(lines.filter((l) => l.key !== line.key));
-                  },
-                }
-              : {})}
-          />
-        );
-      })}
+      {lines.map((line) => (
+        <SaleLineCard
+          key={line.key}
+          line={line}
+          locationName={location.name}
+          issues={issues[line.key]}
+          showErrors={showErrors}
+          fields={fields}
+          shortcuts={props.shortcuts ?? []}
+          onChange={(next) => {
+            onLines(lines.map((l) => (l.key === line.key ? next : l)));
+          }}
+          {...(removeLast || lines.length > 1
+            ? {
+                onRemove: () => {
+                  onLines(lines.filter((l) => l.key !== line.key));
+                },
+              }
+            : {})}
+        />
+      ))}
       {showPicker ? (
         <ArticlePicker
           shopId={shopId}
           locationId={location.id}
           locationName={location.name}
           {...(searchHint === undefined ? {} : { hint: searchHint })}
-          excluded={[...new Set(exhausted)]}
+          excluded={[...new Set(lines.map((l) => l.article.id))]}
           onPick={(article) => {
-            const line = newLine(article);
-            onLines([...lines, line]);
-            setOpenKey(line.key);
+            onLines([...lines, newLine(article)]);
             setPicking(false);
           }}
           {...(lines.length > 0
