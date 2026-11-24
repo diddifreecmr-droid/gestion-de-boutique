@@ -96,6 +96,7 @@ export function receiptOf(sale: SaleResult, sequence: number): Receipt {
       niu: null,
       rccm: null,
       show_logo: false,
+      logo_url: null,
     },
     sale_id: sale.id,
     number: sale.number,

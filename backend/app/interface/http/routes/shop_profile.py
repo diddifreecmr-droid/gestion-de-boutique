@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 
 from app.application.security.actor import Actor
 from app.application.shops.use_cases.shop_settings import SettingsView
+from app.domain.catalog.ids import AttachmentId
 from app.domain.shops.ids import LocationId
 from app.interface.http.presenters.shops import profile_response, settings_response
 from app.interface.http.routes.shop_components import ShopsComponents
@@ -16,13 +17,13 @@ def _settings(view: SettingsView) -> SettingsResponse:
     return settings_response(view.shop, view.values, view.version)
 
 
-def build_shop_profile_router(shops: ShopsComponents) -> APIRouter:
+def build_shop_profile_router(shops: ShopsComponents, api_prefix: str) -> APIRouter:
     router = APIRouter(tags=["shop"])
     Member = Annotated[Actor, Depends(shops.guard.current_actor)]  # noqa: N806
 
     @router.get("/shops/{shop_id}/profile")
     def profile(actor: Member) -> ProfileResponse:
-        return profile_response(shops.profile.execute(actor))
+        return profile_response(shops.profile.execute(actor), api_prefix)
 
     @router.get("/shops/{shop_id}/settings")
     def get_settings(actor: Member) -> SettingsResponse:
@@ -36,6 +37,9 @@ def build_shop_profile_router(shops: ShopsComponents) -> APIRouter:
         location = patch.get("reception_location_id")
         if isinstance(location, str):
             patch["reception_location_id"] = LocationId.parse(location)
+        logo = patch.get("logo_attachment_id")
+        if isinstance(logo, str):
+            patch["logo_attachment_id"] = AttachmentId.parse(logo)
         return _settings(shops.settings.update(actor, patch, body.version))
 
     return router

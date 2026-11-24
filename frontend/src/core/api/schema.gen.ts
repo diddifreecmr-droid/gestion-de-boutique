@@ -3578,7 +3578,8 @@ export interface components {
      * @description Élément auquel la pièce est rattachée ; il fixe les droits de lecture et d'envoi.
      * @enum {string}
      */
-    OwnerType: "customer" | "receivable" | "article" | "expense" | "purchase" | "stock_adjustment";
+    OwnerType:
+      "customer" | "receivable" | "article" | "expense" | "purchase" | "stock_adjustment" | "shop";
     /** PaymentModeCreateRequest */
     PaymentModeCreateRequest: {
       /** Id */
@@ -3846,6 +3847,7 @@ export interface components {
       employee_exchange_allowed: boolean;
       /** Default Location Id */
       default_location_id: string | null;
+      logo: components["schemas"]["ShopLogoResponse"] | null;
       /** Entitlements */
       entitlements: {
         [key: string]: boolean;
@@ -4061,6 +4063,8 @@ export interface components {
       rccm: string | null;
       /** Show Logo */
       show_logo: boolean;
+      /** Logo Url */
+      logo_url: string | null;
     };
     /** ReceiptLineResponse */
     ReceiptLineResponse: {
@@ -4791,6 +4795,8 @@ export interface components {
       transfer_in_transit_days?: number | null;
       /** Reception Location Id */
       reception_location_id?: string | null;
+      /** Logo Attachment Id */
+      logo_attachment_id?: string | null;
       /** City */
       city?: string | null;
       /** Phone */
@@ -4840,6 +4846,8 @@ export interface components {
       transfer_in_transit_days: number | null;
       /** Reception Location Id */
       reception_location_id: string | null;
+      /** Logo Attachment Id */
+      logo_attachment_id: string | null;
       header: components["schemas"]["ShopHeaderResponse"];
     };
     /** ShopHeaderResponse */
@@ -4856,6 +4864,16 @@ export interface components {
       niu: string | null;
       /** Rccm */
       rccm: string | null;
+    };
+    /** ShopLogoResponse */
+    ShopLogoResponse: {
+      /** Url */
+      url: string;
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string;
     };
     /** ShopMembershipResponse */
     ShopMembershipResponse: {

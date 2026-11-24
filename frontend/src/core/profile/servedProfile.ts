@@ -9,6 +9,7 @@ import { parseRole, type Role } from "../auth/me";
 import { menuRoute } from "./menuRoutes";
 import { parseModule } from "./modules";
 import { MORE_KEY, type MenuEntry, type RoleChoice, type ShopProfile } from "./types";
+import { servedLogoPath } from "./shopLogoContext";
 
 export type ProfileResponse = components["schemas"]["ProfileResponse"];
 type ServedEntry = components["schemas"]["MenuEntryResponse"];
@@ -74,6 +75,7 @@ export function profileFromResponse(response: ProfileResponse, role: Role): Shop
     pieceLabel: servedPieceLabel(response.piece_label),
     stock: stockRules(response),
     exchange: exchangeRules(response),
+    logoPath: servedLogoPath(response.logo),
   };
 }
 

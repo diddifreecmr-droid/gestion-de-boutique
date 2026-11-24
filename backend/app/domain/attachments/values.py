@@ -39,6 +39,7 @@ class OwnerType(StrEnum):
     EXPENSE = "expense"
     PURCHASE = "purchase"
     STOCK_ADJUSTMENT = "stock_adjustment"
+    SHOP = "shop"  # logo de la boutique (réglages), sans élément lié : `owner_id` vide
 
     @property
     def is_personal(self) -> bool:
@@ -60,6 +61,9 @@ class FileFormat(StrEnum):
     def extension(self) -> str:
         return _EXTENSIONS[self]
 
+
+IMAGE_FORMATS = frozenset({FileFormat.JPEG, FileFormat.PNG})
+"""Formats d'une image affichée (logo de la boutique) : JPG ou PNG, jamais PDF."""
 
 _EXTENSIONS = {FileFormat.JPEG: "jpg", FileFormat.PNG: "png", FileFormat.PDF: "pdf"}
 _SIGNATURES = (

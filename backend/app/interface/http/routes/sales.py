@@ -41,7 +41,7 @@ from app.interface.http.schemas.sales import ErrorReportResponse, SalePageRespon
 IdQuery = Annotated[str | None, Query(max_length=64)]
 
 
-def build_sales_router(sales: SalesComponents) -> APIRouter:
+def build_sales_router(sales: SalesComponents, api_prefix: str) -> APIRouter:
     router = APIRouter(tags=["sales"])
     Member = Annotated[Actor, Depends(sales.guard.current_actor)]  # noqa: N806
     sparse: dict[str, Any] = {"response_model_exclude_unset": True}
@@ -140,6 +140,7 @@ def build_sales_router(sales: SalesComponents) -> APIRouter:
 
     @router.get("/shops/{shop_id}/sales/{sale_id}/receipt")
     def get_receipt(actor: Member, sale_id: str) -> SaleReceiptResponse:
-        return receipt_response(sales.receipt.execute(actor, SaleId.parse(sale_id)))
+        receipt = sales.receipt.execute(actor, SaleId.parse(sale_id))
+        return receipt_response(receipt, api_prefix)
 
     return router

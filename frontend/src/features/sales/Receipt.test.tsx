@@ -97,6 +97,7 @@ const RECEIPT: Receipt = {
     niu: "M0123456789",
     rccm: "RC/GRA/2024/B/12",
     show_logo: false,
+    logo_url: null,
   },
   sale_id: "s1",
   number: "V-000130",

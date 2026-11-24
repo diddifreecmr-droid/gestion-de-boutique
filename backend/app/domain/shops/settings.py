@@ -11,6 +11,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from app.domain.audit.values import EntityRef, Performer, Scalar
+from app.domain.catalog.ids import AttachmentId
 from app.domain.profiles.printing import PrintLayout, ReceiptFormat
 from app.domain.shared.errors import ValidationFailed
 from app.domain.shared.events import EventCollector
@@ -62,6 +63,8 @@ class SettingsValues:
     truck_silent_hours: int | None = None
     transfer_in_transit_days: int | None = 7
     reception_location_id: LocationId | None = None
+    logo_attachment_id: AttachmentId | None = None
+    """Logo de la boutique (pièce jointe `shop`, JPG ou PNG) ; vide : logo générique."""
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "receipt_format", ReceiptFormat(self.receipt_format))
@@ -85,6 +88,10 @@ class SettingsValues:
         location = self.reception_location_id
         if location is not None and not isinstance(location, LocationId):
             msg = "reception_location_id doit être un LocationId"
+            raise TypeError(msg)
+        logo = self.logo_attachment_id
+        if logo is not None and not isinstance(logo, AttachmentId):
+            msg = "logo_attachment_id doit être un AttachmentId"
             raise TypeError(msg)
 
     def layout(self) -> PrintLayout:

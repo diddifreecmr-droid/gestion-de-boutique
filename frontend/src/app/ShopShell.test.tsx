@@ -94,7 +94,7 @@ describe("coquille — compte et bannières", () => {
     "%s : « Compte » dans la barre du haut, à droite de la cloche, ouvre « Mon compte »",
     async (role) => {
       const { user, router, container } = openAs(role);
-      await screen.findByText("Motos Garoua");
+      await within(await screen.findByRole("banner")).findByText("Motos Garoua");
       const buttons = topBar().getAllByRole("button");
       expect(buttons.map((b) => b.getAttribute("aria-label"))).toEqual([
         "Alertes, aucune nouvelle",
@@ -111,7 +111,7 @@ describe("coquille — compte et bannières", () => {
 
   it("« Mon compte » (barre du haut) : déconnexion après confirmation", async () => {
     const { user, router } = openAs("seller");
-    await screen.findByText("Motos Garoua");
+    await within(await screen.findByRole("banner")).findByText("Motos Garoua");
     expect(
       within(screen.getByRole("main")).queryByRole("button", { name: "Mon compte" }),
     ).toBeNull();
@@ -142,7 +142,7 @@ describe("coquille — compte et bannières", () => {
 
   it("hors ligne : « Connexion nécessaire » sous la barre du haut", async () => {
     openAs("seller");
-    await screen.findByText("Motos Garoua");
+    await within(await screen.findByRole("banner")).findByText("Motos Garoua");
     act(() => {
       window.dispatchEvent(new Event("offline"));
     });
@@ -155,7 +155,7 @@ describe("coquille — compte et bannières", () => {
 
   it("nouvelle version en attente : bannière « Mettre à jour »", async () => {
     openAs("seller");
-    await screen.findByText("Motos Garoua");
+    await within(await screen.findByRole("banner")).findByText("Motos Garoua");
     act(() => {
       updateStoreForTests.set({} as ServiceWorker);
     });

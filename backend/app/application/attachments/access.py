@@ -8,6 +8,7 @@
 | dépense | `expenses` | `EXPENSE_CREATE` | `EXPENSE_READ` | — |
 | achat | `purchases` | `PURCHASE_WRITE` | `PURCHASE_READ` | — |
 | ajustement de stock | `catalog` | `STOCK_ADJUST` | `STOCK_HISTORY_READ` | — |
+| boutique (logo) | `core` | `SETTINGS_MANAGE` (gérant) | `HOME_READ` (tout membre) | — |
 
 Module de l'élément lié éteint pour la boutique → 403 `MODULE_DISABLED` d'abord (§ 15.1).
 
@@ -60,6 +61,7 @@ RIGHTS: Mapping[OwnerType, OwnerRights] = MappingProxyType(
         OwnerType.EXPENSE: OwnerRights(P.EXPENSE_CREATE, P.EXPENSE_READ, M.EXPENSES),
         OwnerType.PURCHASE: OwnerRights(P.PURCHASE_WRITE, P.PURCHASE_READ, M.PURCHASES),
         OwnerType.STOCK_ADJUSTMENT: OwnerRights(P.STOCK_ADJUST, P.STOCK_HISTORY_READ, M.CATALOG),
+        OwnerType.SHOP: OwnerRights(P.SETTINGS_MANAGE, P.HOME_READ, M.CORE),
     }
 )
 if set(RIGHTS) != set(OwnerType):  # tout nouvel élément lié doit déclarer ses droits

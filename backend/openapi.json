@@ -16985,7 +16985,8 @@
           "article",
           "expense",
           "purchase",
-          "stock_adjustment"
+          "stock_adjustment",
+          "shop"
         ],
         "title": "OwnerType",
         "description": "Élément auquel la pièce est rattachée ; il fixe les droits de lecture et d'envoi."
@@ -17797,6 +17798,16 @@
             ],
             "title": "Default Location Id"
           },
+          "logo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShopLogoResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "entitlements": {
             "additionalProperties": {
               "type": "boolean"
@@ -17830,6 +17841,7 @@
           "exchange_days",
           "employee_exchange_allowed",
           "default_location_id",
+          "logo",
           "entitlements"
         ],
         "title": "ProfileResponse"
@@ -18506,6 +18518,17 @@
           "show_logo": {
             "type": "boolean",
             "title": "Show Logo"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
           }
         },
         "type": "object",
@@ -18516,7 +18539,8 @@
           "address",
           "niu",
           "rccm",
-          "show_logo"
+          "show_logo",
+          "logo_url"
         ],
         "title": "ReceiptHeader"
       },
@@ -20948,6 +20972,18 @@
             ],
             "title": "Reception Location Id"
           },
+          "logo_attachment_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Attachment Id"
+          },
           "city": {
             "anyOf": [
               {
@@ -21125,6 +21161,17 @@
             ],
             "title": "Reception Location Id"
           },
+          "logo_attachment_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Attachment Id"
+          },
           "header": {
             "$ref": "#/components/schemas/ShopHeaderResponse"
           }
@@ -21150,6 +21197,7 @@
           "truck_silent_hours",
           "transfer_in_transit_days",
           "reception_location_id",
+          "logo_attachment_id",
           "header"
         ],
         "title": "SettingsResponse"
@@ -21213,6 +21261,26 @@
           "rccm"
         ],
         "title": "ShopHeaderResponse"
+      },
+      "ShopLogoResponse": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "url",
+          "expires_at"
+        ],
+        "title": "ShopLogoResponse"
       },
       "ShopMembershipResponse": {
         "properties": {

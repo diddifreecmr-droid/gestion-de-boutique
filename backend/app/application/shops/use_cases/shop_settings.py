@@ -5,7 +5,8 @@ téléphone, adresse, NIU, RCCM). Modification **partielle** : seuls les champs 
 (un champ facultatif envoyé à `null` est effacé), avec la `version` lue (409 sinon). Chaque
 champ modifié est inscrit au journal avec son avant/après. Changer le format du reçu sans
 fournir la mise en page reprend celle du profil d'impression du format (specs § 9.1). Le lieu
-de réception des achats (Q-01) doit être un lieu actif de la boutique.
+de réception des achats (Q-01) doit être un lieu actif de la boutique ; le logo
+(`logo_attachment_id`, `null` pour le retirer) une image JPG ou PNG de la boutique.
 """
 
 from collections.abc import Mapping
@@ -18,6 +19,7 @@ from app.application.security.actor import Actor
 from app.application.security.permissions import Permission
 from app.application.security.policy import Policy
 from app.application.shops.context import actor_shop, performer_of, require_version
+from app.application.shops.logo import require_logo
 from app.application.shops.ports import LocationRepository, ShopRepository, ShopSettingsRepository
 from app.domain.identity.phone import PhoneNumber
 from app.domain.profiles.printing import ReceiptFormat, print_profile_of
@@ -97,6 +99,9 @@ class ShopSettingsUseCase:
             if not LocationRepository.within(uow).get(location).active:
                 msg = "Le lieu de réception doit être un lieu actif"
                 raise ValidationFailed(msg, details={"field": "reception_location_id"})
+        logo = changes.get("logo_attachment_id")
+        if logo is not None:
+            require_logo(uow, logo)
         return replace(current, **changes)
 
     @staticmethod

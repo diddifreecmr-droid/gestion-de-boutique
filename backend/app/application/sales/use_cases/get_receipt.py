@@ -4,9 +4,11 @@ Chaque demande **est** une impression : elle est inscrite (`ReceiptPrint`, journ
 avec son rang ; dès la 2ᵉ, le reçu porte « Duplicata » (Q-25 tranchée). Le reçu d'une vente
 annulée porte « Annulé ». Portée : le vendeur ne lit que les reçus de ses ventes (404 sinon) ;
 comptable et chauffeur : 403 (RG-D03). Le nom du vendeur vient du compte (plateforme).
+Logo (si « afficher le logo » et un logo réglé) : lien signé court, `shops/logo.py`.
 Lignes « à la pièce » : la longueur de la pièce est relue sur l'article (`quantity_label.py`).
 """
 
+from dataclasses import replace
 from decimal import Decimal
 
 from app.application.catalog.ports import ArticleRepository
@@ -21,6 +23,7 @@ from app.application.sales.use_cases.read_sales import seller_scope
 from app.application.security.actor import Actor
 from app.application.security.policy import Policy
 from app.application.shops.context import actor_shop, performer_of
+from app.application.shops.logo import LogoLinks
 from app.application.shops.ports import (
     PaymentModeRepository,
     ShopRepository,
@@ -41,11 +44,13 @@ class GetReceipt:
         platform: IdentityUnitOfWorkFactory,
         policy: Policy,
         clock: Clock,
+        logos: LogoLinks | None = None,
     ) -> None:
         self._uow_factory = uow_factory
         self._platform = platform
         self._policy = policy
         self._clock = clock
+        self._logos = logos
 
     def execute(self, actor: Actor, sale_id: SaleId) -> Receipt:
         seller = seller_scope(self._policy, actor)
@@ -77,7 +82,7 @@ class GetReceipt:
             settings = ShopSettingsRepository.within(uow).current().values
             lengths = _piece_lengths(uow, sale)
             uow.commit()
-        return build_receipt(
+        receipt = build_receipt(
             shop=shop,
             settings=settings,
             sale=sale,
@@ -88,6 +93,9 @@ class GetReceipt:
             printed_at=now,
             piece_lengths=lengths,
         )
+        if self._logos is None or not settings.show_logo:
+            return receipt
+        return replace(receipt, logo=self._logos.link(shop.id, settings))
 
 
 def _piece_lengths(uow: UnitOfWork, sale: Sale) -> dict[ArticleId, Decimal | None]:

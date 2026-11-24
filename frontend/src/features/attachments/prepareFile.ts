@@ -4,6 +4,7 @@
  * - photo (tout format que le navigateur sait lire : JPG, PNG, WebP, HEIC selon l'appareil)
  *   → réduite à 1600 px au plus sur son grand côté, ré-encodée en JPEG qualité 0,7 ;
  * - PDF → envoyé tel quel s'il fait 5 Mo au plus ;
+ * - logo de la boutique → réduit à 512 px au plus, ré-encodé en PNG (transparence gardée) ;
  * - tout autre fichier, ou au-delà de 5 Mo après réduction → `FileRejected` (message lisible).
  *
  * Le serveur revérifie format (premiers octets) et taille : ce contrôle n'est qu'un confort.
@@ -12,6 +13,9 @@
 export const MAX_BYTES = 5 * 1024 * 1024;
 export const MAX_SIDE_PX = 1600;
 export const JPEG_QUALITY = 0.7;
+export const LOGO_MAX_SIDE_PX = 512;
+
+export type EncodedType = "image/jpeg" | "image/png";
 
 export class FileRejected extends Error {
   override name = "FileRejected";
@@ -24,11 +28,11 @@ export interface PreparedFile {
 
 /** Décodage et ré-encodage d'une image : remplacé dans les tests (jsdom n'a pas de canvas). */
 export interface ImageCodec {
-  reduce(file: Blob, maxSide: number, quality: number): Promise<Blob>;
+  reduce(file: Blob, maxSide: number, quality: number, type?: EncodedType): Promise<Blob>;
 }
 
 export const canvasCodec: ImageCodec = {
-  async reduce(file, maxSide, quality) {
+  async reduce(file, maxSide, quality, type = "image/jpeg") {
     const bitmap = await createImageBitmap(file).catch((cause: unknown) => {
       throw new FileRejected("Image illisible : prenez une autre photo.", { cause });
     });
@@ -43,10 +47,10 @@ export const canvasCodec: ImageCodec = {
     return new Promise<Blob>((resolve, reject) => {
       canvas.toBlob(
         (blob) => {
-          if (blob === null) reject(new Error("Ré-encodage JPEG impossible"));
+          if (blob === null) reject(new Error(`Ré-encodage ${type} impossible`));
           else resolve(blob);
         },
-        "image/jpeg",
+        type,
         quality,
       );
     });
@@ -72,4 +76,17 @@ export async function prepareFile(
   const reduced = await codec.reduce(file, MAX_SIDE_PX, JPEG_QUALITY);
   if (reduced.size > MAX_BYTES) throw new FileRejected("Photo trop lourde, même réduite.");
   return { blob: reduced, fileName: `${baseName(file.name)}.jpg` };
+}
+
+/** Logo de la boutique : une image (JPG, PNG…), réduite à 512 px, envoyée en PNG. */
+export async function prepareLogo(
+  file: File,
+  codec: ImageCodec = canvasCodec,
+): Promise<PreparedFile> {
+  if (!file.type.startsWith("image/")) {
+    throw new FileRejected("Le logo est une image : photo JPG ou PNG.");
+  }
+  const reduced = await codec.reduce(file, LOGO_MAX_SIDE_PX, JPEG_QUALITY, "image/png");
+  if (reduced.size > MAX_BYTES) throw new FileRejected("Logo trop lourd, même réduit.");
+  return { blob: reduced, fileName: `${baseName(file.name)}.png` };
 }

@@ -72,6 +72,7 @@ export function profileBody(role: Role, minPriceEnabled = true) {
     exchange_days: null,
     employee_exchange_allowed: false,
     default_location_id: null,
+    logo: null,
     entitlements: { offline_capture: false },
   };
   return profile;

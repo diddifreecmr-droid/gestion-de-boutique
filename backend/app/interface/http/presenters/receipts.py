@@ -7,12 +7,13 @@ de ligne en sortent (SEC-N04, même pour le propriétaire).
 from app.application.sales.receipt import Receipt
 from app.application.sales.use_cases.manage_customers import CustomerSheet
 from app.domain.sales.customer import Customer
+from app.interface.http.presenters.attachment_links import optional_url
 from app.interface.http.presenters.sales import detail_response, sale_response
 from app.interface.http.schemas import customers as c
 from app.interface.http.schemas import receipts as r
 
 
-def receipt_response(receipt: Receipt) -> r.SaleReceiptResponse:
+def receipt_response(receipt: Receipt, api_prefix: str) -> r.SaleReceiptResponse:
     sale, shop, settings = receipt.sale, receipt.shop.identity, receipt.settings
     customer = receipt.customer
     return r.SaleReceiptResponse(
@@ -25,6 +26,7 @@ def receipt_response(receipt: Receipt) -> r.SaleReceiptResponse:
             niu=shop.niu,
             rccm=shop.rccm,
             show_logo=settings.show_logo,
+            logo_url=optional_url(api_prefix, receipt.logo),
         ),
         sale_id=str(sale.id),
         number=str(sale.number),
