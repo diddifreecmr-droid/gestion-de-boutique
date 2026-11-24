@@ -39,7 +39,15 @@ function setup(current: ShopSettings, src: string | null = null) {
       </AttachmentsContext.Provider>
     </ToastProvider>,
   );
-  return { ...view, upload, updateSettings, replace, onSaved, codec, user: userEvent.setup({ applyAccept: false }) };
+  return {
+    ...view,
+    upload,
+    updateSettings,
+    replace,
+    onSaved,
+    codec,
+    user: userEvent.setup({ applyAccept: false }),
+  };
 }
 
 beforeEach(() => {

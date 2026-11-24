@@ -228,10 +228,23 @@ Un élément annulé (RG-T03) garde sa ligne : le texte passe en `text-muted` et
 
 ### 6.6 Navigation
 
-- **Barre du haut** (56 px) : nom de la boutique, qui s'ouvre en liste quand il y en a plusieurs (UC-SOC-03) ; cloche avec compteur (pastille `danger`, `--radius-full`) ; flèche de retour sur les écrans de détail.
+- **Barre du haut** (56 px) : **logo de la boutique** (§ 6.7, `--logo-sm`) à gauche du nom de la boutique, qui s'ouvre en liste quand il y en a plusieurs (UC-SOC-03) ; cloche avec compteur (pastille `danger`, `--radius-full`) ; flèche de retour sur les écrans de détail.
 - **Accès « Mon compte »** (décision du 11/11/2026) : bouton icône `CircleUser` + mot « Compte » dans la barre du haut, à droite de la cloche, **pour tous les rôles**. Il ouvre « Mon compte » : version de l'application, « Recharger la dernière version », changer mon code, se déconnecter. Depuis la page d'accueil minimale (12/11/2026, § 7.3), la page d'accueil n'a plus de bouton « Mon compte » : la barre du haut suffit ; depuis l'audit UX du 13/11/2026, c'est **le seul** accès (ni tuile dans « Plus », ni entrée dans « Réglages »). Il ne compte pas dans les 5 entrées de la barre du bas.
 - **Barre du bas** (téléphone) : au plus 5 entrées (CDC § 17.4), icône + mot, 64 px de haut. Entrée active en `primary` avec un trait de 3 px au-dessus. Les droits manquants ne s'affichent pas du tout.
 - **Navigation latérale** (ordinateur ≥ 1024 px) : mêmes entrées, plus le contenu de « Plus » déplié.
+
+### 6.7 Logo de la boutique et filigrane (décision client du 2026-11-24)
+
+Chaque boutique peut avoir son logo, envoyé par le gérant (Réglages → Réglages de la boutique → « Logo de la boutique »). Composants : `ShopLogo`, `ShopWatermark` (`shared/ui`).
+
+| Élément | Règle |
+| --- | --- |
+| Logo envoyé | image JPG ou PNG réduite côté client à **512 px** au plus (PNG, transparence gardée) ; affichée en `object-contain` dans un carré arrondi, fond `surface` |
+| Tailles | `--logo-sm` 32 px (barre du haut), `--logo-md` 64 px (aperçu des réglages), `--logo-lg` 128 px (filigrane) ; arrondi `--radius-sm` / `--radius-md` / `--radius-lg` |
+| **Logo générique** | sans logo, image illisible ou lien expiré : badge `primary` / `on-primary`, **initiales** (2 premiers mots du nom, capitales, gras) ; texte `body` (sm), `title` (md), `kpi` (lg). Jamais d'image cassée |
+| Accessibilité | dans la barre du haut, le logo est décoratif (`alt=""` / `aria-hidden`) : le nom est écrit à côté. Dans les réglages, l'aperçu est nommé (« Logo de la boutique », « Logo générique (initiales) ») |
+| **Filigrane** | le logo (`--logo-lg`), ou le logo générique **avec le nom** dessous (`title`, gras), centré au fond de l'écran, `fixed` derrière le contenu (`-z-10` dans la coquille `isolate`), opacité `--opacity-watermark` (0,06), `pointer-events: none`, `aria-hidden`. Les cartes, opaques (`surface`), le recouvrent : le contraste du texte est inchangé |
+| Réglage | aperçu `--logo-md` + aide ; bouton `FilePickerButton` « Envoyer le logo » / « Changer le logo » ; bouton `ghost` « Retirer le logo » (retour aux initiales). La barre du haut et le filigrane changent aussitôt |
 
 ## 7. Écrans de référence
 
@@ -556,6 +569,10 @@ Un tissu a ses **couleurs** ; le stock est tenu **par couleur** : chaque couleur
   --control-md: 3rem;
   --control-lg: 3.5rem;
   --duration-fast: 120ms;
+  --logo-sm: 2rem;             /* logo de la barre du haut (§ 6.7) */
+  --logo-md: 4rem;             /* aperçu dans les réglages */
+  --logo-lg: 8rem;             /* filigrane */
+  --opacity-watermark: 0.06;   /* filigrane très pâle (0,05–0,08) */
 }
 @media (prefers-reduced-motion: reduce) {
   :root { --duration-fast: 0ms; }
@@ -583,6 +600,8 @@ L'impression suit sa propre petite échelle, indépendante de l'écran. Elle est
 | Nom de la boutique | 13 pt, gras | 15 pt, gras | 18 pt, gras |
 | Total | 14 pt, gras | 16 pt, gras | 16 pt, gras |
 | Couleur | noir pur, aucun gris (les thermiques impriment mal le gris) | idem | noir |
-| Logo | facultatif, monochrome, largeur ≤ 60 % | idem | ≤ 40 mm |
+| Logo | facultatif (« Logo sur le reçu »), en tête, centré, niveaux de gris, largeur ≤ 60 %, hauteur ≤ 20 mm | idem | ≤ 40 mm |
+
+Logo (§ 6.7) : sur le reçu imprimé, l'image du lien signé du reçu ; dans le PDF partagé, la même image ré-encodée en JPEG sur fond blanc et embarquée. Lien expiré ou image illisible : **le nom seul** (aucune image cassée, aucun message).
 
 Séparateurs en tirets ; mentions « Vente à crédit », « Duplicata », « Annulé » en capitales et encadrées. Le reçu n'affiche jamais un coût ni une marge (UC-VEN-04).
