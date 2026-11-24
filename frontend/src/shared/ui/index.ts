@@ -54,6 +54,11 @@ export { Skeleton } from "./Skeleton";
 export type { SkeletonProps } from "./Skeleton";
 
 export { TopBar } from "./TopBar";
+export { ShopLogo } from "./ShopLogo";
+export type { ShopLogoProps, ShopLogoSize } from "./ShopLogo";
+export { ShopWatermark } from "./ShopWatermark";
+export type { ShopWatermarkProps } from "./ShopWatermark";
+export { initialsOf } from "./initials";
 export type { TopBarProps } from "./TopBar";
 export { BottomNav } from "./BottomNav";
 export { MAX_NAV_ITEMS } from "./navigation";

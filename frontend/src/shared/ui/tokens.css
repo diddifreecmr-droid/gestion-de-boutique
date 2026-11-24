@@ -64,6 +64,10 @@
   --control-md: 3rem;
   --control-lg: 3.5rem;
   --duration-fast: 120ms;
+  --logo-sm: 2rem; /* logo de la barre du haut (32 px) */
+  --logo-md: 4rem; /* aperçu dans les réglages (64 px) */
+  --logo-lg: 8rem; /* filigrane (128 px) */
+  --opacity-watermark: 0.06; /* filigrane : à peine visible, contraste du texte inchangé */
 }
 @media (prefers-reduced-motion: reduce) {
   :root {

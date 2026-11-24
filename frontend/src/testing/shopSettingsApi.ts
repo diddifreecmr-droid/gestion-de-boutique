@@ -112,6 +112,7 @@ export function settings(overrides: Partial<ShopSettings> = {}): ShopSettings {
     truck_silent_hours: null,
     transfer_in_transit_days: 7,
     reception_location_id: "loc-garoua",
+    logo_attachment_id: null,
     header: {
       name: "Motos Garoua",
       city: "Garoua",

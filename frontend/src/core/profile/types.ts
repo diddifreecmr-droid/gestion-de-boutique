@@ -53,6 +53,8 @@ export interface ShopProfile {
   stock: StockRules;
   /** Règles de l'échange (QC-4, T42) : délai et autorisation de l'employé. */
   exchange: ExchangeRules;
+  /** Chemin du logo servi (lien signé court, `logo.url`) ; `null` : logo générique. */
+  logoPath: string | null;
 }
 
 /** Stock vu par l'acteur (décisions du 2026-11-15). */

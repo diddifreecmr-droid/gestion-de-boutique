@@ -13,6 +13,7 @@ export function saleReceipt(overrides: Partial<Receipt> = {}): Receipt {
       niu: "M0123456789",
       rccm: null,
       show_logo: false,
+      logo_url: null,
     },
     sale_id: "s1",
     number: "V-000130",

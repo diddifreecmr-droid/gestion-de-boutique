@@ -7,12 +7,13 @@ import { ScreenFrame } from "../ScreenFrame";
 import type { SettingsScreenProps } from "../settingsNav";
 import { ExchangeSettingsSection } from "./ExchangeSettingsSection";
 import { HeaderSection } from "./HeaderSection";
+import { LogoSection } from "./LogoSection";
 import { ReceiptSection } from "./ReceiptSection";
 import { ReceptionSection } from "./ReceptionSection";
 import { SalesRulesSection } from "./SalesRulesSection";
 
 /**
- * Réglages de la boutique (UC-SOC-06, SET-01, SET-02) : prix et stock, échanges, reçu, en-tête,
+ * Réglages de la boutique (UC-SOC-06, SET-01, SET-02) : prix et stock, échanges, logo, reçu, en-tête,
  * réception des achats (module Achats actif seulement). Chaque groupe s'enregistre seul ; la réponse (nouvelle `version`)
  * remplace les réglages lus, pour que le groupe suivant ne soit pas refusé (409).
  */
@@ -44,6 +45,7 @@ export function ShopSettingsScreen({ shopId, onBack }: SettingsScreenProps) {
           <>
             <SalesRulesSection {...common} />
             <ExchangeSettingsSection {...common} />
+            <LogoSection {...common} />
             <ReceiptSection {...common} />
             <HeaderSection {...common} />
             {purchases && <ReceptionSection {...common} locations={locations} />}

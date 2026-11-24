@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ArrowLeft, Bell, ChevronDown, CircleUser } from "lucide-react";
 import { FOCUS_OUTLINE, PRESS_TRANSITION, requireText } from "./controlClasses";
 import { alertBadgeText, alertsLabel } from "./navigation";
@@ -5,6 +6,8 @@ import { alertBadgeText, alertsLabel } from "./navigation";
 export interface TopBarProps {
   /** Nom de la boutique (accueil) ou titre de l'écran (détail). */
   title: string;
+  /** Logo de la boutique (`ShopLogo`), à gauche du nom (specs § 15.1). */
+  logo?: ReactNode;
   /** Plusieurs boutiques : le nom devient un bouton qui ouvre la liste (UC-SOC-03). */
   onTitleClick?: () => void;
   /** Écran de détail : flèche de retour (libellé accessible « Retour »). */
@@ -33,6 +36,7 @@ const ACCOUNT_BUTTON =
  */
 export function TopBar({
   title,
+  logo,
   onTitleClick,
   onBack,
   alertCount,
@@ -50,6 +54,7 @@ export function TopBar({
           <ArrowLeft aria-hidden="true" className="size-6" />
         </button>
       )}
+      {logo !== undefined && <span className="flex shrink-0 pl-2">{logo}</span>}
       {onTitleClick === undefined ? (
         <p className="m-0 min-w-0 flex-1 truncate px-2 text-title-sm font-semibold text-text">
           {title}
