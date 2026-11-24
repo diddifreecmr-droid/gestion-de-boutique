@@ -12,6 +12,7 @@ from app.application.shops.ports import (
     ShopRepository,
     ShopSettingsRepository,
 )
+from app.domain.catalog.ids import AttachmentId
 from app.domain.identity.phone import PhoneNumber
 from app.domain.profiles.modules import Module
 from app.domain.profiles.printing import ReceiptFormat
@@ -88,7 +89,7 @@ class SqlShopSettingsRepository(SqlListing[ShopSettingsId, ShopSettings], ShopSe
 
     def _to_columns(self, aggregate: ShopSettings) -> dict[str, Any]:
         values = aggregate.values
-        location = values.reception_location_id
+        location, logo = values.reception_location_id, values.logo_attachment_id
         return {
             "receipt_format": values.receipt_format.value,
             "paper_width_mm": values.paper_width_mm,
@@ -106,10 +107,11 @@ class SqlShopSettingsRepository(SqlListing[ShopSettingsId, ShopSettings], ShopSe
             "truck_silent_hours": values.truck_silent_hours,
             "transfer_in_transit_days": values.transfer_in_transit_days,
             "reception_location_id": None if location is None else location.value,
+            "logo_attachment_id": None if logo is None else logo.value,
         }
 
     def _from_row(self, row: sa.RowMapping) -> ShopSettings:
-        location = row["reception_location_id"]
+        location, logo = row["reception_location_id"], row["logo_attachment_id"]
         values = SettingsValues(
             receipt_format=ReceiptFormat(row["receipt_format"]),
             paper_width_mm=int(row["paper_width_mm"]),
@@ -127,6 +129,7 @@ class SqlShopSettingsRepository(SqlListing[ShopSettingsId, ShopSettings], ShopSe
             truck_silent_hours=row["truck_silent_hours"],
             transfer_in_transit_days=row["transfer_in_transit_days"],
             reception_location_id=None if location is None else LocationId(location),
+            logo_attachment_id=None if logo is None else AttachmentId(logo),
         )
         return ShopSettings(
             id=ShopSettingsId(row["id"]),

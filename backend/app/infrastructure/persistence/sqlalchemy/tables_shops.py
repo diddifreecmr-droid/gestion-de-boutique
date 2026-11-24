@@ -63,6 +63,7 @@ shop_settings = _base(
     sa.Column("truck_silent_hours", sa.Integer, nullable=True),
     sa.Column("transfer_in_transit_days", sa.Integer, nullable=True),
     sa.Column("reception_location_id", sa.Uuid, nullable=True),
+    sa.Column("logo_attachment_id", sa.Uuid, nullable=True),
     sa.UniqueConstraint("shop_id", name="shop_settings_shop"),
     sa.CheckConstraint("copies BETWEEN 1 AND 3", name="copies_range"),
 )

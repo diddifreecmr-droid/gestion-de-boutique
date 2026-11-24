@@ -81,7 +81,8 @@ def create_app(
         shop.include(build_journal_router(journal), Module.AUDIT, {"/alerts": Module.CORE})
     if shops is not None:
         app.include_router(build_platform_router(shops), prefix=prefix)
-        for build in (build_shop_profile_router, build_places_router, build_members_router):
+        shop.include(build_shop_profile_router(shops, prefix), Module.CORE)
+        for build in (build_places_router, build_members_router):
             shop.include(build(shops), Module.CORE)
     if catalog is not None:
         shop.include(build_fabric_router(catalog.fabrics), Module.CATALOG)
@@ -96,7 +97,7 @@ def create_app(
         shop.include(build_suppliers_router(purchasing), Module.PURCHASES)
         shop.include(build_purchases_router(purchasing), Module.PURCHASES)
     if sales is not None:
-        shop.include(build_sales_router(sales), Module.SALES)
+        shop.include(build_sales_router(sales, prefix), Module.SALES)
         shop.include(build_customers_router(sales), Module.SALES)
         shop.include(build_sales_returns_router(sales), Module.SALES)
     if receivables is not None:

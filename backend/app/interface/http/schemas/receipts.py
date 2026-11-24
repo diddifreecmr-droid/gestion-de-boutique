@@ -16,6 +16,8 @@ class ReceiptHeader(BaseModel):
     niu: str | None
     rccm: str | None
     show_logo: bool
+    logo_url: str | None
+    """Lien signé court du logo si `show_logo` et un logo est réglé ; sinon `null`."""
 
 
 class ReceiptPrintSettings(BaseModel):

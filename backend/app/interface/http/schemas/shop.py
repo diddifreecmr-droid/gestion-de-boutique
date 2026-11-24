@@ -4,6 +4,7 @@
 facultatif à `null` est effacé) ; `version` obligatoire (409 si l'objet a changé).
 """
 
+from datetime import datetime
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -74,6 +75,12 @@ class SaleShortcutResponse(_Strict):
     yards: str | None
 
 
+class ShopLogoResponse(_Strict):
+    url: str
+    """Lien signé court vers l'image (60 s) : à charger aussitôt, puis garder en mémoire."""
+    expires_at: datetime
+
+
 class ProfileResponse(_Strict):
     shop_id: str
     profile_code: str
@@ -103,6 +110,8 @@ class ProfileResponse(_Strict):
     employee_exchange_allowed: bool
     """Vrai : le vendeur peut échanger ses ventes dans le délai (QC-4, bouton « Échanger »)."""
     default_location_id: str | None
+    logo: ShopLogoResponse | None
+    """Logo de la boutique (specs § 15.1) ; `null` : logo générique aux initiales."""
     entitlements: dict[str, bool]
     """Droits d'offre de la boutique (TR-26) : `{"offline_capture": false}` en V1. Le frontend
     n'utilise la file d'envoi hors connexion que si `offline_capture` est vrai (T23)."""
@@ -127,6 +136,7 @@ class SettingsResponse(_Strict):
     truck_silent_hours: int | None
     transfer_in_transit_days: int | None
     reception_location_id: str | None
+    logo_attachment_id: str | None
     header: ShopHeaderResponse
 
 
@@ -148,6 +158,8 @@ class SettingsPatch(_Strict):
     truck_silent_hours: int | None = None
     transfer_in_transit_days: int | None = None
     reception_location_id: str | None = Field(default=None, max_length=64)
+    logo_attachment_id: str | None = Field(default=None, max_length=64)
+    """Pièce jointe `shop` (JPG ou PNG) envoyée par `POST /attachments` ; `null` la retire."""
     city: str | None = Field(default=None, max_length=200)
     phone: str | None = Field(default=None, max_length=32)
     address: str | None = Field(default=None, max_length=1000)

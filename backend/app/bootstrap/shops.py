@@ -6,12 +6,14 @@ modes de paiement, membres, délégation de l'administrateur.
 
 from dataclasses import dataclass
 
+from app.application.attachments.links import LinkSigner
 from app.application.identity.ports import TemporaryPinGenerator
 from app.application.identity.use_cases.member_access import MemberAccess
 from app.application.identity.use_cases.reset_pin import ResetPin
 from app.application.identity.use_cases.revoke_user_devices import RevokeUserDevices
 from app.application.identity.use_cases.unlock_user import UnlockUser
 from app.application.security.policy import Policy
+from app.application.shops.logo import logo_links
 from app.application.shops.stock_probe import LocationStock
 from app.application.shops.use_cases.admin_access import GrantAdminAccess, RevokeAdminAccess
 from app.application.shops.use_cases.change_profile import ChangeShopProfile
@@ -54,7 +56,9 @@ def build_shops(
     *,
     pins: TemporaryPinGenerator | None = None,
     stock: LocationStock | None = None,
+    signer: LinkSigner | None = None,
 ) -> ShopsModule:
+    """`signer` : celui des pièces jointes, pour le lien du logo du profil."""
     core, clock, hasher = identity.core, identity.clock, identity.hasher
     pins = pins or RandomPinGenerator()
     shop_uows, platform_uows = core.shop_uow_factory, core.platform_uow_factory
@@ -63,7 +67,9 @@ def build_shops(
     http = ShopsComponents(
         open_shop=OpenShop(platform_uows, policy, hasher, pins, clock),
         platform=PlatformShops(shop_uows, core.catalog, core.overrides, policy, clock),
-        profile=GetShopProfile(shop_uows, policy, shop_entitlements(core)),
+        profile=GetShopProfile(
+            shop_uows, policy, shop_entitlements(core), logo_links(signer, clock)
+        ),
         settings=ShopSettingsUseCase(shop_uows, policy, clock),
         locations=ManageLocations(shop_uows, policy, stock or LedgerLocationStock(), clock),
         payment_modes=ManagePaymentModes(shop_uows, policy, clock),

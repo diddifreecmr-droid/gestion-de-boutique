@@ -31,12 +31,10 @@ from app.application.security.actor import Actor
 from app.application.security.policy import Policy
 from app.application.shops.modules import require_module
 from app.domain.attachments.attachment import Attachment
-from app.domain.attachments.values import FileFormat, OwnerType
+from app.domain.attachments.values import IMAGE_FORMATS, OwnerType
 from app.domain.catalog.article import Article
 from app.domain.catalog.ids import ArticleId
 from app.domain.shared.errors import ValidationFailed
-
-IMAGE_FORMATS = frozenset({FileFormat.JPEG, FileFormat.PNG})
 
 
 class ThumbnailsUnavailable(ValidationFailed):

@@ -15,6 +15,7 @@ from app.domain.shops.location import Location
 from app.domain.shops.payment_mode import PaymentMode
 from app.domain.shops.settings import SettingsValues
 from app.domain.shops.shop import Shop
+from app.interface.http.presenters.attachment_links import content_url
 from app.interface.http.presenters.sale_shortcuts import sale_shortcuts
 from app.interface.http.schemas.members import MemberResponse
 from app.interface.http.schemas.places import LocationResponse, PaymentModeResponse
@@ -27,6 +28,7 @@ from app.interface.http.schemas.shop import (
     RoleResponse,
     SettingsResponse,
     ShopHeaderResponse,
+    ShopLogoResponse,
 )
 
 
@@ -92,7 +94,14 @@ def _receipt(shop: Shop, values: SettingsValues) -> ReceiptSettingsResponse:
     )
 
 
-def profile_response(view: ShopProfileView) -> ProfileResponse:
+def _logo(view: ShopProfileView, api_prefix: str) -> ShopLogoResponse | None:
+    link = view.logo
+    if link is None:
+        return None
+    return ShopLogoResponse(url=content_url(api_prefix, link), expires_at=link.expires_at)
+
+
+def profile_response(view: ShopProfileView, api_prefix: str) -> ProfileResponse:
     profile, shop = view.profile, view.shop
     location = view.default_location_id
     return ProfileResponse(
@@ -118,12 +127,13 @@ def profile_response(view: ShopProfileView) -> ProfileResponse:
         exchange_days=view.settings.exchange_days,
         employee_exchange_allowed=view.settings.employee_exchange_allowed,
         default_location_id=None if location is None else str(location),
+        logo=_logo(view, api_prefix),
         entitlements={e.value: e in view.entitlements for e in Entitlement},
     )
 
 
 def settings_response(shop: Shop, values: SettingsValues, version: int) -> SettingsResponse:
-    location = values.reception_location_id
+    location, logo = values.reception_location_id, values.logo_attachment_id
     return SettingsResponse(
         version=version,
         receipt_format=values.receipt_format.value,
@@ -143,6 +153,7 @@ def settings_response(shop: Shop, values: SettingsValues, version: int) -> Setti
         truck_silent_hours=values.truck_silent_hours,
         transfer_in_transit_days=values.transfer_in_transit_days,
         reception_location_id=None if location is None else str(location),
+        logo_attachment_id=None if logo is None else str(logo),
         header=header_response(shop),
     )
 

@@ -12,6 +12,7 @@
 
 from dataclasses import dataclass
 
+from app.application.attachments.links import LinkSigner
 from app.application.catalog.ranking import SalesRanking
 from app.application.ports.clock import Clock
 from app.application.receivables.debt import ReceivableCustomerDebt
@@ -33,6 +34,7 @@ from app.application.sales.use_cases.read_sales import GetSale, ListSales
 from app.application.sales.use_cases.record_return import RecordReturn
 from app.application.sales.use_cases.record_sale import RecordSale
 from app.application.security.policy import Policy
+from app.application.shops.logo import logo_links
 from app.application.stock.ledger import StockLedger
 from app.bootstrap.identity import IdentityModule
 from app.interface.http.routes.sales_components import SalesComponents
@@ -49,7 +51,10 @@ def sales_ranking(clock: Clock) -> SalesRanking:
     return LedgerSalesRanking(clock)
 
 
-def build_sales(identity: IdentityModule, ledger: StockLedger) -> SalesModule:
+def build_sales(
+    identity: IdentityModule, ledger: StockLedger, *, signer: LinkSigner | None = None
+) -> SalesModule:
+    """`signer` : celui des pièces jointes, pour le logo du reçu (sans lui : pas de logo)."""
     core, clock = identity.core, identity.clock
     uows = core.shop_uow_factory
     policy = Policy(clock=clock.now)
@@ -62,7 +67,9 @@ def build_sales(identity: IdentityModule, ledger: StockLedger) -> SalesModule:
         cancel=CancelSale(uows, policy, ledger, clock),
         report=ReportSaleError(uows, policy, clock),
         answer=AnswerErrorReport(uows, policy, clock),
-        receipt=GetReceipt(uows, core.platform_uow_factory, policy, clock),
+        receipt=GetReceipt(
+            uows, core.platform_uow_factory, policy, clock, logo_links(signer, clock)
+        ),
         customers=ManageCustomers(uows, policy, clock),
         request_price=RequestPriceApproval(uows, policy, clock),
         decide_price=DecidePriceRequest(uows, policy, clock),

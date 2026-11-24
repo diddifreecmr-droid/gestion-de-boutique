@@ -18,6 +18,7 @@ from decimal import Decimal
 from enum import StrEnum
 from types import MappingProxyType
 
+from app.application.attachments.links import SignedLink
 from app.domain.catalog.ids import ArticleId
 from app.domain.profiles.registry import profile_for
 from app.domain.sales.customer import Customer
@@ -80,6 +81,8 @@ class Receipt:
     print_sequence: int
     printed_at: datetime
     title: str = RECEIPT_TITLE
+    logo: SignedLink | None = None
+    """Lien signé du logo, seulement si « afficher le logo » est coché (specs § 15.1)."""
 
 
 def build_receipt(
