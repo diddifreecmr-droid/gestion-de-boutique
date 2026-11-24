@@ -60,7 +60,9 @@ describe("garde de route", () => {
 describe("boutique active (UC-SOC-03)", () => {
   it("une seule boutique : ouverte directement, barre du bas du vendeur", async () => {
     const { router } = renderApp("/", signedIn());
-    expect(await screen.findByText("Motos Garoua")).toBeVisible();
+    expect(
+      await within(await screen.findByRole("banner")).findByText("Motos Garoua"),
+    ).toBeVisible();
     expect(router.state.location.pathname).toBe(`/s/${SHOP_A}`);
     expect(navLabels()).toEqual(["Accueil", "Nouvelle vente", "Mes ventes", "Créances", "Stock"]);
     expect(screen.getByRole("link", { name: "Accueil" })).toHaveAttribute("aria-current", "page");

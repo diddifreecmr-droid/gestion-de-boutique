@@ -7,6 +7,7 @@
  * Module chargé à la demande (premier « Partager », PERF-03) : rien de ceci n'est dans le
  * JavaScript initial.
  */
+import { imageDictionary, imageOps, placeImage, type PdfImage } from "./pdfImage";
 
 export const MM_TO_PT = 72 / 25.4;
 /** Avance d'un caractère Courier : 600/1000 de la taille du texte. */
@@ -92,38 +93,93 @@ function contentStream(lines: readonly PdfLine[], page: PdfPage, heightPt: numbe
   return ops.join("\n");
 }
 
-/** Document PDF complet (octets ASCII) : catalogue, pages, deux polices, table xref. */
-export function renderPdf(lines: readonly PdfLine[], page: PdfPage): Uint8Array {
+/** Octets d'un objet PDF : dictionnaire (et flux éventuel, ASCII ou binaire). */
+function objectBytes(id: number, body: string, stream?: Uint8Array): Uint8Array[] {
+  const ascii = new TextEncoder();
+  if (stream === undefined) return [ascii.encode(`${String(id)} 0 obj\n${body}\nendobj\n`)];
+  return [
+    ascii.encode(`${String(id)} 0 obj\n${body}\nstream\n`),
+    stream,
+    ascii.encode("\nendstream\nendobj\n"),
+  ];
+}
+
+function concat(chunks: readonly Uint8Array[]): Uint8Array {
+  const out = new Uint8Array(chunks.reduce((total, chunk) => total + chunk.length, 0));
+  let at = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, at);
+    at += chunk.length;
+  }
+  return out;
+}
+
+interface PdfObject {
+  body: string;
+  stream?: Uint8Array;
+}
+
+/**
+ * Document PDF complet : catalogue, pages, deux polices, logo facultatif (1re page, JPEG
+ * embarqué), table xref. Texte en ASCII ; seul le flux de l'image est binaire.
+ */
+export function renderPdf(
+  textLines: readonly PdfLine[],
+  page: PdfPage,
+  image: PdfImage | null = null,
+): Uint8Array {
+  const placed = image === null ? null : placeImage(image, page, LEADING);
+  const blank: PdfLine[] = Array.from({ length: placed?.lines ?? 0 }, () => ({ text: "" }));
+  const lines = [...blank, ...textLines];
   const widthPt = page.widthMm * MM_TO_PT;
   const rollHeight = 2 * page.marginMm * MM_TO_PT + (lines.length + 1) * page.fontPt * LEADING;
   const heightPt = page.heightMm === null ? rollHeight : page.heightMm * MM_TO_PT;
   const pages = pagesOf(lines, page);
-  const objects: string[] = [];
+  const objects: PdfObject[] = [];
   const pageIds = pages.map((_, index) => 5 + 2 * index);
-  objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
-  objects[2] = `<< /Type /Pages /Kids [${pageIds.map((id) => `${String(id)} 0 R`).join(" ")}] /Count ${String(pages.length)} >>`;
-  objects[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>";
-  objects[4] =
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold /Encoding /WinAnsiEncoding >>";
+  const imageId = 5 + 2 * pages.length;
+  const kids = pageIds.map((id) => `${String(id)} 0 R`).join(" ");
+  const font = (name: string) =>
+    `<< /Type /Font /Subtype /Type1 /BaseFont /${name} /Encoding /WinAnsiEncoding >>`;
+  objects[1] = { body: "<< /Type /Catalog /Pages 2 0 R >>" };
+  objects[2] = { body: `<< /Type /Pages /Kids [${kids}] /Count ${String(pages.length)} >>` };
+  objects[3] = { body: font("Courier") };
+  objects[4] = { body: font("Courier-Bold") };
   pages.forEach((pageLines, index) => {
     const id = pageIds[index] ?? 0;
-    const stream = contentStream(pageLines, page, heightPt);
-    objects[id] =
-      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${widthPt.toFixed(2)} ${heightPt.toFixed(2)}] ` +
-      `/Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${String(id + 1)} 0 R >>`;
-    objects[id + 1] = `<< /Length ${String(stream.length)} >>\nstream\n${stream}\nendstream`;
+    const withImage = placed !== null && index === 0;
+    const text = contentStream(pageLines, page, heightPt);
+    const stream = withImage ? `${imageOps(placed, page, widthPt, heightPt)}\n${text}` : text;
+    const xobject = withImage ? ` /XObject << /Im1 ${String(imageId)} 0 R >>` : "";
+    const box = `[0 0 ${widthPt.toFixed(2)} ${heightPt.toFixed(2)}]`;
+    objects[id] = {
+      body:
+        `<< /Type /Page /Parent 2 0 R /MediaBox ${box} ` +
+        `/Resources << /Font << /F1 3 0 R /F2 4 0 R >>${xobject} >> /Contents ${String(id + 1)} 0 R >>`,
+    };
+    objects[id + 1] = {
+      body: `<< /Length ${String(stream.length)} >>\nstream\n${stream}\nendstream`,
+    };
   });
-  let body = "%PDF-1.4\n";
-  const offsets: number[] = [];
-  for (let id = 1; id < objects.length; id += 1) {
-    offsets[id] = body.length;
-    body += `${String(id)} 0 obj\n${objects[id] ?? ""}\nendobj\n`;
+  if (placed !== null) {
+    objects[imageId] = { body: imageDictionary(placed.image), stream: placed.image.jpeg };
   }
-  const xref = body.length;
-  const entries = offsets
-    .slice(1)
-    .map((offset) => `${String(offset).padStart(10, "0")} 00000 n \n`);
-  body += `xref\n0 ${String(objects.length)}\n0000000000 65535 f \n${entries.join("")}`;
-  body += `trailer\n<< /Size ${String(objects.length)} /Root 1 0 R >>\nstartxref\n${String(xref)}\n%%EOF\n`;
-  return new TextEncoder().encode(body);
+  const chunks: Uint8Array[] = [new TextEncoder().encode("%PDF-1.4\n")];
+  const offsets: number[] = [];
+  let size = chunks[0]?.length ?? 0;
+  for (let id = 1; id < objects.length; id += 1) {
+    const object = objects[id];
+    if (object === undefined) throw new Error(`Objet PDF ${String(id)} manquant`);
+    offsets[id] = size;
+    for (const chunk of objectBytes(id, object.body, object.stream)) {
+      chunks.push(chunk);
+      size += chunk.length;
+    }
+  }
+  const entries = offsets.slice(1).map((at) => `${String(at).padStart(10, "0")} 00000 n \n`);
+  const tail =
+    `xref\n0 ${String(objects.length)}\n0000000000 65535 f \n${entries.join("")}` +
+    `trailer\n<< /Size ${String(objects.length)} /Root 1 0 R >>\nstartxref\n${String(size)}\n%%EOF\n`;
+  chunks.push(new TextEncoder().encode(tail));
+  return concat(chunks);
 }

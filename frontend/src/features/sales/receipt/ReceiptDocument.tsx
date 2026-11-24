@@ -46,7 +46,7 @@ function Line({ line }: { line: ReceiptLine }) {
 
 /**
  * Reçu de vente (UC-VEN-04, TR-18, design-system § 10) rendu depuis le DTO du serveur : en-tête
- * de la boutique, identification, client, lignes et détails, totaux et paiements par mode,
+ * de la boutique (logo si « afficher le logo », sinon le nom seul), identification, client, lignes et détails, totaux et paiements par mode,
  * mentions encadrées, pied. Le DTO ne porte **aucun** coût ni marge : rien à filtrer ici.
  */
 export function ReceiptDocument({ receipt }: { receipt: Receipt }) {
@@ -60,6 +60,16 @@ export function ReceiptDocument({ receipt }: { receipt: Receipt }) {
     <article aria-label="Reçu" className={`receipt receipt--${profile}`}>
       <style>{pageRules(receipt.printing)}</style>
       <div className="receipt__center">
+        {header.show_logo && header.logo_url !== null && (
+          <img
+            className="receipt__logo"
+            src={header.logo_url}
+            alt={`Logo de ${header.shop_name}`}
+            onError={(event) => {
+              event.currentTarget.hidden = true; // lien expiré ou image illisible : le nom seul
+            }}
+          />
+        )}
         <h2 className="receipt__shop">{header.shop_name}</h2>
         <p>{header.city}</p>
         {header.address !== null && <p>{header.address}</p>}

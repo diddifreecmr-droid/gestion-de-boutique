@@ -41,6 +41,19 @@
 .receipt--a4-a5 .receipt__shop {
   font-size: 1.636em;
 }
+/* Logo (design-system § 10) : centré, ≤ 60 % de la largeur sur ticket, ≤ 40 mm sur feuille ;
+   niveaux de gris pour les thermiques. */
+.receipt__logo {
+  display: block;
+  margin: 0 auto 0.5em;
+  max-width: 60%;
+  max-height: 20mm;
+  object-fit: contain;
+  filter: grayscale(1);
+}
+.receipt--a4-a5 .receipt__logo {
+  max-width: 40mm;
+}
 .receipt__title {
   font-weight: 700;
   font-size: 1em;

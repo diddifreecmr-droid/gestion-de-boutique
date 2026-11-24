@@ -72,8 +72,17 @@ export function createHttpSales({ api, session }: AppServices): SalesGateway {
       session.authorized((token) =>
         api.post(`${SALE}/error-reports`, { token, params: one(shopId, id), body }),
       ),
-    receipt: (shopId, id) =>
-      session.authorized((token) => api.get(`${SALE}/receipt`, { token, params: one(shopId, id) })),
+    // Logo : chemin servi → adresse de l'API (ouverte sans jeton par `<img>`, lien signé court).
+    receipt: async (shopId, id) => {
+      const params = one(shopId, id);
+      const served = await session.authorized((token) =>
+        api.get(`${SALE}/receipt`, { token, params }),
+      );
+      const logo = served.header.logo_url;
+      return logo === null
+        ? served
+        : { ...served, header: { ...served.header, logo_url: api.href(logo) } };
+    },
     members: (shopId) =>
       session.authorized((token) => api.get(`${SHOP}/members`, { token, params: shop(shopId) })),
   };
